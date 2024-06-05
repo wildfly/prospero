@@ -54,7 +54,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -64,7 +63,8 @@ public class GitStorage implements AutoCloseable {
 
     public static final String GIT_HISTORY_USER = "Wildfly Installer";
     private final Git git;
-    private Path base;
+    private final Path base;
+    private final SavedStateParser savedStateParser;
 
     public GitStorage(Path base) throws MetadataException {
         this.base = base.resolve(ProsperoMetadataUtils.METADATA_DIR);
@@ -73,6 +73,7 @@ public class GitStorage implements AutoCloseable {
         } catch (GitAPIException | IOException e) {
             throw ProsperoLogger.ROOT_LOGGER.unableToCreateHistoryStorage(base, e);
         }
+        this.savedStateParser = new SavedStateParser();
     }
 
     public List<SavedState> getRevisions() throws MetadataException {
@@ -80,33 +81,14 @@ public class GitStorage implements AutoCloseable {
             final Iterable<RevCommit> call = git.log().call();
             List<SavedState> history = new ArrayList<>();
             for (RevCommit revCommit : call) {
-                final String shortMessage = revCommit.getShortMessage().trim();
-                final int endOfTypeIndex = shortMessage.indexOf(' ');
-                final String type;
-                String msg;
-                if (endOfTypeIndex < 0) {
-                    type = shortMessage;
-                    msg = "";
-                } else {
-                    type = shortMessage.substring(0, endOfTypeIndex).trim();
-                    msg = shortMessage.substring(endOfTypeIndex + 1).trim();
-
-                }
-                final SavedState.Type recordType = SavedState.Type.fromText(type.toUpperCase(Locale.ROOT));
-                if (recordType == SavedState.Type.INTERNAL_UPDATE) {
-                    // hide internal records
-                    continue;
-                }
-                if (recordType == SavedState.Type.UNKNOWN) {
-                    msg = shortMessage;
-                }
-                history.add(new SavedState(revCommit.getName().substring(0,8),
-                        Instant.ofEpochSecond(revCommit.getCommitTime()),
-                        recordType, msg));
+                final String commitMessage = revCommit.getFullMessage();
+                final Instant commitTime = Instant.ofEpochSecond(revCommit.getCommitTime());
+                final String commitHash = revCommit.getName().substring(0, 8);
+                history.add(savedStateParser.read(commitHash, commitTime, commitMessage));
             }
 
             return history;
-        } catch (GitAPIException e) {
+        } catch (GitAPIException | IOException e) {
             throw ProsperoLogger.ROOT_LOGGER.unableToAccessHistoryStorage(base, e);
         }
     }
@@ -117,7 +99,7 @@ public class GitStorage implements AutoCloseable {
             if (isRepositoryEmpty(git)) {
                 final PersonIdent author = adjustCommitDateToCreationDate(getCommitter());
                 final SavedState.Type commitType = SavedState.Type.INSTALL;
-                final String msg = readCommitMessage();
+                final String msg = readCommitMessage(commitType);
                 git.add().addFilepattern(ProsperoMetadataUtils.MANIFEST_FILE_NAME).call();
                 git.add().addFilepattern(ProsperoMetadataUtils.INSTALLER_CHANNELS_FILE_NAME).call();
                 git.add().addFilepattern(CURRENT_VERSION_FILE).call();
@@ -126,7 +108,7 @@ public class GitStorage implements AutoCloseable {
                 git.commit()
                         .setAuthor(author)
                         .setCommitter(author)
-                        .setMessage(commitType.name() + (msg==null ? "" : " " + msg))
+                        .setMessage(msg)
                         .call();
             } else {
                 recordChange(SavedState.Type.UPDATE);
@@ -138,10 +120,10 @@ public class GitStorage implements AutoCloseable {
 
     }
 
-    private String readCommitMessage() throws MetadataException {
+    private String readCommitMessage(SavedState.Type stateType) throws MetadataException {
         final Path versionsFile = base.resolve(CURRENT_VERSION_FILE);
         try {
-            return ManifestVersionRecord.read(versionsFile).map(ManifestVersionRecord::getSummary).orElse(null);
+            return savedStateParser.write(stateType, ManifestVersionRecord.read(versionsFile).orElse(new ManifestVersionRecord()));
         } catch (IOException e) {
             throw ProsperoLogger.ROOT_LOGGER.unableToReadFile(versionsFile, e);
         }
@@ -164,12 +146,12 @@ public class GitStorage implements AutoCloseable {
             final PersonIdent author = getCommitter();
             final SavedState.Type commitType = operation;
 
-            String msg = readCommitMessage();
+            String msg = readCommitMessage(commitType);
 
             git.commit()
                     .setAuthor(author)
                     .setCommitter(author)
-                    .setMessage(commitType.name()+ (msg==null? "" : " " + msg ))
+                    .setMessage(msg)
                     .call();
 
         } catch (IOException | GitAPIException e) {

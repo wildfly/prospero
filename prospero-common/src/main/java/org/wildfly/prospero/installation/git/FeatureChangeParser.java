@@ -20,15 +20,12 @@ package org.wildfly.prospero.installation.git;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.galleon.ProvisioningException;
 import org.jboss.galleon.config.ConfigId;
-import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.api.Diff;
 import org.wildfly.prospero.api.FeatureChange;
 import org.wildfly.prospero.api.exceptions.MetadataException;
-import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -50,7 +47,7 @@ import static org.wildfly.prospero.api.FeatureChange.Type.CONFIG;
  */
 class FeatureChangeParser implements GitStorage.Parser<FeatureChange> {
     @Override
-    public List<FeatureChange> parse(Path changed, Path base) throws IOException, MetadataException {
+    public List<FeatureChange> parse(String changed, String base) throws IOException, MetadataException {
         final List<FeatureChange> featureChanges = new ArrayList<>();
         final GalleonProvisioningConfig newConfig;
         final GalleonProvisioningConfig oldConfig;
@@ -58,7 +55,8 @@ class FeatureChangeParser implements GitStorage.Parser<FeatureChange> {
             newConfig = parseProvisioningConfig(changed);
             oldConfig = parseProvisioningConfig(base);
         } catch (ProvisioningException e) {
-            throw ProsperoLogger.ROOT_LOGGER.unableToParseConfiguration(changed.resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML), e);
+//            throw ProsperoLogger.ROOT_LOGGER.unableToParseConfiguration(changed.resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML), e);
+            throw new RuntimeException("Unable to Parse configuration ProsperoMetadataUtils.PROVISIONING_RECORD_XML");
         }
 
         final Set<String> oldFeatureNames = oldConfig.getFeaturePackDeps().stream().map(c -> c.getLocation().toString()).collect(Collectors.toSet());
@@ -103,13 +101,13 @@ class FeatureChangeParser implements GitStorage.Parser<FeatureChange> {
         return featureChanges;
     }
 
-    private static GalleonProvisioningConfig parseProvisioningConfig(Path changed) throws ProvisioningException {
-        if (changed == null || !Files.exists(changed.resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML))) {
+    private static GalleonProvisioningConfig parseProvisioningConfig(String changed) throws ProvisioningException {
+        if (changed == null) {
             return GalleonProvisioningConfig.builder().build();
         } else {
             // XXX TODO, WE SHOULD BE ABLE TO RESOLVE here we use default core.
             try(Provisioning p = new GalleonBuilder().newProvisioningBuilder().build()) {
-                return p.loadProvisioningConfig(changed.resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML));
+                return p.loadProvisioningConfig(new ByteArrayInputStream(changed.getBytes()));
             }
         }
     }

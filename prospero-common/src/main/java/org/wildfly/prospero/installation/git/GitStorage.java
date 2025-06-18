@@ -19,10 +19,17 @@ package org.wildfly.prospero.installation.git;
 
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.util.SystemReader;
 import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifest;
+import org.wildfly.channel.ChannelManifestMapper;
+import org.wildfly.channel.ChannelMapper;
 import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.api.FeatureChange;
 import org.wildfly.prospero.metadata.ManifestVersionRecord;
@@ -31,8 +38,6 @@ import org.wildfly.prospero.api.exceptions.MetadataException;
 import org.wildfly.prospero.api.SavedState;
 import org.wildfly.prospero.api.ArtifactChange;
 import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
-import org.wildfly.prospero.model.ManifestYamlSupport;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.jgit.api.Git;
@@ -41,9 +46,10 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.wildfly.channel.Stream;
-import org.wildfly.prospero.model.ProsperoConfig;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -299,46 +305,20 @@ public class GitStorage implements AutoCloseable {
     }
 
     private <T> List<T> getChanges(SavedState savedState, SavedState other, String manifestFileName, Parser<T> parser) throws MetadataException {
-        Path change = null;
-        Path base = null;
         try {
-            change = checkoutPastState(savedState, manifestFileName);
+            final String change = checkoutPastState(savedState, manifestFileName);
+            final String base;
             if (other != null) {
                 base = checkoutPastState(other, manifestFileName);
+            } else {
+                base = null;
             }
 
             return parser.parse(change, base);
         } catch (GitAPIException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
-            throw ProsperoLogger.ROOT_LOGGER.unableToParseConfiguration(change, e);
-        } finally {
-            try {
-                deleteWithRetry(change);
-                deleteWithRetry(base);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private static void deleteWithRetry(Path repo) throws IOException {
-        int retryCount = 0;
-        while (repo != null && Files.exists(repo)) {
-            try {
-                FileUtils.deleteDirectory(repo.toFile());
-            } catch (IOException e) {
-                if (retryCount++ < 3) {
-                    ProsperoLogger.ROOT_LOGGER.tracef(e, "Unable to delete temporary config in %s, attempt nr %d/3", repo, retryCount);
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                } else {
-                    throw e;
-                }
-            }
+            throw ProsperoLogger.ROOT_LOGGER.unableToParseConfiguration(this.base.resolve(manifestFileName), e);
         }
     }
 
@@ -390,30 +370,49 @@ public class GitStorage implements AutoCloseable {
         return !isRepositoryEmpty(git);
     }
 
-    private Path checkoutPastState(SavedState savedState, String fileName) throws GitAPIException, IOException {
-        Path hist = Files.createTempDirectory("hist");
-        try (Git temp =  Git.cloneRepository()
-                    .setDirectory(hist.toFile())
-                    .setRemote("origin")
-                    .setURI(base.toUri().toString())
-                    .call()) {
-            temp.checkout()
-                    .setStartPoint(savedState.getName())
-                    .addPath(fileName)
-                    .call();
-            return hist;
+    private String checkoutPastState(SavedState savedState, String fileName) throws GitAPIException, IOException {
+        // we need to get historical data from git, but we don't really want to change currently checkout state
+        // so we're gonna find the commit in history, then load the file for it
+        final RevWalk revWalk = new RevWalk(git.getRepository());
+        try {
+            final RevCommit commit = revWalk.parseCommit(git.getRepository().resolve(savedState.getName()));
+            // the commit has an associated file tree. we need to find the fileName in it
+            final RevTree tree = commit.getTree();
+
+            try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
+                treeWalk.addTree(tree);
+                treeWalk.setRecursive(true);
+                treeWalk.setFilter(PathFilter.create(fileName));
+                if (!treeWalk.next()) {
+                    // there is no such file - we return null and let the caller handle it
+                    return null;
+                }
+
+                // otherwise, let's read the file content
+                final ObjectId objectId = treeWalk.getObjectId(0);
+                final ObjectLoader loader = git.getRepository().open(objectId);
+
+                try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                    loader.copyTo(os);
+                    os.flush();
+                    return os.toString(StandardCharsets.UTF_8);
+                }
+            }
+        } finally {
+            revWalk.dispose();
+            revWalk.close();
         }
     }
 
     interface Parser<T> {
-        List<T> parse(Path changedPath, Path basePath) throws IOException, MetadataException;
+        List<T> parse(String changedPath, String basePath) throws IOException, MetadataException;
     }
 
     private static class ChannelChangeParser implements Parser<ChannelChange> {
         @Override
-        public List<ChannelChange> parse(Path changed, Path base) throws IOException, MetadataException {
-            final List<Channel> oldChannels = base == null ? Collections.emptyList() : ProsperoConfig.readConfig(base).getChannels();
-            final List<Channel> currentChannels = ProsperoConfig.readConfig(changed).getChannels();
+        public List<ChannelChange> parse(String changed, String base) throws IOException, MetadataException {
+            final List<Channel> oldChannels = base == null ? Collections.emptyList() : ChannelMapper.fromString(base);
+            final List<Channel> currentChannels = ChannelMapper.fromString(changed);
 
             final ArrayList<ChannelChange> channelChanges = new ArrayList<>();
 
@@ -446,16 +445,16 @@ public class GitStorage implements AutoCloseable {
 
     private class ArtifactChangeParser implements Parser<ArtifactChange> {
         @Override
-        public List<ArtifactChange> parse(Path changed, Path base) throws IOException, MetadataException {
+        public List<ArtifactChange> parse(String changed, String base) throws IOException, MetadataException {
             final Map<String, Artifact> oldArtifacts;
             if (base != null) {
-                final ChannelManifest parseOld = ManifestYamlSupport.parse(base.resolve(ProsperoMetadataUtils.MANIFEST_FILE_NAME).toFile());
+                final ChannelManifest parseOld = ChannelManifestMapper.fromString(base);
                 oldArtifacts = GitStorage.this.toMap(parseOld.getStreams());
             } else {
                 oldArtifacts = Collections.emptyMap();
             }
 
-            final ChannelManifest parseCurrent = ManifestYamlSupport.parse(changed.resolve(ProsperoMetadataUtils.MANIFEST_FILE_NAME).toFile());
+            final ChannelManifest parseCurrent = ChannelManifestMapper.fromString(changed);
             final Map<String, Artifact> currentArtifacts = GitStorage.this.toMap(parseCurrent.getStreams());
 
             final ArrayList<ArtifactChange> artifactChanges = new ArrayList<>();

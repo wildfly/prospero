@@ -170,7 +170,7 @@ public class RepositoryDefinitionTest {
     public void testNonExistingFile() throws Exception {
         Assertions.assertThatThrownBy(() -> from(List.of("idontexist")))
                 .hasMessageContaining(String.format(
-                        "The provided path [%s] doesn't exist or is not accessible. The local repository has to an existing, readable folder.",
+                        "The provided path [%s] doesn't exist or is not accessible. The local repository has to be an existing, readable folder.",
                         Path.of("idontexist").toAbsolutePath()));
     }
 
@@ -178,7 +178,7 @@ public class RepositoryDefinitionTest {
     public void testNonExistingFileUri() throws Exception {
         Assertions.assertThatThrownBy(() -> from(List.of("file:idontexist")))
                 .hasMessageContaining(String.format(
-                        "The provided path [%s] doesn't exist or is not accessible. The local repository has to an existing, readable folder.",
+                        "The provided path [%s] doesn't exist or is not accessible. The local repository has to be an existing, readable folder.",
                         Path.of("idontexist").toAbsolutePath()));
     }
 

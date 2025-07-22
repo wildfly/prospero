@@ -116,7 +116,7 @@ public class RevertCommand extends AbstractParentCommand {
             final MavenOptions mavenOptions = parseMavenOptions();
 
             final List<Repository> repositories = RepositoryDefinition.from(temporaryRepositories);
-            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.getInstance()) {
+            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
                 final List<Repository> overrideRepositories = RepositoryUtils.unzipArchives(repositories, temporaryFiles);
 
                 InstallationHistoryAction historyAction = actionFactory.history(installationDirectory, console);
@@ -216,7 +216,7 @@ public class RevertCommand extends AbstractParentCommand {
             final Path installationDirectory = determineInstallationDirectory(directory);
             final MavenOptions mavenOptions = parseMavenOptions();
 
-            try(TemporaryFilesManager temporaryFiles = TemporaryFilesManager.getInstance()) {
+            try(TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
                 final List<Repository> repositories = RepositoryDefinition.from(temporaryRepositories);
                 final List<Repository> overrideRepositories = RepositoryUtils.unzipArchives(repositories, temporaryFiles);
 

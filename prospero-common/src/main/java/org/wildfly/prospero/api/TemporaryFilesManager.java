@@ -36,7 +36,7 @@ public class TemporaryFilesManager implements AutoCloseable {
 
     }
 
-    public static TemporaryFilesManager getInstance() {
+    public static TemporaryFilesManager newInstance() {
         return new TemporaryFilesManager();
     }
 

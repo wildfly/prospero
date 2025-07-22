@@ -143,7 +143,7 @@ public class CloneCommand extends AbstractCommand {
             }
             console.println("");
 
-            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.getInstance()) {
+            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
                 List<Repository> repositories = RepositoryDefinition.from(remoteRepositories);
                 actionFactory
                         .restoreAction(installationDirectory, mavenOptions.build(), console)

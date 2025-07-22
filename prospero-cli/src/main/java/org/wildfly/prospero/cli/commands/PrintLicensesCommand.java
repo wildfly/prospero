@@ -17,11 +17,11 @@
 
 package org.wildfly.prospero.cli.commands;
 
-import org.apache.commons.io.FileUtils;
 import org.wildfly.channel.Channel;
 import org.wildfly.prospero.actions.ProvisioningAction;
 import org.wildfly.prospero.api.MavenOptions;
 import org.wildfly.prospero.api.ProvisioningDefinition;
+import org.wildfly.prospero.api.TemporaryFilesManager;
 import org.wildfly.prospero.cli.ActionFactory;
 import org.wildfly.prospero.cli.CliConsole;
 import org.wildfly.prospero.cli.CliMessages;
@@ -32,7 +32,6 @@ import org.wildfly.prospero.cli.ChannelUtils;
 import org.wildfly.prospero.licenses.License;
 import picocli.CommandLine;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.jboss.galleon.api.config.GalleonProvisioningConfig;
@@ -50,13 +49,13 @@ public class PrintLicensesCommand extends AbstractInstallCommand {
     @Override
     public Integer call() throws Exception {
 
-        final Path tempDirectory = Files.createTempDirectory("tmp-installer");
-        try {
-            final ProvisioningDefinition provisioningDefinition = buildDefinition().build();
+        try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
+            final ProvisioningDefinition provisioningDefinition = buildDefinition(temporaryFiles).build();
             final MavenOptions mavenOptions = getMavenOptions();
             final GalleonProvisioningConfig provisioningConfig = provisioningDefinition.toProvisioningConfig();
             final List<Channel> channels = ChannelUtils.resolveChannels(provisioningDefinition, mavenOptions);
 
+            Path tempDirectory = temporaryFiles.createTempDirectory("tmp-installer");
             final ProvisioningAction provisioningAction = actionFactory.install(tempDirectory.toAbsolutePath(),
                     mavenOptions, console);
 
@@ -71,8 +70,6 @@ public class PrintLicensesCommand extends AbstractInstallCommand {
                 console.println(CliMessages.MESSAGES.noAgreementsNeeded());
             }
             return ReturnCodes.SUCCESS;
-        } finally {
-            FileUtils.deleteQuietly(tempDirectory.toFile());
         }
     }
 }

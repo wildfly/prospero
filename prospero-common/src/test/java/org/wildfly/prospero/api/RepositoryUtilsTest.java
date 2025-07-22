@@ -180,6 +180,6 @@ public class RepositoryUtilsTest {
     }
 
     private static List<Repository> applyOverride(List<Repository> overrideRepositories) throws InvalidRepositoryArchiveException {
-        return RepositoryUtils.unzipArchives(overrideRepositories, TemporaryFilesManager.getInstance());
+        return RepositoryUtils.unzipArchives(overrideRepositories, TemporaryFilesManager.newInstance());
     }
 }

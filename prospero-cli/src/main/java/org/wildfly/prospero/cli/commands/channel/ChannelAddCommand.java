@@ -84,7 +84,7 @@ public class ChannelAddCommand extends AbstractCommand {
             channel = readChannelFromDefinition();
         } else {
             final ChannelManifestCoordinate manifest = ArtifactUtils.manifestCoordFromString(channelOptions.channelGroup.manifestLocation);
-            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.getInstance()) {
+            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
                 final List<Repository> repositories = RepositoryUtils.unzipArchives(RepositoryDefinition.from(channelOptions.channelGroup.repositoryDefs), temporaryFiles);
                 channel = new Channel(channelName, null, null, repositories, manifest, null, null);
             }

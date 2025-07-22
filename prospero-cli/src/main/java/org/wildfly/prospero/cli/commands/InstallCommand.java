@@ -199,15 +199,15 @@ public class InstallCommand extends AbstractInstallCommand {
         }
 
         verifyTargetDirectoryIsEmpty(directory);
-        final ProvisioningDefinition provisioningDefinition = buildDefinition()
-                .setStabilityLevel(stabilityLevels.stabilityLevel==null?null:stabilityLevels.stabilityLevel.toLowerCase(Locale.ROOT))
-                .setPackageStabilityLevel(stabilityLevels.packageStabilityLevel==null?null:stabilityLevels.packageStabilityLevel.toLowerCase(Locale.ROOT))
-                .setConfigStabilityLevel(stabilityLevels.configStabilityLevel==null?null:stabilityLevels.configStabilityLevel.toLowerCase(Locale.ROOT))
-                .build();
-        final MavenOptions mavenOptions = getMavenOptions();
-        final GalleonProvisioningConfig provisioningConfig = provisioningDefinition.toProvisioningConfig();
-        final List<Channel> channels = ChannelUtils.resolveChannels(provisioningDefinition, mavenOptions);
-        try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.getInstance()) {
+        try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
+            final ProvisioningDefinition provisioningDefinition = buildDefinition(temporaryFiles)
+                    .setStabilityLevel(stabilityLevels.stabilityLevel == null ? null : stabilityLevels.stabilityLevel.toLowerCase(Locale.ROOT))
+                    .setPackageStabilityLevel(stabilityLevels.packageStabilityLevel == null ? null : stabilityLevels.packageStabilityLevel.toLowerCase(Locale.ROOT))
+                    .setConfigStabilityLevel(stabilityLevels.configStabilityLevel == null ? null : stabilityLevels.configStabilityLevel.toLowerCase(Locale.ROOT))
+                    .build();
+            final MavenOptions mavenOptions = getMavenOptions();
+            final GalleonProvisioningConfig provisioningConfig = provisioningDefinition.toProvisioningConfig();
+            final List<Channel> channels = ChannelUtils.resolveChannels(provisioningDefinition, mavenOptions);
             List<Repository> repositories = RepositoryDefinition.from(this.shadowRepositories);
             final List<Repository> shadowRepositories = RepositoryUtils.unzipArchives(repositories, temporaryFiles);
 

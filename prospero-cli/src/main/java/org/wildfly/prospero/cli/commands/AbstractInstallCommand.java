@@ -17,8 +17,12 @@
 
 package org.wildfly.prospero.cli.commands;
 
+import org.wildfly.channel.Repository;
 import org.wildfly.prospero.api.MavenOptions;
 import org.wildfly.prospero.api.ProvisioningDefinition;
+import org.wildfly.prospero.api.RepositoryUtils;
+import org.wildfly.prospero.api.TemporaryFilesManager;
+import org.wildfly.prospero.api.exceptions.InvalidRepositoryArchiveException;
 import org.wildfly.prospero.cli.ActionFactory;
 import org.wildfly.prospero.cli.ArgumentParsingException;
 import org.wildfly.prospero.cli.CliConsole;
@@ -85,14 +89,16 @@ public abstract class AbstractInstallCommand extends AbstractCommand {
         return mavenOptions.build();
     }
 
-    protected ProvisioningDefinition.Builder buildDefinition() throws ArgumentParsingException {
+    protected ProvisioningDefinition.Builder buildDefinition(TemporaryFilesManager temporaryFiles)
+            throws ArgumentParsingException, InvalidRepositoryArchiveException {
+        final List<Repository> repositories = RepositoryUtils.unzipArchives(
+                RepositoryDefinition.from(remoteRepositories), temporaryFiles);
         return ProvisioningDefinition.builder()
                 .setFpl(featurePackOrDefinition.fpl.orElse(null))
                 .setProfile(featurePackOrDefinition.profile.orElse(null))
                 .setManifests(manifestCoordinates)
                 .setChannelCoordinates(channelCoordinates)
-                .setOverrideRepositories(RepositoryDefinition.from(remoteRepositories))
+                .setOverrideRepositories(repositories)
                 .setDefinitionFile(featurePackOrDefinition.definition.map(Path::toUri).orElse(null));
     }
-
 }

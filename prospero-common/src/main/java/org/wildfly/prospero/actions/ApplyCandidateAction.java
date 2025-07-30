@@ -681,6 +681,7 @@ public class ApplyCandidateAction {
 
         // Delete the files in the installation that are not present in the update and not added by the user
         // We need to skip .glnew and .glold.
+        // JBEAP-30585: We need to keep the Symbolic files
         Files.walkFileTree(installationDir, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
@@ -688,7 +689,7 @@ public class ApplyCandidateAction {
                 Path relative = installationDir.relativize(file);
                 Path updateFile = updateDir.resolve(relative);
                 final String fsDiffKey = getFsDiffKey(relative, false);
-                if (isNotAddedOrModified(fsDiffKey, fsDiff) && fileNotPresent(updateFile)) {
+                if (isNotAddedOrModified(fsDiffKey, fsDiff) && fileNotPresent(updateFile) && !Files.isSymbolicLink(file)) {
                     if (ProsperoLogger.ROOT_LOGGER.isDebugEnabled()) {
                         ProsperoLogger.ROOT_LOGGER.debug("Deleting the file " + relative + " that doesn't exist in the update");
                     }

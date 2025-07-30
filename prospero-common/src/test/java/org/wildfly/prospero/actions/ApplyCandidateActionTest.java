@@ -110,6 +110,34 @@ public class ApplyCandidateActionTest {
         assertThat(conflicts).isEmpty();
     }
 
+    public void testUpdateWithSymlink() throws Exception {
+        final DirState expectedState = dirBuilder
+                .addFile("prod1/p1.txt", "p1 1.0.1")
+                .addDir("log")
+                .addDir("testlog")
+                .build();
+
+        // build test packages
+        createSimpleFeaturePacks();
+
+        // install base and update. perform apply-update
+        install(installationPath, FPL_100);
+
+        //creating SymbolicLink
+        Path symlinkPath = Files.createDirectory(installationPath.resolve("testlog"));
+        Path logPath = installationPath.resolve("log");
+        Files.createSymbolicLink(logPath, symlinkPath);
+
+        prepareUpdate(updatePath, installationPath, FPL_101);
+        final List<FileConflict> conflicts = new ApplyCandidateAction(installationPath, updatePath).applyUpdate(ApplyCandidateAction.Type.UPDATE);
+
+        // verify
+        expectedState.assertState(installationPath);
+        assertThat(conflicts).isEmpty();
+        assertTrue(Files.exists(logPath));
+        assertTrue(Files.isSymbolicLink(logPath));
+    }
+
     @Test
     public void testUpdateWithUserChanges() throws Exception {
         final DirState expectedState = dirBuilder

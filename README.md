@@ -26,8 +26,11 @@ The demo below provisions and updates Wildfly 29.0.0.Final.
       ./prospero update perform --dir=wfly-29
    ```
 
+## Contributing
+Please see the instructions available in the [contribution guide](CONTRIBUTING.md).
+
 ## Building distribution
-The full distribution of Prospero includes a Wildfly feature pack, a standalone zip and documentation. Building those projects is excluded by default and enabled only if a maven `dist` profile is enabled.
+The full distribution of Prospero includes a Galleon feature pack, a standalone zip and documentation. Building those projects is excluded by default and enabled only if a maven `dist` profile is enabled.
 ```
    cd <PROSPERO_HOME>
    mvn clean install -Pdist
@@ -39,3 +42,7 @@ Slower tests (e.g. including provisioning a full server), are located in integra
    cd <PROSPERO_HOME>
    mvn clean install -DallTests
 ```
+
+License
+-------
+* [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)

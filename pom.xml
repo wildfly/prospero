@@ -81,7 +81,7 @@
         <version.maven-shade-plugin>3.6.0</version.maven-shade-plugin>
         <version.org.wildfly.channel>1.2.2.Final</version.org.wildfly.channel>
         <version.maven-compiler-plugin>3.10.1</version.maven-compiler-plugin>
-        <version.org.wildfly.galleon-pack>36.0.1.Final</version.org.wildfly.galleon-pack>
+        <version.org.wildfly.galleon-pack>37.0.0.Final</version.org.wildfly.galleon-pack>
         <version.info.picocli>4.7.7</version.info.picocli>
         <version.system-rules>1.19.0</version.system-rules>
         <version.assertj>3.27.3</version.assertj>

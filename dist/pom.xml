@@ -12,6 +12,8 @@
     <artifactId>prospero-dist</artifactId>
     <packaging>pom</packaging>
 
+    <name>Prospero Distributions</name>
+
     <properties>
         <!-- common module renames the start scripts, need to use processed resources -->
         <common.resources.directory>${basedir}/../common/target/classes</common.resources.directory>

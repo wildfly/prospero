@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>49</version>
+        <version>50</version>
         <relativePath />
     </parent>
 
@@ -14,14 +14,61 @@
     <version>1.4.0.Beta2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>Prospero Parent</name>
+    <description>Provisioning tool for the Wildfly application server.</description>
+    <url>https://github.com/wildfly-extras/prospero/</url>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Bartosz Spyrko-Smietanko</name>
+            <email>bspyrkos@redhat.com</email>
+            <organization>Red Hat</organization>
+            <organizationUrl>https://www.redhat.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Pedro Silva</name>
+            <email>pesilva@redhat.com</email>
+            <organization>Red Hat</organization>
+            <organizationUrl>https://www.redhat.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Tomas Hofman</name>
+            <email>thofman@redhat.com</email>
+            <organization>Red Hat</organization>
+            <organizationUrl>https://www.redhat.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Yeray Borges Santana</name>
+            <email>yborgess@redhat.com</email>
+            <organization>Red Hat</organization>
+            <organizationUrl>https://www.redhat.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Jean Francois Denise</name>
+            <email>jdenise@redhat.com</email>
+            <organization>Red Hat</organization>
+            <organizationUrl>https://www.redhat.com</organizationUrl>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:git@github.com:wildfly-extras/prospero.git</connection>
         <developerConnection>scm:git:git@github.com:wildfly-extras/prospero.git</developerConnection>
         <url>https://github.com/wildfly-extras/prospero</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <nexus.staging.tag>prospero-${project.version}</nexus.staging.tag>
         <prospero.dist.name>prospero</prospero.dist.name>
         <prospero.target.server>Wildfly</prospero.target.server>
         <prospero.base.feature-pack.groupId>org.wildfly</prospero.base.feature-pack.groupId>
@@ -525,16 +572,6 @@
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                    <testSource>17</testSource>
-                    <testTarget>17</testTarget>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>

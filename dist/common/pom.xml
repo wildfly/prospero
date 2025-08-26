@@ -9,6 +9,8 @@
   <artifactId>prospero-dist-common</artifactId>
   <packaging>pom</packaging>
 
+  <name>Prospero Distributions Common</name>
+
   <properties>
       <prospero.script.path>packages/org.jboss.prospero/content/bin/</prospero.script.path>
   </properties>

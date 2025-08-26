@@ -9,6 +9,8 @@
     <artifactId>prospero-build</artifactId>
     <packaging>jar</packaging>
 
+    <name>Prospero Build</name>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly.prospero</groupId>

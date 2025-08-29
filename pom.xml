@@ -68,6 +68,7 @@
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
+        <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
         <nexus.staging.tag>prospero-${project.version}</nexus.staging.tag>
         <prospero.dist.name>prospero</prospero.dist.name>
         <prospero.target.server>Wildfly</prospero.target.server>

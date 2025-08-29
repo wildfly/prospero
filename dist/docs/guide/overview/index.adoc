@@ -12,6 +12,6 @@ The tool supports:
 
 Prospero includes a CLI client and a programmatic API.
 
-Releases of the command line tool will be available at https://github.com/wildfly-extras/prospero/releases/.
+Releases of the command line tool will be available at https://github.com/wildfly/prospero/releases/.
 
 To use the tool, download and unzip the release zip, then add the bin directory to your system path. Use `prospero.sh` or `prospero.bat` to launch the tool.

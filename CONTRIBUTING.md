@@ -62,7 +62,7 @@ This is necessary because the testsuite poms do not contain all necessary module
 ### Issues
 ---
 
-You can find all issues under [Github Issues](https://github.com/wildfly-extras/prospero/issues) page. Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else.
+You can find all issues under [Github Issues](https://github.com/wildfly/prospero/issues) page. Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else.
 
 Check out our issues with the `good-first-issue` label. These are a triaged set of issues that are great for getting started on our project.
 

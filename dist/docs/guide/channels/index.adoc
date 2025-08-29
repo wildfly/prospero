@@ -1,6 +1,6 @@
 ## Working with channels
 
-More information on the Wildfly Channels can be found in https://github.com/wildfly-extras/wildfly-channel/blob/main/doc/spec.adoc. This chapter is intended to explain some concepts behind different channel types and how they can be used to provide software updates.
+More information on the Wildfly Channels can be found in https://github.com/wildfly/wildfly-channel/blob/main/doc/spec.adoc. This chapter is intended to explain some concepts behind different channel types and how they can be used to provide software updates.
 
 A channel contains a collections of artifact streams used by a server. Each stream should contain only backwards-compatible artifact updates with new versions of artifacts replacing previous ones.
 

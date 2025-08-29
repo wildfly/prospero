@@ -6,4 +6,4 @@ repositories:
   - id: "jboss-public"
     url: "https://repository.jboss.org/nexus/content/groups/public/"
 manifest:
-  url: "https://raw.githubusercontent.com/wildfly-extras/prospero/main/examples/wildfly-core-manifest.yaml"
+  url: "https://raw.githubusercontent.com/wildfly/prospero/main/examples/wildfly-core-manifest.yaml"

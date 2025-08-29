@@ -4,7 +4,7 @@ Wildfly Channels are a way to provide a curated list of compatible, up-to-date c
 
 There are two types of Wildfly Channels supported by Prospero - open channels and manifest channels. Open channels allow access to the latest artifacts in the underlying repository, while manifest channels define a list of allowed list of components.
 
-For more information on Wildfly Channels see the https://github.com/wildfly-extras/wildfly-channel/blob/main/doc/spec.adoc[spec documentation].
+For more information on Wildfly Channels see the https://github.com/wildfly/wildfly-channel/blob/main/doc/spec.adoc[spec documentation].
 
 #### Manifest channels
 

@@ -16,7 +16,7 @@
 
     <name>Prospero Parent</name>
     <description>Provisioning tool for the Wildfly application server.</description>
-    <url>https://github.com/wildfly-extras/prospero/</url>
+    <url>https://github.com/wildfly/prospero/</url>
 
     <licenses>
         <license>
@@ -60,9 +60,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:wildfly-extras/prospero.git</connection>
-        <developerConnection>scm:git:git@github.com:wildfly-extras/prospero.git</developerConnection>
-        <url>https://github.com/wildfly-extras/prospero</url>
+        <connection>scm:git:git@github.com:wildfly/prospero.git</connection>
+        <developerConnection>scm:git:git@github.com:wildfly/prospero.git</developerConnection>
+        <url>https://github.com/wildfly/prospero</url>
         <tag>HEAD</tag>
     </scm>
 

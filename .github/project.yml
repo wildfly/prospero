@@ -1,8 +1,0 @@
-name: WildFly Prospero 
-# Open the PR to do the PR from
-# the wildfly/prospero repository
-release:
-  current-version: 1.4.0.Beta1
-  next-version: 1.4.0.Beta2-SNAPSHOT
-
-

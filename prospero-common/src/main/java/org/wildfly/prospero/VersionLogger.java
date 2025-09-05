@@ -55,7 +55,7 @@ public class VersionLogger {
             URL url = resources.nextElement();
             Manifest manifest = new Manifest(url.openStream());
             final String specTitle = manifest.getMainAttributes().getValue("Specification-Title");
-            if ("prospero-common".equals(specTitle) || "prospero-cli".equals(specTitle)) {
+            if ("Prospero Common".equals(specTitle) || "Prospero CLI".equals(specTitle)) {
                 return StringUtils.join(manifest.getMainAttributes().getValue("Implementation-Version"));
             }
         }

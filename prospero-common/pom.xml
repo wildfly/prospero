@@ -12,6 +12,8 @@
     <artifactId>prospero-common</artifactId>
     <packaging>jar</packaging>
 
+    <name>Prospero Common</name>
+    
     <dependencies>
         <dependency>
             <groupId>org.wildfly.installation-manager</groupId>

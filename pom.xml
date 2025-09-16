@@ -102,7 +102,7 @@
         <version.org.apache.maven.plugins.jar>3.0.2</version.org.apache.maven.plugins.jar>
         <version.org.apache.maven.plugins.pmd>3.27.0</version.org.apache.maven.plugins.pmd>
         <version.org.apache.maven.plugins.dependency>3.8.1</version.org.apache.maven.plugins.dependency>
-        <version.org.apache.maven.resolver>1.9.23</version.org.apache.maven.resolver>
+        <version.org.apache.maven.resolver>1.9.24</version.org.apache.maven.resolver>
         <version.org.apache.maven>3.9.9</version.org.apache.maven>
         <version.org.codehaus.gmaven.groovy-maven-plugin>2.1.1</version.org.codehaus.gmaven.groovy-maven-plugin>
         <version.org.codehaus.plexus-interpolation>1.28</version.org.codehaus.plexus-interpolation>

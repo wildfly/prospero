@@ -1,20 +1,21 @@
 package org.wildfly.prospero.actions;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.jboss.galleon.Constants;
-import org.wildfly.prospero.ProsperoLogger;
-import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.jboss.galleon.Constants;
+import org.wildfly.prospero.ProsperoLogger;
+import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
 
 /**
  * A temporary record of all files modified, removed or added during applying a candidate server.
@@ -162,7 +163,7 @@ class ApplyStageBackup implements AutoCloseable {
 
         try {
             Files.createLink(backupPath, serverPath);
-        } catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException | FileSystemException e) {
             Files.copy(serverPath, backupPath);
         }
     }

@@ -9,6 +9,7 @@ import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -162,7 +163,7 @@ class ApplyStageBackup implements AutoCloseable {
 
         try {
             Files.createLink(backupPath, serverPath);
-        } catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException | FileSystemException e) {
             Files.copy(serverPath, backupPath);
         }
     }

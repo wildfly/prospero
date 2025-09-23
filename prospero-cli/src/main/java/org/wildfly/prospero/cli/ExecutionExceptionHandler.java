@@ -190,9 +190,21 @@ public class ExecutionExceptionHandler implements CommandLine.IExecutionExceptio
             }
 
             printRepositories(ex.getRepositories(), ex.isOffline());
+            if (versionPatternMismatch(ex.getMissingArtifacts())) {
+                console.error("It seems the version pattern does not match the expected format. Ensure that your version pattern is correct.");
+            }
         } else {
             console.error(CliMessages.MESSAGES.errorHeader(ex.getLocalizedMessage()));
         }
+    }
+    private boolean versionPatternMismatch(Set<ArtifactCoordinate> missingArtifacts) {
+        for (ArtifactCoordinate artifact : missingArtifacts) {
+            // Adjust this pattern to match your specific needs
+            if (!artifact.getVersion().matches(".*\\.redhat-.*")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void printRepositories(Set<Repository> repositories, boolean b) {

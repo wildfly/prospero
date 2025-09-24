@@ -121,6 +121,7 @@
                     <groupId>org.wildfly.prospero</groupId>
                     <artifactId>prospero-build</artifactId>
                     <version>${project.version}</version>
+                    <type>zip</type>
                     <scope>test</scope>
                     <exclusions>
                         <exclusion>

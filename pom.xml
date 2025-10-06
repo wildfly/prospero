@@ -91,7 +91,7 @@
         <prospero.channel.manifest.artifactId>prospero-standalone-galleon-pack</prospero.channel.manifest.artifactId>
         <prospero.channel.manifest.groupId>${project.groupId}</prospero.channel.manifest.groupId>
 
-        <version.io.undertow>2.3.18.Final</version.io.undertow>
+        <version.io.undertow>2.3.19.Final</version.io.undertow>
         <version.commons-codec>1.17.1</version.commons-codec>
         <version.commons-io>2.18.0</version.commons-io>
         <version.org.asciidoctor.asciidoctor-maven-plugin>3.2.0</version.org.asciidoctor.asciidoctor-maven-plugin>

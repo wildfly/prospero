@@ -379,7 +379,7 @@ public class UpdateCommand extends AbstractParentCommand {
 
             final MavenOptions mavenOptions = parseMavenOptions();
 
-            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.getInstance()) {
+            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
                 final List<Repository> repositories = RepositoryUtils.unzipArchives(
                         RepositoryDefinition.from(temporaryRepositories), temporaryFiles);
                 console.println(CliMessages.MESSAGES.checkUpdatesHeader(installationDir));

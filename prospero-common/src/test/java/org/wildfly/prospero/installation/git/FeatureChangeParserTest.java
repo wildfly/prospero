@@ -28,6 +28,7 @@ import org.wildfly.prospero.api.Diff;
 import org.wildfly.prospero.api.FeatureChange;
 import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -51,8 +52,9 @@ public class FeatureChangeParserTest {
                         .includeLayer("layer-one")
                         .build())
                 .build();
-        ProvisioningXmlWriter.getInstance().write(config, oldConfigDir.resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML));
-        final List<FeatureChange> changes = new FeatureChangeParser().parse(null, oldConfigDir);
+        final Path provisioningXml = oldConfigDir.resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML);
+        ProvisioningXmlWriter.getInstance().write(config, provisioningXml);
+        final List<FeatureChange> changes = new FeatureChangeParser().parse(null, Files.readString(provisioningXml));
 
         assertThat(changes)
                 .containsOnly(
@@ -71,8 +73,9 @@ public class FeatureChangeParserTest {
                         .includeLayer("layer-one")
                         .build())
                 .build();
-        ProvisioningXmlWriter.getInstance().write(config, newConfigDir.resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML));
-        final List<FeatureChange> changes = new FeatureChangeParser().parse(newConfigDir, null);
+        final Path provisioningXml = newConfigDir.resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML);
+        ProvisioningXmlWriter.getInstance().write(config, provisioningXml);
+        final List<FeatureChange> changes = new FeatureChangeParser().parse(Files.readString(provisioningXml), null);
 
         assertThat(changes)
                 .containsOnly(

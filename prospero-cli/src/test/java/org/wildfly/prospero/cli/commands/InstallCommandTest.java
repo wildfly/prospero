@@ -497,7 +497,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.versionOverrideHasToApplyToAllChannels().getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.versionOverrideHasToApplyToAllChannels().getMessage());
     }
 
     @Test
@@ -508,7 +508,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideMissingDelimiter("1.1.1").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideMissingDelimiter("1.1.1").getMessage());
     }
 
     @Test
@@ -533,7 +533,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.channelNotFoundException("idontexist").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.channelNotFoundException("idontexist").getMessage());
     }
 
     @Test
@@ -544,7 +544,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideMissingDelimiter("channel1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideMissingDelimiter("channel1.0.0").getMessage());
     }
 
     @Test
@@ -555,7 +555,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideTooManyDelimiters("wildfly-core::1.0.0::extra").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideTooManyDelimiters("wildfly-core::1.0.0::extra").getMessage());
     }
 
     @Test
@@ -566,7 +566,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyChannel("::1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyChannel("::1.0.0").getMessage());
     }
 
     @Test
@@ -577,7 +577,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyVersion("wildfly-core::").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyVersion("wildfly-core::").getMessage());
     }
 
     @Test
@@ -588,7 +588,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyChannel("   ::1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyChannel("   ::1.0.0").getMessage());
     }
 
     @Test
@@ -599,7 +599,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyVersion("wildfly-core::   ").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyVersion("wildfly-core::   ").getMessage());
     }
 
     @Test
@@ -650,7 +650,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.duplicatedVersionOverride("test-one").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.duplicatedVersionOverride("test-one").getMessage());
     }
 
     @Test

@@ -19,10 +19,12 @@ import org.junit.Test;
 import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifest;
 import org.wildfly.channel.Stream;
+import org.wildfly.prospero.api.InstallationMetadata;
 import org.wildfly.prospero.cli.CliMessages;
 import org.wildfly.prospero.cli.ReturnCodes;
 import org.wildfly.prospero.cli.commands.CliConstants;
 import org.wildfly.prospero.it.ExecutionUtils;
+import org.wildfly.prospero.metadata.ManifestVersionRecord;
 import org.wildfly.prospero.test.BuildProperties;
 import org.wildfly.prospero.test.TestInstallation;
 import org.wildfly.prospero.test.TestLocalRepository;
@@ -33,24 +35,25 @@ public class UpdateToVersionTest extends CliTestBase {
     private TestLocalRepository testLocalRepository;
     private TestInstallation testInstallation;
     private Channel testChannel;
+    private Channel testUrlChannel;
+    private URL manifestUrl;
+    private URL manifestUrl2;
 
     @Before
     public void setUp() throws Exception {
-        testLocalRepository = new TestLocalRepository(temp.newFolder("local-repo").toPath(),
-                List.of(new URL("https://repo1.maven.org/maven2")));
-
-        prepareRequiredArtifacts(testLocalRepository);
-
+        testLocalRepository = prepareLocalRepository(temp.newFolder("local-repo").toPath());
         testInstallation = new TestInstallation(temp.newFolder("server").toPath());
-
-        testLocalRepository.deploy(TestInstallation.fpBuilder("org.test:pack-one:1.0.0")
-                .addModule("commons-io", "commons-io", COMMONS_IO_VERSION)
-                .build());
-
         testChannel = new Channel.Builder()
                 .setName("test-channel")
                 .addRepository("local-repo", testLocalRepository.getUri().toString())
                 .setManifestCoordinate("org.test", "test-channel")
+                .build();
+        manifestUrl = testLocalRepository.getUri().resolve("org/test/test-channel/1.0.0/test-channel-1.0.0-manifest.yaml").toURL();
+        manifestUrl2 = testLocalRepository.getUri().resolve("org/test/test-channel/1.0.1/test-channel-1.0.1-manifest.yaml").toURL();
+        testUrlChannel = new Channel.Builder()
+                .setName("test-channel")
+                .addRepository("local-repo", testLocalRepository.getUri().toString())
+                .setManifestUrl(manifestUrl)
                 .build();
     }
 
@@ -178,7 +181,37 @@ public class UpdateToVersionTest extends CliTestBase {
                 .containsPattern("commons-io:commons-io\\s+2.18.0\\s+==>\\s+2.18.0.CP-01");
     }
 
-    private void prepareRequiredArtifacts(TestLocalRepository localRepository) throws Exception {
+    @Test
+    public void updateUrlManifest() throws Exception {
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testUrlChannel));
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION);
+
+        testInstallation.update(CliConstants.VERSION, "test-channel::" + manifestUrl2.toString());
+
+        testInstallation.verifyModuleJar("commons-io", "commons-io", bump(COMMONS_IO_VERSION));
+        testInstallation.verifyInstallationMetadataPresent();
+        try (InstallationMetadata metadata = testInstallation.readInstallationMetadata()) {
+            // Verify manifest url in manifest_version.yaml file is updated to manifestUrl2
+            assertThat(metadata.getManifestVersions()).satisfies(versionRecord -> {
+                assertThat(versionRecord).isPresent();
+                List<String> currentManifestUrls = versionRecord.get().getUrlManifests().stream()
+                        .map(ManifestVersionRecord.UrlManifest::getUrl).toList();
+                assertThat(currentManifestUrls).contains(manifestUrl2.toString());
+            });
+
+            // Verify manifest url in installer-channels.yaml file *has not changed* - the installation is still
+            // subscribed to the original manifest URL.
+            List<URL> installedChannelsUrls = metadata.getProsperoConfig().getChannels().stream()
+                    .map(c -> c.getManifestCoordinate().getUrl())
+                    .toList();
+            assertThat(installedChannelsUrls).contains(manifestUrl);
+        }
+    }
+
+    public static TestLocalRepository prepareLocalRepository(Path repoPath) throws Exception {
+        TestLocalRepository localRepository = new TestLocalRepository(repoPath,
+                List.of(new URL("https://repo1.maven.org/maven2")));
+
         localRepository.deployGalleonPlugins();
 
         Artifact resolved = localRepository.resolveAndDeploy(new DefaultArtifact("commons-io", "commons-io", "jar", COMMONS_IO_VERSION));
@@ -196,7 +229,7 @@ public class UpdateToVersionTest extends CliTestBase {
                         new Stream("org.test", "pack-one", "1.0.0")
                 )));
 
-        testLocalRepository.deploy(
+        localRepository.deploy(
                 new DefaultArtifact("org.test", "test-channel", "manifest", "yaml","1.0.1"),
                 new ChannelManifest("test-manifest", null, null, List.of(
                         new Stream("org.wildfly.galleon-plugins", "wildfly-config-gen", GALLEON_PLUGINS_VERSION),
@@ -205,7 +238,7 @@ public class UpdateToVersionTest extends CliTestBase {
                         new Stream("org.test", "pack-one", "1.0.0")
                 )));
 
-        testLocalRepository.deploy(
+        localRepository.deploy(
                 new DefaultArtifact("org.test", "test-channel", "manifest", "yaml","1.0.2"),
                 new ChannelManifest("test-manifest", null, null, List.of(
                         new Stream("org.wildfly.galleon-plugins", "wildfly-config-gen", GALLEON_PLUGINS_VERSION),
@@ -213,9 +246,15 @@ public class UpdateToVersionTest extends CliTestBase {
                         new Stream("commons-io", "commons-io", bump(bump(COMMONS_IO_VERSION))),
                         new Stream("org.test", "pack-one", "1.0.0")
                 )));
+
+        localRepository.deploy(TestInstallation.fpBuilder("org.test:pack-one:1.0.0")
+                .addModule("commons-io", "commons-io", COMMONS_IO_VERSION)
+                .build());
+
+        return localRepository;
     }
 
-    private String bump(String version) {
+    private static String bump(String version) {
         final Pattern pattern = Pattern.compile(".*\\.CP-(\\d{2})");
         final Matcher matcher = pattern.matcher(version);
         if (matcher.matches()) {

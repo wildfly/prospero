@@ -39,6 +39,7 @@ import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifestCoordinate;
 import org.wildfly.channel.Repository;
 import org.wildfly.channel.maven.ChannelCoordinate;
+import org.wildfly.prospero.actions.OverrideBuilder;
 import org.wildfly.prospero.actions.ProvisioningAction;
 import org.wildfly.prospero.api.ArtifactUtils;
 import org.wildfly.prospero.api.InstallationProfilesManager;

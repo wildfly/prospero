@@ -155,6 +155,10 @@ public class TestLocalRepository {
         return root.toUri();
     }
 
+    public Path getRootPath() {
+        return root;
+    }
+
     private Artifact resolveUpstream(Artifact artifact) throws ArtifactResolutionException {
         final ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setRepositories(upstreamRepositories);

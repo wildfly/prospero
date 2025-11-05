@@ -48,8 +48,10 @@ import org.wildfly.channel.Repository;
 import org.wildfly.prospero.actions.InstallationHistoryAction;
 import org.wildfly.prospero.api.Console;
 import org.wildfly.prospero.api.FileConflict;
+import org.wildfly.prospero.api.InstallationMetadata;
 import org.wildfly.prospero.api.MavenOptions;
 import org.wildfly.prospero.api.SavedState;
+import org.wildfly.prospero.api.exceptions.MetadataException;
 import org.wildfly.prospero.api.exceptions.OperationException;
 import org.wildfly.prospero.cli.CliMessages;
 import org.wildfly.prospero.cli.ReturnCodes;
@@ -91,6 +93,11 @@ public class TestInstallation {
         assertThat(metadataRoot).exists();
         assertThat(metadataRoot.resolve(ProsperoMetadataUtils.INSTALLER_CHANNELS_FILE_NAME)).exists();
         assertThat(metadataRoot.resolve(ProsperoMetadataUtils.MANIFEST_FILE_NAME)).exists();
+        assertThat(metadataRoot.resolve(ProsperoMetadataUtils.CURRENT_VERSION_FILE)).exists();
+    }
+
+    public InstallationMetadata readInstallationMetadata() throws MetadataException {
+        return InstallationMetadata.loadInstallation(serverRoot);
     }
 
     /**

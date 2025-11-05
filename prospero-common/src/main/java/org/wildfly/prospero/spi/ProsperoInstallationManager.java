@@ -4,6 +4,8 @@ import org.jboss.galleon.ProvisioningException;
 import org.jboss.logging.Logger;
 import org.wildfly.channel.ChannelManifestCoordinate;
 import org.wildfly.channel.MavenCoordinate;
+import org.wildfly.channel.version.VersionMatcher;
+import org.wildfly.common.annotation.Nullable;
 import org.wildfly.installationmanager.ArtifactChange;
 import org.wildfly.installationmanager.CandidateType;
 import org.wildfly.installationmanager.Channel;
@@ -11,7 +13,9 @@ import org.wildfly.installationmanager.ChannelChange;
 import org.wildfly.installationmanager.FileConflict;
 import org.wildfly.installationmanager.HistoryResult;
 import org.wildfly.installationmanager.InstallationChanges;
+import org.wildfly.installationmanager.InstallationUpdates;
 import org.wildfly.installationmanager.ManifestVersion;
+import org.wildfly.installationmanager.ManifestVersionChange;
 import org.wildfly.installationmanager.MavenOptions;
 import org.wildfly.installationmanager.OperationNotAvailableException;
 import org.wildfly.installationmanager.Repository;
@@ -22,9 +26,11 @@ import org.wildfly.prospero.actions.ApplyCandidateAction;
 import org.wildfly.prospero.actions.InstallationExportAction;
 import org.wildfly.prospero.actions.InstallationHistoryAction;
 import org.wildfly.prospero.actions.MetadataAction;
+import org.wildfly.prospero.actions.OverrideBuilder;
 import org.wildfly.prospero.actions.UpdateAction;
+import org.wildfly.prospero.api.ChannelVersion;
+import org.wildfly.prospero.api.InstallationMetadata;
 import org.wildfly.prospero.api.MavenOptions.Builder;
-import org.wildfly.prospero.api.TemporaryRepositoriesHandler;
 import org.wildfly.prospero.api.exceptions.InvalidUpdateCandidateException;
 import org.wildfly.prospero.galleon.GalleonCallbackAdapter;
 import org.wildfly.prospero.metadata.ManifestVersionRecord;
@@ -118,9 +124,18 @@ public class ProsperoInstallationManager implements InstallationManager {
     }
 
     @Override
-    public boolean prepareUpdate(Path targetDir, List<Repository> repositories) throws Exception {
-        try (UpdateAction prepareUpdateAction = actionFactory.getUpdateAction(map(repositories, ProsperoInstallationManager::mapRepository))) {
+    public boolean prepareUpdate(Path targetDir, List<Repository> repositories, boolean allowDowngrade) throws Exception {
+        try (UpdateAction prepareUpdateAction = actionFactory.getUpdateAction(map(repositories, ProsperoInstallationManager::mapRepository), allowDowngrade)) {
             return prepareUpdateAction.buildUpdate(targetDir);
+        }
+    }
+
+    @Override
+    public boolean prepareUpdate(Path targetDir, List<Repository> repositories, List<ManifestVersion> manifestVersions, boolean allowDowngrade)
+            throws Exception {
+        var mappedRepositories = map(repositories, ProsperoInstallationManager::mapRepository);
+        try (UpdateAction updateAction = actionFactory.getUpdateAction(mappedRepositories, manifestVersions, allowDowngrade)) {
+            return updateAction.buildUpdate(targetDir);
         }
     }
 
@@ -180,12 +195,21 @@ public class ProsperoInstallationManager implements InstallationManager {
     }
 
     @Override
-    public List<ArtifactChange> findUpdates(List<Repository> repositories) throws Exception {
-        try (UpdateAction updateAction = actionFactory.getUpdateAction(map(repositories, ProsperoInstallationManager::mapRepository))) {
+    public InstallationUpdates findUpdates(List<Repository> repositories) throws Exception {
+        return findUpdates(repositories, null);
+    }
+
+    @Override
+    public InstallationUpdates findUpdates(List<Repository> repositories, List<ManifestVersion> manifestVersions)
+            throws Exception {
+        var mappedRepositories = map(repositories, ProsperoInstallationManager::mapRepository);
+        try (UpdateAction updateAction = actionFactory.getUpdateAction(mappedRepositories, manifestVersions, true)) {
             final UpdateSet updates = updateAction.findUpdates();
-            return updates.getArtifactUpdates().stream()
+            List<ArtifactChange> artifactUpdates = updates.getArtifactUpdates().stream()
                     .map(ProsperoInstallationManager::mapArtifactChange)
-                    .collect(Collectors.toList());
+                    .toList();
+            List<ManifestVersionChange> channelUpdates = updates.getChannelVersionChanges().stream().map(ProsperoInstallationManager::mapChannelVersionChange).toList();
+            return new InstallationUpdates(artifactUpdates, channelUpdates);
         }
     }
 
@@ -373,6 +397,11 @@ public class ProsperoInstallationManager implements InstallationManager {
         }
     }
 
+    private static ManifestVersionChange mapChannelVersionChange(org.wildfly.prospero.api.ChannelVersionChange change) {
+        return new ManifestVersionChange(change.channelName(), change.oldVersion().getLocation(),
+                change.oldVersion().getPhysicalVersion(), change.newVersion().getPhysicalVersion(), change.isDowngrade());
+    }
+
     private static ChannelChange mapChannelChange(org.wildfly.prospero.api.ChannelChange change) {
         final Channel oldChannel = change.getOldChannel() == null ? null : mapChannel(change.getOldChannel());
         final Channel newChannel = change.getNewChannel() == null ? null : mapChannel(change.getNewChannel());
@@ -409,14 +438,50 @@ public class ProsperoInstallationManager implements InstallationManager {
             return new InstallationHistoryAction(server, null);
         }
 
-        protected UpdateAction getUpdateAction(List<org.wildfly.channel.Repository> repositories) throws OperationException, ProvisioningException {
+        protected UpdateAction getUpdateAction(List<org.wildfly.channel.Repository> repositories, boolean allowManifestDowngrades) throws OperationException, ProvisioningException {
+            return getUpdateAction(repositories, null, allowManifestDowngrades);
+        }
+
+        protected UpdateAction getUpdateAction(List<org.wildfly.channel.Repository> repositories, @Nullable List<ManifestVersion> manifestVersions, boolean allowManifestDowngrades) throws OperationException, ProvisioningException {
             final List<org.wildfly.channel.Channel> overrideChannels;
-            if (!repositories.isEmpty()) {
-                try (MetadataAction metadataAction = getMetadataAction()) {
-                    overrideChannels = TemporaryRepositoriesHandler.overrideRepositories(metadataAction.getChannels(), repositories);
+            List<String> manifestVersionsStrings = null;
+
+            try (InstallationMetadata im = InstallationMetadata.loadInstallation(server)) {
+                if (manifestVersions != null && !allowManifestDowngrades) {
+                    // The manifest versions to update to has been specified *and* manifest downgrades are not allowed.
+                    // => Fail the operation if there is a downgrade present.
+                    for (ChannelVersion channelVersion : im.getChannelVersions()) {
+                        Optional<ManifestVersion> manifestVersionOptional = manifestVersions.stream()
+                                .filter(mv -> mv.getChannelId().equals(channelVersion.getChannelName()))
+                                .findFirst();
+                        if (manifestVersionOptional.isPresent()) {
+                            ManifestVersion manifestVersion = manifestVersionOptional.get();
+                            if (!ManifestVersion.Type.MAVEN.equals(manifestVersion.getType())) {
+                                // Only check MAVEN versions, comparing URL versions makes no sense.
+                                continue;
+                            }
+                            String newVersion = manifestVersion.getVersion();
+                            String oldVersion = channelVersion.getPhysicalVersion();
+                            if (VersionMatcher.COMPARATOR.compare(newVersion, channelVersion.getPhysicalVersion()) < 0) {
+                                String message = String.format("Manifest %s is being downgraded from %s to %s. Manifest downgrades need to be explicitly allowed in the command invocation.",
+                                        channelVersion.getLocation(), oldVersion, newVersion);
+                                throw new RuntimeException(message);
+                            }
+                        }
+                    }
                 }
-            } else {
-                overrideChannels = Collections.emptyList();
+
+                if (manifestVersions != null) {
+                    manifestVersionsStrings = manifestVersions.stream()
+                            .map(mv -> mv.getChannelId() + "::" + mv.getVersion())
+                            .toList();
+                }
+
+                overrideChannels = OverrideBuilder
+                        .from(im.getProsperoConfig().getChannels())
+                        .withRepositories(repositories)
+                        .withManifestVersions(manifestVersionsStrings)
+                        .build();
             }
             return new UpdateAction(server, overrideChannels, mavenOptions, null);
         }

@@ -191,8 +191,15 @@ public class UpdateFinder implements AutoCloseable {
         for (String channelName: oldManifests.keySet()) {
             final ChannelVersion oldVersion = oldManifests.get(channelName);
             final ChannelVersion newVersion = newManifests.get(channelName);
-
-            res.add(new ChannelVersionChange(channelName, oldVersion, newVersion));
+            if (ChannelVersion.Type.OPEN.equals(oldVersion.getType()) || !oldVersion.equals(newVersion)) {
+                // Always add OPEN channels (channels that have noResolveStrategy==LATEST), because these channels can
+                // bring updates everytime, even if the manifest location doesn't change. This was guarded by test case
+                // UpdateFinderTest#listChannelVersionChangesOpenChannel, which is why I'm adding this check, but I'm
+                // not sure if we should always list OPEN channels. The URL channels can in theory change any time
+                // as well, but I don't like always listing is as "updated".
+                // Otherwise, add maven based channels when the version has changed.
+                res.add(new ChannelVersionChange(channelName, oldVersion, newVersion));
+            }
         }
 
         // add versions were a channel was added since history

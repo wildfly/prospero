@@ -724,28 +724,6 @@ public interface CliMessages {
                 CliConstants.NO_CONFLICTS_ONLY));
     }
 
-    default ArgumentParsingException invalidVersionOverrideString(String versionString) {
-        return new ArgumentParsingException(format(
-                bundle.getString("prospero.general.error.version_overwrite.invalid_format"),
-                versionString));
-    }
-
-    default ArgumentParsingException channelNotFoundException(String channelName) {
-        return new ArgumentParsingException(format(
-                bundle.getString("prospero.general.error.version_overwrite.channel_not_found"),
-                channelName));
-    }
-
-    default ArgumentParsingException versionOverrideHasToApplyToAllChannels() {
-        return new ArgumentParsingException(format(
-                bundle.getString("prospero.general.error.version_overwrite.not_complete")));
-    }
-
-    default ArgumentParsingException duplicatedVersionOverride(String channelName) {
-        return new ArgumentParsingException(format(
-                bundle.getString("prospero.general.error.version_overwrite.duplicated"), channelName));
-    }
-
     default String channelDowngradeWarningHeader() {
         return bundle.getString("prospero.downgrade.warning.header");
     }
@@ -781,30 +759,6 @@ public interface CliMessages {
     default String channelVersionUpdateListUpdateCommandSuggestion(String cmd) {
         return bundle.getString("prospero.update.channel-list.updates.update_command_suggestion")
                 .formatted(cmd);
-    }
-
-    default ArgumentParsingException invalidVersionOverrideMissingDelimiter(String versionString) {
-        return new ArgumentParsingException(format(
-                bundle.getString("prospero.general.error.version_overwrite.missing_delimiter"),
-                versionString));
-    }
-
-    default ArgumentParsingException invalidVersionOverrideTooManyDelimiters(String versionString) {
-        return new ArgumentParsingException(format(
-                bundle.getString("prospero.general.error.version_overwrite.too_many_delimiters"),
-                versionString));
-    }
-
-    default ArgumentParsingException invalidVersionOverrideEmptyChannel(String versionString) {
-        return new ArgumentParsingException(format(
-                bundle.getString("prospero.general.error.version_overwrite.empty_channel"),
-                versionString));
-    }
-
-    default ArgumentParsingException invalidVersionOverrideEmptyVersion(String versionString) {
-        return new ArgumentParsingException(format(
-                bundle.getString("prospero.general.error.version_overwrite.empty_version"),
-                versionString));
     }
 
     default String applyingVersionOverrides(int count) {

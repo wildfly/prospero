@@ -45,6 +45,7 @@ import org.wildfly.channel.Repository;
 import org.wildfly.prospero.DistributionInfo;
 import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.actions.ApplyCandidateAction;
+import org.wildfly.prospero.actions.OverrideBuilder;
 import org.wildfly.prospero.actions.SubscribeNewServerAction;
 import org.wildfly.prospero.actions.UpdateAction;
 import org.wildfly.prospero.api.ChannelVersionChange;

@@ -36,17 +36,8 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Before
     public void setUp() throws Exception {
-        testLocalRepository = new TestLocalRepository(temp.newFolder("local-repo").toPath(),
-                List.of(new URL("https://repo1.maven.org/maven2")));
-
-        prepareRequiredArtifacts(testLocalRepository);
-
+        testLocalRepository = prepareLocalRepository(temp.newFolder("local-repo").toPath());
         testInstallation = new TestInstallation(temp.newFolder("server").toPath());
-
-        testLocalRepository.deploy(TestInstallation.fpBuilder("org.test:pack-one:1.0.0")
-                .addModule("commons-io", "commons-io", COMMONS_IO_VERSION)
-                .build());
-
         testChannel = new Channel.Builder()
                 .setName("test-channel")
                 .addRepository("local-repo", testLocalRepository.getUri().toString())
@@ -178,7 +169,10 @@ public class UpdateToVersionTest extends CliTestBase {
                 .containsPattern("commons-io:commons-io\\s+2.18.0\\s+==>\\s+2.18.0.CP-01");
     }
 
-    private void prepareRequiredArtifacts(TestLocalRepository localRepository) throws Exception {
+    public static TestLocalRepository prepareLocalRepository(Path repoPath) throws Exception {
+        TestLocalRepository localRepository = new TestLocalRepository(repoPath,
+                List.of(new URL("https://repo1.maven.org/maven2")));
+
         localRepository.deployGalleonPlugins();
 
         Artifact resolved = localRepository.resolveAndDeploy(new DefaultArtifact("commons-io", "commons-io", "jar", COMMONS_IO_VERSION));
@@ -196,7 +190,7 @@ public class UpdateToVersionTest extends CliTestBase {
                         new Stream("org.test", "pack-one", "1.0.0")
                 )));
 
-        testLocalRepository.deploy(
+        localRepository.deploy(
                 new DefaultArtifact("org.test", "test-channel", "manifest", "yaml","1.0.1"),
                 new ChannelManifest("test-manifest", null, null, List.of(
                         new Stream("org.wildfly.galleon-plugins", "wildfly-config-gen", GALLEON_PLUGINS_VERSION),
@@ -205,7 +199,7 @@ public class UpdateToVersionTest extends CliTestBase {
                         new Stream("org.test", "pack-one", "1.0.0")
                 )));
 
-        testLocalRepository.deploy(
+        localRepository.deploy(
                 new DefaultArtifact("org.test", "test-channel", "manifest", "yaml","1.0.2"),
                 new ChannelManifest("test-manifest", null, null, List.of(
                         new Stream("org.wildfly.galleon-plugins", "wildfly-config-gen", GALLEON_PLUGINS_VERSION),
@@ -213,9 +207,15 @@ public class UpdateToVersionTest extends CliTestBase {
                         new Stream("commons-io", "commons-io", bump(bump(COMMONS_IO_VERSION))),
                         new Stream("org.test", "pack-one", "1.0.0")
                 )));
+
+        localRepository.deploy(TestInstallation.fpBuilder("org.test:pack-one:1.0.0")
+                .addModule("commons-io", "commons-io", COMMONS_IO_VERSION)
+                .build());
+
+        return localRepository;
     }
 
-    private String bump(String version) {
+    private static String bump(String version) {
         final Pattern pattern = Pattern.compile(".*\\.CP-(\\d{2})");
         final Matcher matcher = pattern.matcher(version);
         if (matcher.matches()) {

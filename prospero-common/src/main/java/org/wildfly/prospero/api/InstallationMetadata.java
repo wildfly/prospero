@@ -24,6 +24,7 @@ import org.jboss.galleon.util.PathsUtils;
 import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifest;
 import org.apache.commons.io.FileUtils;
+import org.wildfly.channel.ChannelMapper;
 import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.metadata.ManifestVersionRecord;
 import org.wildfly.prospero.api.exceptions.MetadataException;
@@ -436,5 +437,17 @@ public class InstallationMetadata implements AutoCloseable {
      */
     public GalleonProvisioningConfig getRecordedProvisioningConfig() {
         return provisioningConfig;
+    }
+
+    public List<ChannelVersion> getChannelVersions() throws MetadataException {
+        try {
+            final ChannelVersionReader reader = new ChannelVersionReader(
+                    ChannelMapper.fromString(Files.readString(channelsFile)),
+                    manifestVersion.orElse(new ManifestVersionRecord())
+            );
+            return reader.getChannelVersions();
+        } catch (IOException e) {
+            throw ProsperoLogger.ROOT_LOGGER.unableToParseConfiguration(channelsFile, e);
+        }
     }
 }

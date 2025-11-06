@@ -24,6 +24,7 @@ import org.wildfly.prospero.actions.InstallationHistoryAction;
 import org.wildfly.prospero.actions.MetadataAction;
 import org.wildfly.prospero.actions.UpdateAction;
 import org.wildfly.prospero.api.MavenOptions.Builder;
+import org.wildfly.prospero.api.TemporaryRepositoriesHandler;
 import org.wildfly.prospero.api.exceptions.InvalidUpdateCandidateException;
 import org.wildfly.prospero.galleon.GalleonCallbackAdapter;
 import org.wildfly.prospero.metadata.ManifestVersionRecord;
@@ -409,7 +410,15 @@ public class ProsperoInstallationManager implements InstallationManager {
         }
 
         protected UpdateAction getUpdateAction(List<org.wildfly.channel.Repository> repositories) throws OperationException, ProvisioningException {
-            return new UpdateAction(server, mavenOptions, null, repositories);
+            final List<org.wildfly.channel.Channel> overrideChannels;
+            if (!repositories.isEmpty()) {
+                try (MetadataAction metadataAction = getMetadataAction()) {
+                    overrideChannels = TemporaryRepositoriesHandler.overrideRepositories(metadataAction.getChannels(), repositories);
+                }
+            } else {
+                overrideChannels = Collections.emptyList();
+            }
+            return new UpdateAction(server, overrideChannels, mavenOptions, null);
         }
 
         protected MetadataAction getMetadataAction() throws MetadataException {

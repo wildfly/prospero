@@ -23,7 +23,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -44,6 +47,7 @@ import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.actions.ApplyCandidateAction;
 import org.wildfly.prospero.actions.SubscribeNewServerAction;
 import org.wildfly.prospero.actions.UpdateAction;
+import org.wildfly.prospero.api.ChannelVersionChange;
 import org.wildfly.prospero.api.FileConflict;
 import org.wildfly.prospero.api.InstallationMetadata;
 import org.wildfly.prospero.api.InstallationProfilesManager;
@@ -60,10 +64,12 @@ import org.wildfly.prospero.cli.FileConflictPrinter;
 import org.wildfly.prospero.cli.RepositoryDefinition;
 import org.wildfly.prospero.cli.ReturnCodes;
 import org.wildfly.prospero.api.TemporaryFilesManager;
+import org.wildfly.prospero.cli.printers.ChannelVersionChangesPrinter;
 import org.wildfly.prospero.galleon.FeaturePackLocationParser;
 import org.wildfly.prospero.galleon.GalleonUtils;
 import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
 import org.wildfly.prospero.model.InstallationProfile;
+import org.wildfly.prospero.updates.ChannelsUpdateResult;
 import org.wildfly.prospero.updates.UpdateSet;
 import picocli.CommandLine;
 
@@ -82,13 +88,10 @@ public class UpdateCommand extends AbstractParentCommand {
     public static final String PROSPERO_FP_ZIP = PROSPERO_FP_GA + "::zip";
 
     @CommandLine.Command(name = CliConstants.Commands.PERFORM, sortOptions = false)
-    public static class PerformCommand extends AbstractMavenCommand {
+    public static class PerformCommand extends UpdateBuildCommand {
 
         @CommandLine.Option(names = CliConstants.SELF)
         boolean self;
-
-        @CommandLine.Option(names = {CliConstants.Y, CliConstants.YES})
-        boolean yes;
 
         @CommandLine.Option(names = {CliConstants.NO_CONFLICTS_ONLY})
         boolean noConflictsOnly;
@@ -122,8 +125,19 @@ public class UpdateCommand extends AbstractParentCommand {
 
                 console.println(CliMessages.MESSAGES.updateHeader(installationDir));
 
-                try (UpdateAction updateAction = actionFactory.update(installationDir, mavenOptions, console, repositories)) {
-                    performUpdate(updateAction, yes, console, installationDir, noConflictsOnly);
+                final List<Channel> overrideChannels;
+                try (InstallationMetadata im = InstallationMetadata.loadInstallation(installationDir)) {
+                    overrideChannels = OverrideBuilder
+                            .from(im.getProsperoConfig().getChannels())
+                            .withRepositories(repositories)
+                            .withManifestVersions(versions)
+                            .build();
+                }
+
+                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
+                    if (!performUpdate(updateAction, console, installationDir, noConflictsOnly)) {
+                        return ReturnCodes.PROCESSING_ERROR;
+                    }
                 }
             }
 
@@ -133,11 +147,11 @@ public class UpdateCommand extends AbstractParentCommand {
             return ReturnCodes.SUCCESS;
         }
 
-        private boolean performUpdate(UpdateAction updateAction, boolean yes, CliConsole console, Path installDir, boolean noConflictsOnly) throws OperationException, ProvisioningException {
+        private boolean performUpdate(UpdateAction updateAction, CliConsole console, Path installDir, boolean noConflictsOnly) throws OperationException, ProvisioningException {
             Path targetDir = null;
             try {
                 targetDir = Files.createTempDirectory("update-candidate");
-                if (buildUpdate(updateAction, targetDir, yes, console, () -> console.confirmUpdates())) {
+                if (buildUpdate(updateAction, targetDir, console::confirmUpdates)) {
                     console.println("");
                     console.buildUpdatesComplete();
 
@@ -174,13 +188,10 @@ public class UpdateCommand extends AbstractParentCommand {
     }
 
     @CommandLine.Command(name = CliConstants.Commands.PREPARE, sortOptions = false)
-    public static class PrepareCommand extends AbstractMavenCommand {
+    public static class PrepareCommand extends UpdateBuildCommand {
 
         @CommandLine.Option(names = CliConstants.CANDIDATE_DIR, required = true)
         Path candidateDirectory;
-
-        @CommandLine.Option(names = {CliConstants.Y, CliConstants.YES})
-        boolean yes;
 
         public PrepareCommand(CliConsole console, ActionFactory actionFactory) {
             super(console, actionFactory);
@@ -203,9 +214,18 @@ public class UpdateCommand extends AbstractParentCommand {
 
                 verifyTargetDirectoryIsEmpty(candidateDirectory);
 
-                try (UpdateAction updateAction = actionFactory.update(installationDir,
-                        mavenOptions, console, repositories)) {
-                    if (buildUpdate(updateAction, candidateDirectory, yes, console, () -> console.confirmBuildUpdates())) {
+                final List<Channel> overrideChannels;
+                try (InstallationMetadata im = InstallationMetadata.loadInstallation(installationDir)) {
+                    overrideChannels = OverrideBuilder
+                            .from(im.getProsperoConfig().getChannels())
+                            .withRepositories(repositories)
+                            .withManifestVersions(versions)
+                            .build();
+                }
+
+                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels,
+                        mavenOptions, console)) {
+                    if (buildUpdate(updateAction, candidateDirectory, console::confirmBuildUpdates)) {
                         console.println("");
                         console.buildUpdatesComplete();
                         console.println(CliMessages.MESSAGES.updateCandidateGenerated(candidateDirectory));
@@ -302,6 +322,12 @@ public class UpdateCommand extends AbstractParentCommand {
     @CommandLine.Command(name = CliConstants.Commands.LIST, sortOptions = false)
     public static class ListCommand extends AbstractMavenCommand {
 
+        @CommandLine.Option(
+                names = CliConstants.VERSION,
+                split = ","
+        )
+        protected List<String> versions = new ArrayList<>();
+
         public ListCommand(CliConsole console, ActionFactory actionFactory) {
             super(console, actionFactory);
         }
@@ -316,9 +342,58 @@ public class UpdateCommand extends AbstractParentCommand {
                 final List<Repository> repositories = RepositoryUtils.unzipArchives(
                         RepositoryDefinition.from(temporaryRepositories), temporaryFiles);
                 console.println(CliMessages.MESSAGES.checkUpdatesHeader(installationDir));
-                try (UpdateAction updateAction = actionFactory.update(installationDir, mavenOptions, console, repositories)) {
+                final List<Channel> overrideChannels;
+                try (InstallationMetadata im = InstallationMetadata.loadInstallation(installationDir)) {
+                    overrideChannels = OverrideBuilder
+                            .from(im.getProsperoConfig().getChannels())
+                            .withRepositories(repositories)
+                            .withManifestVersions(versions)
+                            .build();
+                }
+                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
                     final UpdateSet updateSet = updateAction.findUpdates();
                     console.updatesFound(updateSet.getArtifactUpdates());
+                }
+
+                final float totalTime = (System.currentTimeMillis() - startTime) / 1000f;
+                console.println("");
+                console.println(CliMessages.MESSAGES.operationCompleted(totalTime));
+                return ReturnCodes.SUCCESS;
+            }
+        }
+    }
+
+    @CommandLine.Command(name = CliConstants.Commands.LIST_CHANNELS, sortOptions = false)
+    public static class ListChannelsCommand extends AbstractMavenCommand {
+
+        @CommandLine.Option(names = CliConstants.ALL)
+        boolean all;
+
+        public ListChannelsCommand(CliConsole console, ActionFactory actionFactory) {
+            super(console, actionFactory);
+        }
+        @Override
+        public Integer call() throws Exception {
+            final long startTime = System.currentTimeMillis();
+            final Path installationDir = determineInstallationDirectory(directory);
+
+            final MavenOptions mavenOptions = parseMavenOptions();
+
+            try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
+                final List<Repository> repositories = RepositoryUtils.unzipArchives(
+                        RepositoryDefinition.from(temporaryRepositories), temporaryFiles);
+                console.println(CliMessages.MESSAGES.checkUpdatesHeader(installationDir));
+                final List<Channel> overrideChannels;
+                try (InstallationMetadata im = InstallationMetadata.loadInstallation(installationDir)) {
+                    overrideChannels = OverrideBuilder
+                            .from(im.getProsperoConfig().getChannels())
+                            .withRepositories(repositories)
+                            .build();
+                }
+
+                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
+                    final ChannelsUpdateResult result = updateAction.findChannelUpdates(all);
+                    new ChannelVersionChangesPrinter(console).printAvailableChannelChanges(result, installationDir.toString());
                 }
 
                 final float totalTime = (System.currentTimeMillis() - startTime) / 1000f;
@@ -448,6 +523,99 @@ public class UpdateCommand extends AbstractParentCommand {
 
     }
 
+    public abstract static class UpdateBuildCommand extends AbstractMavenCommand {
+
+        @CommandLine.Option(names = {CliConstants.Y, CliConstants.YES})
+        boolean yes;
+
+        @CommandLine.Spec
+        protected CommandLine.Model.CommandSpec spec;
+
+        @CommandLine.Option(
+                names = CliConstants.VERSION,
+                split = ","
+        )
+        protected List<String> versions = new ArrayList<>();
+
+        public UpdateBuildCommand(CliConsole console, ActionFactory actionFactory) {
+            super(console, actionFactory);
+        }
+
+        protected boolean buildUpdate(UpdateAction updateAction, Path updateDirectory,
+                                           Supplier<Boolean> confirmation) throws OperationException, ProvisioningException {
+            // Log version overrides being applied
+            if (!versions.isEmpty()) {
+                log.infof("Applying version overrides: %s", versions);
+                console.println(CliMessages.MESSAGES.applyingVersionOverrides(versions.size()));
+            }
+
+            final UpdateSet updateSet = updateAction.findUpdates();
+
+            final List<ChannelVersionChange> channelChanges = updateSet.getChannelVersionChanges();
+            log.debugf("Found %d channel version changes", channelChanges.size());
+
+            final List<ChannelVersionChange> downgrades = channelChanges.stream().filter(ChannelVersionChange::isDowngrade).toList();
+            if (!downgrades.isEmpty()) {
+                log.warnf("Detected %d potential downgrade(s)", downgrades.size());
+                for (ChannelVersionChange downgrade : downgrades) {
+                    log.warnf("Downgrade detected: %s: %s -> %s",
+                        downgrade.channelName(),
+                        downgrade.oldVersion().getPhysicalVersion(),
+                        downgrade.newVersion().getPhysicalVersion());
+                }
+
+                // check that each flagged downgrade is listed specifically in the versions
+                final ChannelVersionChangesPrinter printer = new ChannelVersionChangesPrinter(console);
+                printer.printDowngrades(downgrades);
+
+                if (hasUnexpectedDowngrade(downgrades)) {
+                    log.errorf("Found unexpected downgrade(s) - user must explicitly specify version overrides");
+                    printer.printUnexpectedDowngradesError(downgrades, spec);
+                    return false;
+                } else {
+                    log.infof("All downgrades are explicitly requested via version overrides");
+                }
+
+                if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), "", CliMessages.MESSAGES.updateCancelled())) {
+                    log.infof("Update cancelled by user due to downgrades");
+                    return false;
+                }
+                log.infof("User confirmed downgrade operation");
+            }
+
+            console.updatesFound(updateSet.getArtifactUpdates());
+            if (updateSet.isEmpty()) {
+                return false;
+            }
+
+            if (!yes && !confirmation.get()) {
+                return false;
+            }
+
+            updateAction.buildUpdate(updateDirectory.toAbsolutePath());
+
+            return true;
+        }
+
+        private boolean hasUnexpectedDowngrade(List<ChannelVersionChange> downgrades) {
+            boolean unexpectedDowngrade = false;
+            Map<String, String> allowedVersions = new HashMap<>();
+            versions.stream().map(v -> v.split("::")).forEach(p -> allowedVersions.put(p[0], p[1]));
+            for (ChannelVersionChange cvc : downgrades) {
+                if (!allowedVersions.containsKey(cvc.channelName())) {
+                    unexpectedDowngrade = true;
+                    break;
+                }
+                final String allowedVersion = allowedVersions.get(cvc.channelName());
+                if (!allowedVersion.equals(cvc.newVersion().getPhysicalVersion())) {
+                    unexpectedDowngrade = true;
+                    break;
+                }
+            }
+            return unexpectedDowngrade;
+        }
+    }
+
     public UpdateCommand(CliConsole console, ActionFactory actionFactory) {
         super(console, actionFactory, CliConstants.Commands.UPDATE,
                 List.of(
@@ -455,25 +623,9 @@ public class UpdateCommand extends AbstractParentCommand {
                     new UpdateCommand.ApplyCommand(console, actionFactory),
                     new UpdateCommand.PerformCommand(console, actionFactory),
                     new UpdateCommand.ListCommand(console, actionFactory),
+                    new ListChannelsCommand(console, actionFactory),
                     new SubscribeCommand(console, actionFactory))
         );
-    }
-
-    private static boolean buildUpdate(UpdateAction updateAction, Path updateDirectory, boolean yes, CliConsole console, Supplier<Boolean> confirmation) throws OperationException, ProvisioningException {
-        final UpdateSet updateSet = updateAction.findUpdates();
-
-        console.updatesFound(updateSet.getArtifactUpdates());
-        if (updateSet.isEmpty()) {
-            return false;
-        }
-
-        if (!yes && !confirmation.get()) {
-            return false;
-        }
-
-        updateAction.buildUpdate(updateDirectory.toAbsolutePath());
-
-        return true;
     }
 
     public static void verifyInstallationContainsOnlyProspero(Path dir) throws ArgumentParsingException {

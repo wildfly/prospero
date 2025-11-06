@@ -107,6 +107,12 @@ public class InstallCommand extends AbstractInstallCommand {
     )
     StabilityLevels stabilityLevels = new StabilityLevels();
 
+    @CommandLine.Option(
+            names = CliConstants.VERSION,
+            split = ","
+    )
+    List<String> versions = new ArrayList<>();
+
     static class FeaturePackOrDefinition {
         @CommandLine.Option(
                 names = CliConstants.PROFILE,
@@ -241,7 +247,9 @@ public class InstallCommand extends AbstractInstallCommand {
                 }
             }
 
-            provisioningAction.provision(provisioningConfig, channels, shadowRepositories);
+            final List<Channel> overrideChannels = buildOverrideChannels(shadowRepositories, channels);
+
+            provisioningAction.provisionWithChannels(provisioningConfig, channels, overrideChannels);
 
             console.println("");
             console.println(CliMessages.MESSAGES.installComplete(directory));
@@ -251,6 +259,14 @@ public class InstallCommand extends AbstractInstallCommand {
 
             return ReturnCodes.SUCCESS;
         }
+    }
+
+    private List<Channel> buildOverrideChannels(List<Repository> shadowRepositories, List<Channel> channels) throws ArgumentParsingException {
+        return OverrideBuilder
+                .from(channels)
+                .withRepositories(shadowRepositories)
+                .withManifestVersions(versions)
+                .build();
     }
 
     private void checkFileExists(URL resourceUrl, String argValue) throws ArgumentParsingException {

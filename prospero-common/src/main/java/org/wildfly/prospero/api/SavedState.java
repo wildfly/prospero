@@ -185,7 +185,7 @@ public class SavedState {
 
         public String getDisplayVersion() {
             if (logicalVersion != null) {
-                return logicalVersion;
+                return physicalVersion + " (" + logicalVersion + ")";
             } else {
                 return identifier + ":" + physicalVersion;
             }

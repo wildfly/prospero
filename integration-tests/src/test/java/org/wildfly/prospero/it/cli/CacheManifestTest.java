@@ -303,7 +303,7 @@ public class CacheManifestTest extends WfCoreTestBase {
     }
 
     private void performUpdate() throws OperationException, ProvisioningException {
-        try (UpdateAction updateAction = new UpdateAction(outputPath, mavenOptions, new CliConsole(), Collections.emptyList())) {
+        try (UpdateAction updateAction = new UpdateAction(outputPath, Collections.emptyList(), mavenOptions, new CliConsole())) {
             updateAction.performUpdate();
             FileUtils.deleteQuietly(mavenSessionManager.getProvisioningRepo().toFile());
         }

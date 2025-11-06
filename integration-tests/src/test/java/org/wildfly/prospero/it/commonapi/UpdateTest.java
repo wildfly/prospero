@@ -109,7 +109,7 @@ public class UpdateTest extends WfCoreTestBase {
         deployManifestFile(mockRepo.toURI().toURL(), updatedManifest, "1.0.1");
 
         // update installation
-        new UpdateAction(outputPath, mavenOptions, new AcceptingConsole(), Collections.emptyList())
+        new UpdateAction(outputPath, Collections.emptyList(), mavenOptions, new AcceptingConsole())
                 .performUpdate();
 
         wildflyCliArtifact = readArtifactFromManifest("org.wildfly.core", "wildfly-cli");
@@ -140,7 +140,7 @@ public class UpdateTest extends WfCoreTestBase {
         deployManifestFile(mockRepo.toURI().toURL(), updatedChannel, "1.0.1");
 
         // update installation
-        new UpdateAction(outputPath, mavenOptions, new AcceptingConsole(), Collections.emptyList())
+        new UpdateAction(outputPath, Collections.emptyList(), mavenOptions, new AcceptingConsole())
                 .performUpdate();
 
         assertTrue(Files.readString(channelsFile).contains("# test comment"));
@@ -166,7 +166,7 @@ public class UpdateTest extends WfCoreTestBase {
 
         // update installation
         final Path preparedUpdatePath = temp.newFolder().toPath();
-        new UpdateAction(outputPath, mavenOptions, new AcceptingConsole(), Collections.emptyList())
+        new UpdateAction(outputPath, Collections.emptyList(), mavenOptions, new AcceptingConsole())
                 .buildUpdate(preparedUpdatePath);
 
         final Path markerFile = preparedUpdatePath.resolve(UPDATE_MARKER_FILE);
@@ -198,8 +198,9 @@ public class UpdateTest extends WfCoreTestBase {
                 .setChannelCoordinates(buildConfigWithMockRepo().toPath().toString())
                 .setOverrideRepositories(Collections.emptyList()) // reset overrides from defaultWfCoreDefinition()
                 .build();
+        final List<Channel> channels = provisioningDefinition.resolveChannels(CHANNELS_RESOLVER_FACTORY);
         installation.provision(provisioningDefinition.toProvisioningConfig(),
-                provisioningDefinition.resolveChannels(CHANNELS_RESOLVER_FACTORY));
+                channels);
 
         // update manifest file
         final URL tempRepo = mockTemporaryRepo(true);
@@ -210,9 +211,14 @@ public class UpdateTest extends WfCoreTestBase {
         final MavenOptions offlineOptions = MavenOptions.OFFLINE_NO_CACHE;
 
         // update installation
-        new UpdateAction(outputPath, offlineOptions, new AcceptingConsole(),
-                List.of(new Repository("temp", tempRepo.toExternalForm())))
-                .performUpdate();
+        final List<Channel> overrideChannels = channels.stream()
+                .map(c -> new Channel.Builder(c)
+                        .setRepositories(List.of(new Repository("temp", tempRepo.toExternalForm())))
+                        .build())
+                .collect(Collectors.toList());
+        try (UpdateAction ua = new UpdateAction(outputPath, overrideChannels, offlineOptions, new AcceptingConsole())) {
+            ua.performUpdate();
+        }
 
         Optional<Artifact> wildflyCliArtifact = readArtifactFromManifest("org.wildfly.core", "wildfly-cli");
         assertEquals(UPGRADE_VERSION, wildflyCliArtifact.get().getVersion());
@@ -229,13 +235,14 @@ public class UpdateTest extends WfCoreTestBase {
                 .setChannelCoordinates(buildConfigWithMockRepo().toPath().toString())
                 .setOverrideRepositories(Collections.emptyList()) // reset overrides from defaultWfCoreDefinition()
                 .build();
+        final List<Channel> channels = provisioningDefinition.resolveChannels(CHANNELS_RESOLVER_FACTORY);
         installation.provision(provisioningDefinition.toProvisioningConfig(),
-                provisioningDefinition.resolveChannels(CHANNELS_RESOLVER_FACTORY));
+                channels);
 
         // update manifest file
         final URL tempRepo = mockTemporaryRepo(true);
-        final File updatedChannel = upgradeTestArtifactIn(manifestFile);
-        deployManifestFile(tempRepo, updatedChannel, "1.0.1");
+        final File updatedManifest = upgradeTestArtifactIn(manifestFile);
+        deployManifestFile(tempRepo, updatedManifest, "1.0.1");
 
         // offline MSM will disable http(s) repositories and local maven cache
         final MavenOptions offlineOptions = MavenOptions.OFFLINE_NO_CACHE;
@@ -244,10 +251,18 @@ public class UpdateTest extends WfCoreTestBase {
         final Path candidateFolder = temp.newFolder("candidate").toPath();
         Files.writeString(candidateFolder.resolve("dirty.txt"), "foobar");
 
+        final List<Channel> overrideChannels = channels.stream()
+                .map(c -> new Channel.Builder(c)
+                        .setRepositories(List.of(new Repository("temp", tempRepo.toExternalForm())))
+                        .build())
+                .collect(Collectors.toList());
+
         assertThatThrownBy(
-                () -> new UpdateAction(outputPath, offlineOptions, new AcceptingConsole(),
-                        List.of(new Repository("temp", tempRepo.toExternalForm())))
-                        .buildUpdate(candidateFolder))
+                () -> {
+                    try (UpdateAction ua = new UpdateAction(outputPath, overrideChannels, offlineOptions, new AcceptingConsole())) {
+                        ua.buildUpdate(candidateFolder);
+                    }
+                })
                 .isInstanceOf(IllegalArgumentException.class)
                 .message().contains("Can't install the server into a non empty directory");
     }

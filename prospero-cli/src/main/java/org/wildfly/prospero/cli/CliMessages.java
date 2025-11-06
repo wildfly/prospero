@@ -723,4 +723,91 @@ public interface CliMessages {
                 bundle.getString("prospero.updates.apply.candidate.cancel_conflicts"),
                 CliConstants.NO_CONFLICTS_ONLY));
     }
+
+    default ArgumentParsingException invalidVersionOverrideString(String versionString) {
+        return new ArgumentParsingException(format(
+                bundle.getString("prospero.general.error.version_overwrite.invalid_format"),
+                versionString));
+    }
+
+    default ArgumentParsingException channelNotFoundException(String channelName) {
+        return new ArgumentParsingException(format(
+                bundle.getString("prospero.general.error.version_overwrite.channel_not_found"),
+                channelName));
+    }
+
+    default ArgumentParsingException versionOverrideHasToApplyToAllChannels() {
+        return new ArgumentParsingException(format(
+                bundle.getString("prospero.general.error.version_overwrite.not_complete")));
+    }
+
+    default ArgumentParsingException duplicatedVersionOverride(String channelName) {
+        return new ArgumentParsingException(format(
+                bundle.getString("prospero.general.error.version_overwrite.duplicated"), channelName));
+    }
+
+    default String channelDowngradeWarningHeader() {
+        return bundle.getString("prospero.downgrade.warning.header");
+    }
+
+    default String unexpectedVersionsHeader(String command) {
+        return bundle.getString("prospero.downgrade.unexpected_versions").formatted(command);
+    }
+
+    default String noChannelVersionUpdates() {
+        return bundle.getString("prospero.update.channel-list.no_updates");
+    }
+
+    default String channelVersionListUnsupportedChannelType() {
+        return bundle.getString("prospero.update.channel-list.unsupported_channel");
+    }
+
+    default String channelVersionUpdateListHeader() {
+        return bundle.getString("prospero.update.channel-list.updates_found.header");
+    }
+
+    default String channelVersionUpdateListChannelName() {
+        return bundle.getString("prospero.update.channel-list.updates.channel_name");
+    }
+
+    default String channelVersionUpdateListCurrentVersion() {
+        return bundle.getString("prospero.update.channel-list.updates.current_version");
+    }
+
+    default String channelVersionUpdateListAvailableVersions() {
+        return bundle.getString("prospero.update.channel-list.updates.available_versions");
+    }
+
+    default String channelVersionUpdateListUpdateCommandSuggestion(String cmd) {
+        return bundle.getString("prospero.update.channel-list.updates.update_command_suggestion")
+                .formatted(cmd);
+    }
+
+    default ArgumentParsingException invalidVersionOverrideMissingDelimiter(String versionString) {
+        return new ArgumentParsingException(format(
+                bundle.getString("prospero.general.error.version_overwrite.missing_delimiter"),
+                versionString));
+    }
+
+    default ArgumentParsingException invalidVersionOverrideTooManyDelimiters(String versionString) {
+        return new ArgumentParsingException(format(
+                bundle.getString("prospero.general.error.version_overwrite.too_many_delimiters"),
+                versionString));
+    }
+
+    default ArgumentParsingException invalidVersionOverrideEmptyChannel(String versionString) {
+        return new ArgumentParsingException(format(
+                bundle.getString("prospero.general.error.version_overwrite.empty_channel"),
+                versionString));
+    }
+
+    default ArgumentParsingException invalidVersionOverrideEmptyVersion(String versionString) {
+        return new ArgumentParsingException(format(
+                bundle.getString("prospero.general.error.version_overwrite.empty_version"),
+                versionString));
+    }
+
+    default String applyingVersionOverrides(int count) {
+        return format(bundle.getString("prospero.general.version_overrides.applying"), count);
+    }
 }

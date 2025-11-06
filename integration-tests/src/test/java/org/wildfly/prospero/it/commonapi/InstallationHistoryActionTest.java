@@ -489,7 +489,7 @@ public class InstallationHistoryActionTest extends WfCoreTestBase {
     }
 
     private UpdateAction updateAction() throws ProvisioningException, OperationException {
-        return new UpdateAction(outputPath, mavenOptions, new AcceptingConsole(), Collections.emptyList());
+        return new UpdateAction(outputPath, Collections.emptyList(), mavenOptions, new AcceptingConsole());
     }
 
     private Optional<Artifact> readArtifactFromManifest(String groupId, String artifactId) throws IOException, MetadataException {

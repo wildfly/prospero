@@ -403,4 +403,7 @@ public interface ProsperoLogger extends BasicLogger {
     @Message(id = 275, value = "The candidate at [%s] was not prepared for %s operation.")
     InvalidUpdateCandidateException wrongCandidateOperation(Path candidateServer, ApplyCandidateAction.Type operationType);
 
+    @Message(id = 276, value = "Unable to resolve version information for channel %s with coordinates %s:%s in repositories %s")
+    MetadataException unableToResolveChannelVersionInformation(String channelName, String groupId, String artifactId, String repos, @Cause Exception e);
+
 }

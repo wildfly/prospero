@@ -110,6 +110,14 @@ public class ProvisioningAction {
      */
     public void provision(GalleonProvisioningConfig provisioningConfig, List<Channel> channels, List<Repository> overwriteRepositories)
             throws ProvisioningException, OperationException, MalformedURLException {
+
+        provisionWithChannels(provisioningConfig, channels, TemporaryRepositoriesHandler.overrideRepositories(channels, overwriteRepositories));
+    }
+
+    public void provisionWithChannels(GalleonProvisioningConfig provisioningConfig,
+                                      List<Channel> channels,
+                                      List<Channel> overrideChannels)
+            throws ProvisioningException, OperationException {
         ProsperoLogger.ROOT_LOGGER.startingProvision(installDir);
         channels = enforceChannelNames(channels);
 
@@ -119,7 +127,9 @@ public class ProvisioningAction {
         }
         final List<Channel> recordedChannels = new ArrayList<>(channels);
 
-        channels = TemporaryRepositoriesHandler.overrideRepositories(channels, overwriteRepositories);
+        if (!overrideChannels.isEmpty()) {
+            channels = overrideChannels;
+        }
 
         try (GalleonEnvironment galleonEnv = GalleonEnvironment
                 .builder(installDir, channels, mavenSessionManager, false)

@@ -18,6 +18,7 @@
 package org.wildfly.prospero.updates;
 
 import org.wildfly.prospero.api.ArtifactChange;
+import org.wildfly.prospero.api.ChannelVersionChange;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,9 +27,15 @@ public class UpdateSet {
 
     public static final UpdateSet EMPTY = new UpdateSet(Collections.emptyList());
     private final List<ArtifactChange> artifactUpdates;
+    private List<ChannelVersionChange> channelChanges;
 
     public UpdateSet(List<ArtifactChange> updates) {
+        this(updates, Collections.emptyList());
+    }
+
+    public UpdateSet(List<ArtifactChange> updates, List<ChannelVersionChange> channelChanges) {
         this.artifactUpdates = updates;
+        this.channelChanges = channelChanges;
     }
 
     public List<ArtifactChange> getArtifactUpdates() {
@@ -37,5 +44,9 @@ public class UpdateSet {
 
     public boolean isEmpty() {
         return artifactUpdates.isEmpty();
+    }
+
+    public List<ChannelVersionChange> getChannelVersionChanges() {
+        return channelChanges;
     }
 }

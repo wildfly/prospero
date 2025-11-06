@@ -152,8 +152,9 @@ public class CachedVersionResolver implements MavenVersionsResolver {
                     LOG.debugf("Last used version for manifest %s is %s.", a, version);
                 }
 
-                if (version == null) {
-                    // we can't use cache, just throw the resolution exception
+                // if version is empty - we're looking for a latest available manifest. we accept whatever we have in the cache
+                if (version == null || (!a.getVersion().isEmpty() && !version.equals(a.getVersion()))) {
+                    // we can't use cache, or we tried to resolve a different version of manifest - either way, just throw the resolution exception
                     throw e;
                 }
 

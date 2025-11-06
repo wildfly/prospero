@@ -17,34 +17,63 @@
 
 package org.wildfly.prospero.api;
 
-import io.undertow.Undertow;
-import io.undertow.server.handlers.resource.PathResourceManager;
-import io.undertow.util.MimeMappings;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import org.jboss.galleon.util.ZipUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.wildfly.channel.Repository;
 import org.wildfly.prospero.api.exceptions.InvalidRepositoryArchiveException;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
+import io.undertow.Undertow;
+import io.undertow.server.handlers.resource.PathResourceManager;
+import io.undertow.util.MimeMappings;
 
 import static io.undertow.Handlers.resource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class RepositoryUtilsTest {
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
-    @Test
+    @Parameters
+    public static Iterable<BiConsumer<Path, Path>> zipHandlers() {
+        return List.of((source, target) -> {
+            try {
+                ZipUtils.zip(source, target);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }, (source, target) -> zipDirNoFolderEntries(source, target));
+    }
+
+    private final BiConsumer<Path, Path> zipHandler;
+
+    public RepositoryUtilsTest(BiConsumer<Path, Path> zipHandler) {
+        this.zipHandler = zipHandler;
+    }
+
     public void unzipArchiveBeforeUsingIt() throws Exception {
         final Path repoRoot = temp.newFolder("repo").toPath();
         final Path zipFile = createRepository(repoRoot);
@@ -115,7 +144,7 @@ public class RepositoryUtilsTest {
         final Path repoRoot = temp.newFolder("repo-root").toPath();
         final Path repoZip = temp.newFile("repo.zip").toPath();
         Files.delete(repoZip);
-        ZipUtils.zip(repoRoot, repoZip);
+        zip(repoRoot, repoZip);
 
         assertThatThrownBy(()->applyOverride(List.of(repo("temp-0", repoZip.toUri().toString()))))
                 .isInstanceOf(InvalidRepositoryArchiveException.class);
@@ -127,7 +156,7 @@ public class RepositoryUtilsTest {
         Files.writeString(repoRoot.resolve("test.txt"), "test");
         final Path repoZip = temp.newFile("repo.zip").toPath();
         Files.delete(repoZip);
-        ZipUtils.zip(repoRoot, repoZip);
+        zip(repoRoot, repoZip);
 
         assertThatThrownBy(()->applyOverride(List.of(repo("temp-0", repoZip.toUri().toString()))))
                 .isInstanceOf(InvalidRepositoryArchiveException.class);
@@ -140,7 +169,7 @@ public class RepositoryUtilsTest {
         Files.createDirectory(repoRoot.resolve("test2"));
         final Path repoZip = temp.newFile("repo.zip").toPath();
         Files.delete(repoZip);
-        ZipUtils.zip(repoRoot, repoZip);
+        zip(repoRoot, repoZip);
 
         assertThatThrownBy(()->applyOverride(List.of(repo("temp-0", repoZip.toUri().toString()))))
                 .isInstanceOf(InvalidRepositoryArchiveException.class);
@@ -152,7 +181,7 @@ public class RepositoryUtilsTest {
         Files.createDirectory(repoRoot.resolve("test"));
         final Path repoZip = temp.newFile("repo.zip").toPath();
         Files.delete(repoZip);
-        ZipUtils.zip(repoRoot, repoZip);
+        zip(repoRoot, repoZip);
 
         assertThatThrownBy(()->applyOverride(List.of(repo("temp-0", repoZip.toUri().toString()))))
                 .isInstanceOf(InvalidRepositoryArchiveException.class);
@@ -164,15 +193,8 @@ public class RepositoryUtilsTest {
         Files.writeString(repoRoot.resolve("test-repository").resolve("maven-repository").resolve("test.txt"), "test text");
         final Path zipFile = temp.newFile("repo.zip").toPath();
         Files.delete(zipFile);
-        ZipUtils.zip(repoRoot, zipFile);
+        zip(repoRoot, zipFile);
         return zipFile;
-    }
-
-    private String toLocalUri(String fileName) throws IOException {
-        final File notZipFile = temp.newFile(fileName);
-
-        final String url = "file:" +Path.of(".").normalize().toAbsolutePath().relativize(notZipFile.toPath());
-        return url;
     }
 
     private static Repository repo(String id, String url) {
@@ -181,5 +203,29 @@ public class RepositoryUtilsTest {
 
     private static List<Repository> applyOverride(List<Repository> overrideRepositories) throws InvalidRepositoryArchiveException {
         return RepositoryUtils.unzipArchives(overrideRepositories, TemporaryFilesManager.newInstance());
+    }
+
+    public void zip(Path sourcePath, Path target) {
+        zipHandler.accept(sourcePath, target);
+    }
+
+    public static void zipDirNoFolderEntries(Path sourcePath, Path target) {
+        try (FileOutputStream fos = new FileOutputStream(target.toFile()); ZipOutputStream zos = new ZipOutputStream(fos)) {
+            Files.walkFileTree(sourcePath, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+                    return FileVisitResult.CONTINUE;
+                }
+                @Override
+                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                    zos.putNextEntry(new ZipEntry(sourcePath.relativize(file).toString()));
+                    Files.copy(file, zos);
+                    zos.closeEntry();
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

@@ -302,6 +302,30 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
                 });
     }
 
+    @Test
+    public void multipleManifestsAreTranslatedToMultipleChannels() throws Exception {
+        Path channelsFile = temporaryFolder.newFile().toPath();
+
+        File installDir = temporaryFolder.newFolder();
+        String testURL =  installDir.toPath().toUri().toURL().toString();
+
+        MetadataTestUtils.prepareChannel(channelsFile, List.of(new URL("file:some-manifest.yaml")));
+
+        int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, installDir.getName(),
+                CliConstants.REPOSITORIES, "repo1::" + testURL, CliConstants.CHANNEL_MANIFEST, "g:a:1.0,g:b:2.0",
+                CliConstants.FPL, "feature:pack");
+
+        assertEquals(ReturnCodes.SUCCESS, exitCode);
+        Mockito.verify(provisionAction).provision(configCaptor.capture(), channelCaptor.capture(), any());
+        assertThat(channelCaptor.getValue())
+                // TODO: implement equals toHash in wildfly-channels objects and remove the toString mapping
+                .map(Channel::toString).containsExactly(
+                        new Channel.Builder().setManifestCoordinate("g", "a", "1.0").addRepository("repo1", testURL).build()
+                                .toString(),
+                        new Channel.Builder().setManifestCoordinate("g", "b", "2.0").addRepository("repo1", testURL).build()
+                                .toString());
+    }
+
     @Override
     protected MavenOptions getCapturedMavenOptions() throws Exception {
         Mockito.verify(actionFactory).install(any(), mavenOptions.capture(), any());

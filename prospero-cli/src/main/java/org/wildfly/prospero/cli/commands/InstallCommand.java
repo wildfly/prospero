@@ -114,7 +114,7 @@ public class InstallCommand extends AbstractInstallCommand {
         // following is checked by picocli, adding this to avoid IDE warnings
         assert featurePackOrDefinition.definition.isPresent() || featurePackOrDefinition.fpl.isPresent() || featurePackOrDefinition.profile.isPresent();
 
-        if (featurePackOrDefinition.profile.isEmpty() && channelCoordinates.isEmpty() && manifestCoordinate.isEmpty()) {
+        if (featurePackOrDefinition.profile.isEmpty() && channelCoordinates.isEmpty() && manifestCoordinates.isEmpty()) {
             throw CliMessages.MESSAGES.channelsMandatoryWhenCustomFpl(String.join(",", KnownFeaturePacks.getNames()));
         }
 
@@ -122,13 +122,15 @@ public class InstallCommand extends AbstractInstallCommand {
             throw CliMessages.MESSAGES.unknownInstallationProfile(featurePackOrDefinition.profile.get(), String.join(",", KnownFeaturePacks.getNames()));
         }
 
-        if (!channelCoordinates.isEmpty() && manifestCoordinate.isPresent()) {
+        if (!channelCoordinates.isEmpty() && !manifestCoordinates.isEmpty()) {
             throw CliMessages.MESSAGES.exclusiveOptions(CliConstants.CHANNELS, CliConstants.CHANNEL_MANIFEST);
         }
 
-        if (manifestCoordinate.isPresent()) {
-            final ChannelManifestCoordinate manifest = ArtifactUtils.manifestCoordFromString(manifestCoordinate.get());
-            checkFileExists(manifest.getUrl(), manifestCoordinate.get());
+        if (!manifestCoordinates.isEmpty()) {
+            for (String coordinate : manifestCoordinates) {
+                final ChannelManifestCoordinate manifest = ArtifactUtils.manifestCoordFromString(coordinate);
+                checkFileExists(manifest.getUrl(), coordinate);
+            }
         }
 
         if (!channelCoordinates.isEmpty()) {

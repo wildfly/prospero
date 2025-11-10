@@ -100,9 +100,9 @@ public class ProvisioningDefinition {
             this.fpl = null;
             this.definition = featurePackInfo.getGalleonConfiguration();
             if (this.channelCoordinates.isEmpty()) { // no channels provided by user
-                if (builder.manifest.isPresent()) { // if manifest given, use it to create a channel
+                if (!builder.manifests.isEmpty()) { // if manifest given, use it to create a channel
                     List<Repository> repositories = extractRepositoriesFromChannels(featurePackInfo.getChannels());
-                    this.channels = List.of(composeChannelFromManifest(builder.manifest.get(), repositories));
+                    this.channels = builder.manifests.stream().map(m->composeChannelFromManifest(m, repositories)).collect(Collectors.toList());
                 } else if (!featurePackInfo.getChannels().isEmpty()) { // if no manifest given, use channels from known FP
                     this.channels = featurePackInfo.getChannels();
                 } else {
@@ -112,13 +112,13 @@ public class ProvisioningDefinition {
         } else {
             this.fpl = builder.fpl.orElse(null);
             this.definition = builder.definitionFile.orElse(null);
-            if (this.channelCoordinates.isEmpty() && builder.manifest.isEmpty()) {
+            if (this.channelCoordinates.isEmpty() && builder.manifests.isEmpty()) {
                 throw ProsperoLogger.ROOT_LOGGER.predefinedFplOrChannelRequired(String.join(", ", KnownFeaturePacks.getNames()));
-            } else if (builder.manifest.isPresent()) { // if manifest given, use it to create a channel
+            } else if (!builder.manifests.isEmpty()) { // if manifest given, use it to create a channel
                 if (overrideRepositories.isEmpty()) {
                     throw ProsperoLogger.ROOT_LOGGER.repositoriesMustBeSetWithManifest();
                 }
-                this.channels = List.of(composeChannelFromManifest(builder.manifest.get(), overrideRepositories));
+                this.channels = builder.manifests.stream().map(m->composeChannelFromManifest(m, overrideRepositories)).collect(Collectors.toList());
             }
         }
     }
@@ -228,7 +228,7 @@ public class ProvisioningDefinition {
     }
 
     private static Channel composeChannelFromManifest(ChannelManifestCoordinate manifestCoordinate, List<Repository> repositories) {
-        return new Channel("", "", null, repositories, manifestCoordinate, null, null);
+        return new Channel(null, null, null, repositories, manifestCoordinate, null, null);
     }
 
     public static Builder builder() {
@@ -239,7 +239,7 @@ public class ProvisioningDefinition {
         private Optional<String> fpl = Optional.empty();
         private Optional<URI> definitionFile = Optional.empty();
         private List<Repository> overrideRepositories = Collections.emptyList();
-        private Optional<ChannelManifestCoordinate> manifest = Optional.empty();
+        private List<ChannelManifestCoordinate> manifests = Collections.emptyList();
         private List<ChannelCoordinate> channelCoordinates = Collections.emptyList();
         private Optional<String> profile = Optional.empty();
 
@@ -257,9 +257,16 @@ public class ProvisioningDefinition {
             return this;
         }
 
-        public Builder setManifest(String manifest) {
-            if (manifest != null) {
-                this.manifest = Optional.of(ArtifactUtils.manifestCoordFromString(manifest));
+        public Builder setManifest(String manifests) {
+            if (manifests != null) {
+                this.manifests = List.of(ArtifactUtils.manifestCoordFromString(manifests));
+            }
+            return this;
+        }
+
+        public Builder setManifests(List<String> manifests) {
+            if (manifests != null) {
+                this.manifests = manifests.stream().map(ArtifactUtils::manifestCoordFromString).collect(Collectors.toList());
             }
             return this;
         }

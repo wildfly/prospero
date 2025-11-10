@@ -74,6 +74,7 @@ public class RepositoryUtilsTest {
         this.zipHandler = zipHandler;
     }
 
+    @Test
     public void unzipArchiveBeforeUsingIt() throws Exception {
         final Path repoRoot = temp.newFolder("repo").toPath();
         final Path zipFile = createRepository(repoRoot);

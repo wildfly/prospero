@@ -194,7 +194,7 @@ public class SimpleProvisionTest extends WfCoreTestBase {
                 provisioningDefinition.resolveChannels(CHANNELS_RESOLVER_FACTORY));
 
         MetadataTestUtils.prepareChannel(outputPath.resolve(MetadataTestUtils.INSTALLER_CHANNELS_FILE_PATH), CHANNEL_COMPONENT_UPDATES, CHANNEL_BASE_CORE_19);
-        final Set<String> updates = new UpdateAction(outputPath, mavenOptions, new AcceptingConsole(), Collections.emptyList())
+        final Set<String> updates = new UpdateAction(outputPath, Collections.emptyList(), mavenOptions, new AcceptingConsole())
                 .findUpdates().getArtifactUpdates().stream()
                 .map(ArtifactChange::getArtifactName)
                 .collect(Collectors.toSet());
@@ -258,7 +258,7 @@ public class SimpleProvisionTest extends WfCoreTestBase {
     }
 
     private UpdateAction getUpdateAction() throws ProvisioningException, OperationException {
-        return new UpdateAction(outputPath, mavenOptions, new AcceptingConsole(), Collections.emptyList());
+        return new UpdateAction(outputPath, Collections.emptyList(), mavenOptions, new AcceptingConsole());
     }
 
     private Optional<Artifact> readArtifactFromManifest(String groupId, String artifactId) throws IOException, MetadataException {

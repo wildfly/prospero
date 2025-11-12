@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.jboss.galleon.ProvisioningException;
+import org.wildfly.channel.Channel;
 import org.wildfly.channel.Repository;
 import org.wildfly.prospero.actions.ApplyCandidateAction;
 import org.wildfly.prospero.actions.FeaturesAddAction;
@@ -43,12 +44,16 @@ public class ActionFactory {
         return new ProvisioningAction(targetPath, mavenOptions, console);
     }
 
-    // Option for BETA update support
-    // TODO: evaluate in GA - replace by repository:add / custom channels?
+    @Deprecated(forRemoval = true)
     public UpdateAction update(Path targetPath, MavenOptions mavenOptions, Console console, List<Repository> additionalRepositories)
             throws OperationException,
             ProvisioningException {
         return new UpdateAction(targetPath, mavenOptions, console, additionalRepositories);
+    }
+
+    public UpdateAction update(Path targetPath, List<Channel> overrideChannels, MavenOptions mavenOptions, Console console)
+            throws OperationException, ProvisioningException {
+        return new UpdateAction(targetPath, overrideChannels, mavenOptions, console);
     }
 
     public ApplyCandidateAction applyUpdate(Path installationPath, Path updatePath)

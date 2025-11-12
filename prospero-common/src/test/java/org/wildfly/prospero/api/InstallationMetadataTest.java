@@ -54,6 +54,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
+import static org.wildfly.prospero.metadata.ProsperoMetadataUtils.CURRENT_VERSION_FILE;
+import static org.wildfly.prospero.metadata.ProsperoMetadataUtils.METADATA_DIR;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstallationMetadataTest {
@@ -297,6 +299,39 @@ public class InstallationMetadataTest {
             assertThat(base.resolve(ProsperoMetadataUtils.METADATA_DIR).resolve(ProsperoMetadataUtils.PROVISIONING_RECORD_XML))
                     .exists()
                     .hasContent("<installation xmlns=\"urn:jboss:galleon:provisioning:3.0\"><feature-pack location=\"org.wildfly:wildfly-galleon-pack:zip\"/></installation>");
+        }
+    }
+
+    @Test
+    public void getUnknownChannelVersionIfNoVersionIsAvailable() throws Exception {
+        try (final InstallationMetadata metadata = InstallationMetadata.loadInstallation(base)) {
+            assertThat(metadata.getChannelVersions())
+                    .contains(new ChannelVersion.Builder()
+                            .setChannelName("test")
+                            .setType(ChannelVersion.Type.MAVEN)
+                            .setLocation("foo:bar")
+                            .build());
+        }
+    }
+
+    @Test
+    public void getFullChannelVersionIfVersionIsAvailable() throws Exception {
+        final ManifestVersionRecord manifestVersionRecord = new ManifestVersionRecord("1.0.0",
+            List.of(new ManifestVersionRecord.MavenManifest("foo", "bar", "1.0.0", "Update 0")),
+            Collections.emptyList(),
+            Collections.emptyList()
+        );
+        ProsperoMetadataUtils.writeVersionRecord(base.resolve(METADATA_DIR).resolve(CURRENT_VERSION_FILE), manifestVersionRecord);
+
+        try (final InstallationMetadata metadata = InstallationMetadata.loadInstallation(base)) {
+            assertThat(metadata.getChannelVersions())
+                    .contains(new ChannelVersion.Builder()
+                            .setChannelName("test")
+                            .setType(ChannelVersion.Type.MAVEN)
+                            .setLocation("foo:bar")
+                            .setPhysicalVersion("1.0.0")
+                            .setLogicalVersion("Update 0")
+                            .build());
         }
     }
 

@@ -4,13 +4,17 @@ import org.jboss.galleon.ProvisioningException;
 import org.jboss.logging.Logger;
 import org.wildfly.channel.ChannelManifestCoordinate;
 import org.wildfly.channel.MavenCoordinate;
+import org.wildfly.channel.version.VersionMatcher;
+import org.wildfly.common.annotation.Nullable;
 import org.wildfly.installationmanager.ArtifactChange;
 import org.wildfly.installationmanager.CandidateType;
 import org.wildfly.installationmanager.Channel;
 import org.wildfly.installationmanager.ChannelChange;
+import org.wildfly.installationmanager.ChannelVersionChange;
 import org.wildfly.installationmanager.FileConflict;
 import org.wildfly.installationmanager.HistoryResult;
 import org.wildfly.installationmanager.InstallationChanges;
+import org.wildfly.installationmanager.InstallationUpdates;
 import org.wildfly.installationmanager.ManifestVersion;
 import org.wildfly.installationmanager.MavenOptions;
 import org.wildfly.installationmanager.OperationNotAvailableException;
@@ -22,7 +26,10 @@ import org.wildfly.prospero.actions.ApplyCandidateAction;
 import org.wildfly.prospero.actions.InstallationExportAction;
 import org.wildfly.prospero.actions.InstallationHistoryAction;
 import org.wildfly.prospero.actions.MetadataAction;
+import org.wildfly.prospero.actions.OverrideBuilder;
 import org.wildfly.prospero.actions.UpdateAction;
+import org.wildfly.prospero.api.ChannelVersion;
+import org.wildfly.prospero.api.InstallationMetadata;
 import org.wildfly.prospero.api.MavenOptions.Builder;
 import org.wildfly.prospero.api.exceptions.InvalidUpdateCandidateException;
 import org.wildfly.prospero.galleon.GalleonCallbackAdapter;
@@ -124,6 +131,15 @@ public class ProsperoInstallationManager implements InstallationManager {
     }
 
     @Override
+    public boolean prepareUpdate(Path targetDir, List<Repository> repositories, List<ManifestVersion> manifestVersions)
+            throws Exception {
+        var mappedRepositories = map(repositories, ProsperoInstallationManager::mapRepository);
+        try (UpdateAction updateAction = actionFactory.getUpdateAction(mappedRepositories, manifestVersions)) {
+            return updateAction.buildUpdate(targetDir);
+        }
+    }
+
+    @Override
     public Collection<FileConflict> verifyCandidate(Path candidatePath, CandidateType candidateType) throws Exception {
         final ApplyCandidateAction applyCandidateAction = actionFactory.getApplyCandidateAction(candidatePath);
         final ApplyCandidateAction.Type operation;
@@ -185,6 +201,20 @@ public class ProsperoInstallationManager implements InstallationManager {
             return updates.getArtifactUpdates().stream()
                     .map(ProsperoInstallationManager::mapArtifactChange)
                     .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public InstallationUpdates findUpdates(List<Repository> repositories, List<ManifestVersion> manifestVersions)
+            throws Exception {
+        var mappedRepositories = map(repositories, ProsperoInstallationManager::mapRepository);
+        try (UpdateAction updateAction = actionFactory.getUpdateAction(mappedRepositories, manifestVersions)) {
+            final UpdateSet updates = updateAction.findUpdates();
+            List<ArtifactChange> artifactUdates = updates.getArtifactUpdates().stream()
+                    .map(ProsperoInstallationManager::mapArtifactChange)
+                    .toList();
+            List<ChannelVersionChange> channelUpdates = updates.getChannelVersionChanges().stream().map(ProsperoInstallationManager::mapChannelVersionChange).toList();
+            return new InstallationUpdates(artifactUdates, channelUpdates);
         }
     }
 
@@ -372,6 +402,10 @@ public class ProsperoInstallationManager implements InstallationManager {
         }
     }
 
+    private static ChannelVersionChange mapChannelVersionChange(org.wildfly.prospero.api.ChannelVersionChange change) {
+        return new ChannelVersionChange(change.channelName(), change.oldVersion().getPhysicalVersion(), change.newVersion().getPhysicalVersion(), change.isDowngrade());
+    }
+
     private static ChannelChange mapChannelChange(org.wildfly.prospero.api.ChannelChange change) {
         final Channel oldChannel = change.getOldChannel() == null ? null : mapChannel(change.getOldChannel());
         final Channel newChannel = change.getNewChannel() == null ? null : mapChannel(change.getNewChannel());
@@ -409,7 +443,35 @@ public class ProsperoInstallationManager implements InstallationManager {
         }
 
         protected UpdateAction getUpdateAction(List<org.wildfly.channel.Repository> repositories) throws OperationException, ProvisioningException {
-            return new UpdateAction(server, mavenOptions, null, repositories);
+            return getUpdateAction(repositories, null);
+        }
+
+        protected UpdateAction getUpdateAction(List<org.wildfly.channel.Repository> repositories, @Nullable List<ManifestVersion> manifestVersions) throws OperationException, ProvisioningException {
+            final List<org.wildfly.channel.Channel> overrideChannels;
+            try (InstallationMetadata im = InstallationMetadata.loadInstallation(server)) {
+                for (ChannelVersion channelVersion: im.getChannelVersions()) {
+                    Optional<ManifestVersion> manifestVersionOptional = manifestVersions.stream()
+                            .filter(mv -> mv.getChannelId().equals(channelVersion.getChannelName()))
+                            .findFirst();
+                    if (manifestVersionOptional.isPresent()) {
+                        String newVersion = manifestVersionOptional.get().getVersion();
+                        if (VersionMatcher.COMPARATOR.compare(newVersion, channelVersion.getPhysicalVersion()) < 0) {
+                            throw new RuntimeException("New version " + newVersion + " is older than old version " + channelVersion.getPhysicalVersion());
+                        }
+                    }
+                }
+
+                List<String> manifestVersionsStrings = manifestVersions.stream()
+                        .map(mv -> mv.getChannelId() + "::" + mv.getVersion())
+                        .toList();
+
+                overrideChannels = OverrideBuilder
+                        .from(im.getProsperoConfig().getChannels())
+                        .withRepositories(repositories)
+                        .withManifestVersions(manifestVersionsStrings)
+                        .build();
+            }
+            return new UpdateAction(server, overrideChannels, mavenOptions, null);
         }
 
         protected MetadataAction getMetadataAction() throws MetadataException {

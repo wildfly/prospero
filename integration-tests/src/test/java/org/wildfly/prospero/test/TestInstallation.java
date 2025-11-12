@@ -302,6 +302,25 @@ public class TestInstallation {
         final ExecutionUtils.ExecutionResult result = ExecutionUtils.prosperoExecution(argList.toArray(new String[]{}))
                 .withTimeLimit(10, TimeUnit.MINUTES)
                 .execute();
+
+        result.assertReturnCode(ReturnCodes.SUCCESS);
+        return result.getCommandOutput();
+    }
+
+
+    public String listChannelManifestUpdates(boolean allVersions) throws Exception {
+        final ArrayList<String> argList = new ArrayList<>();
+        Collections.addAll(argList,
+                CliConstants.Commands.UPDATE, CliConstants.Commands.LIST_CHANNELS,
+                CliConstants.DIR, serverRoot.toAbsolutePath().toString());
+
+        if (allVersions) {
+            argList.add(CliConstants.ALL);
+        }
+
+        final ExecutionUtils.ExecutionResult result = ExecutionUtils.prosperoExecution(argList.toArray(new String[]{}))
+                .withTimeLimit(10, TimeUnit.MINUTES)
+                .execute();
         result.assertReturnCode(ReturnCodes.SUCCESS);
 
         return result.getCommandOutput();

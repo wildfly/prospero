@@ -39,6 +39,7 @@ import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifestCoordinate;
 import org.wildfly.channel.Repository;
 import org.wildfly.channel.maven.ChannelCoordinate;
+import org.wildfly.prospero.actions.OverrideBuilder;
 import org.wildfly.prospero.actions.ProvisioningAction;
 import org.wildfly.prospero.api.ArtifactUtils;
 import org.wildfly.prospero.api.InstallationProfilesManager;
@@ -106,6 +107,12 @@ public class InstallCommand extends AbstractInstallCommand {
             order = 9
     )
     StabilityLevels stabilityLevels = new StabilityLevels();
+
+    @CommandLine.Option(
+            names = CliConstants.VERSION,
+            split = ","
+    )
+    List<String> versions = new ArrayList<>();
 
     static class FeaturePackOrDefinition {
         @CommandLine.Option(
@@ -241,7 +248,9 @@ public class InstallCommand extends AbstractInstallCommand {
                 }
             }
 
-            provisioningAction.provision(provisioningConfig, channels, shadowRepositories);
+            final List<Channel> overrideChannels = buildOverrideChannels(shadowRepositories, channels);
+
+            provisioningAction.provisionWithChannels(provisioningConfig, channels, overrideChannels);
 
             console.println("");
             console.println(CliMessages.MESSAGES.installComplete(directory));
@@ -251,6 +260,14 @@ public class InstallCommand extends AbstractInstallCommand {
 
             return ReturnCodes.SUCCESS;
         }
+    }
+
+    private List<Channel> buildOverrideChannels(List<Repository> shadowRepositories, List<Channel> channels) throws ArgumentParsingException {
+        return OverrideBuilder
+                .from(channels)
+                .withRepositories(shadowRepositories)
+                .withManifestVersions(versions)
+                .build();
     }
 
     private void checkFileExists(URL resourceUrl, String argValue) throws ArgumentParsingException {

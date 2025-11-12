@@ -286,4 +286,16 @@ public class CachedVersionResolverTest {
                 new ChannelManifestCoordinate("org.test", "manifest-two"))))
                 .containsExactly(testFileOne.toURI().toURL(), testFileTwo.toURI().toURL());
     }
+
+    @Test
+    public void testResolveChannelMetadata_ManifestVersionDoesNotMatchCache() throws Exception {
+        final ArtifactTransferException resolutionException = new ArtifactTransferException("",
+                Set.of(new ArtifactCoordinate("org.test", "manifest-one", ChannelManifest.EXTENSION, ChannelManifest.CLASSIFIER, "1.2.4")),
+                Collections.emptySet());
+        when(mockResolver.resolveChannelMetadata(any())).thenThrow(resolutionException);
+        when(manifestVersionProvider.apply(any())).thenReturn("1.2.3");
+
+        assertThatThrownBy(()->resolver.resolveChannelMetadata(List.of(new ChannelMetadataCoordinate("org.test", "manifest-one", ChannelManifest.CLASSIFIER, ChannelManifest.EXTENSION))))
+                .isEqualTo(resolutionException);
+    }
 }

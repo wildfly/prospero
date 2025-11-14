@@ -37,10 +37,10 @@ jobs:
           cache: maven
       - name: Build and test
         if: runner.os == 'Windows'
-        run: mvn clean install -DallTests -Pdist '-Dskip.container.tests=true'
+        run: mvn clean install -DallTests -Pdist '-Dskip.container.tests=true' -Dnet.bytebuddy.experimental=tru
       - name: Build and test
         if: runner.os != 'Windows'
-        run: mvn clean install -DallTests -Pdist '-Dskip.container.tests=false'
+        run: mvn clean install -DallTests -Pdist '-Dskip.container.tests=false' -Dnet.bytebuddy.experimental=tru
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

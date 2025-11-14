@@ -113,7 +113,7 @@
         <version.com.fasterxml.jackson>2.17.0</version.com.fasterxml.jackson>
         <version.org.jboss.logmanager>2.1.19.Final</version.org.jboss.logmanager>
         <version.org.jboss.logging.slf4j-jboss-logmanager>2.0.1.Final</version.org.jboss.logging.slf4j-jboss-logmanager>
-        <version.org.jboss.logging.jboss-logging-processor>2.2.1.Final</version.org.jboss.logging.jboss-logging-processor>
+        <version.org.jboss.logging.jboss-logging-processor>3.0.2.Final</version.org.jboss.logging.jboss-logging-processor>
         <version.org.jboss.modules>2.1.6.Final</version.org.jboss.modules>
         <version.org.jboss.xnio>3.8.17.Final</version.org.jboss.xnio>
         <version.org.testcontainers>1.21.3</version.org.testcontainers>
@@ -539,6 +539,15 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${version.maven-compiler-plugin}</version>
+                    <configuration>
+                      <annotationProcessorPaths>
+                        <path>
+                          <groupId>org.jboss.logging</groupId>
+                          <artifactId>jboss-logging-processor</artifactId>
+                          <version>${version.org.jboss.logging.jboss-logging-processor}</version>
+                        </path>
+                      </annotationProcessorPaths>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

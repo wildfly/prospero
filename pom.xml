@@ -108,7 +108,7 @@
         <version.org.codehaus.plexus-interpolation>1.28</version.org.codehaus.plexus-interpolation>
         <version.org.codehaus.plexus-utils>3.5.0</version.org.codehaus.plexus-utils>
         <version.org.jboss.staxmapper>1.5.0.Final</version.org.jboss.staxmapper>
-        <version.org.jboss.galleon>6.0.6.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>6.1.1.Final</version.org.jboss.galleon>
         <version.org.eclipse.jgit>6.10.1.202505221210-r</version.org.eclipse.jgit>
         <version.com.fasterxml.jackson>2.17.0</version.com.fasterxml.jackson>
         <version.org.jboss.logmanager>2.1.19.Final</version.org.jboss.logmanager>

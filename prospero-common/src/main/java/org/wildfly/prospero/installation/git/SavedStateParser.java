@@ -33,7 +33,7 @@ class SavedStateParser {
     private static final String SCHEMA_1_0_0_FILE = "org/wildfly/prospero/savedstate/v1.0.0/schema.json";
     private static final Map<String, JsonSchema> SCHEMAS = new HashMap();
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
-    private static final JsonSchemaFactory SCHEMA_FACTORY = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909)).jsonMapper(JSON_MAPPER).build();
+    private static final JsonSchemaFactory SCHEMA_FACTORY = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909)).objectMapper(JSON_MAPPER).build();
 
     static {
         SCHEMAS.put(SCHEMA_VERSION_1_0_0, SCHEMA_FACTORY.getSchema(ChannelMapper.class.getClassLoader().getResourceAsStream(SCHEMA_1_0_0_FILE)));

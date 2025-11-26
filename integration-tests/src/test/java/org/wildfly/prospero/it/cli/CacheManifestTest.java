@@ -384,6 +384,7 @@ public class CacheManifestTest extends WfCoreTestBase {
                 .collect(Collectors.toList());
         return new ChannelManifest(
                 sourceManifest.getSchemaVersion(),
+                sourceManifest.getName(),
                 sourceManifest.getId(),
                 sourceManifest.getLogicalVersion(),
                 sourceManifest.getDescription(),

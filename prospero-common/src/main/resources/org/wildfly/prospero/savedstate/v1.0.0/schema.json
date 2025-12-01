@@ -1,0 +1,76 @@
+{
+  "$id": "https://wildfly.org/prospero/savedstate/v1.0.0/schema.json",
+  "$schema": "https://json-schema.org/draft/2019-09/schema#",
+  "type": "object",
+  "required": ["schemaVersion"],
+  "properties": {
+    "schemaVersion": {
+      "description": "The version of the schema defining a saved state.",
+      "type": "string",
+      "pattern": "^[0-9]+.[0-9]+.[0-9]+$"
+    },
+    "maven": {
+      "type": "array",
+      "items": {
+        "type" : "object",
+        "properties": {
+          "groupId": {
+            "description": "GroupID Maven coordinate of the manifest",
+            "type": "string"
+          },
+          "artifactId": {
+            "description": "ArtifactID Maven coordinate of the manifest",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version Maven coordinate of the manifest",
+            "type": "string"
+          },
+          "description": {
+            "description": "A human readable description of the manifest version",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "url": {
+      "type": "array",
+      "items": {
+        "type" : "object",
+        "properties": {
+          "url": {
+            "description": "A URL the manifest was resolved from",
+            "type": "string"
+          },
+          "hash": {
+            "description": "A SHA-1 hash of the manifest content",
+            "type": "string"
+          },
+          "description": {
+            "description": "A human readable description of the manifest version",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "open": {
+      "type": "array",
+      "items": {
+        "type" : "object",
+        "properties": {
+          "repos": {
+            "type": "array",
+            "description": "Repositories used to assemble the manifest",
+            "items": {
+              "type": "string"
+            }
+          },
+          "strategy": {
+            "description": "Resolution strategy for the channel",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

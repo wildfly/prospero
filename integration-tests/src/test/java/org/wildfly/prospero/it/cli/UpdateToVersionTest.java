@@ -121,7 +121,7 @@ public class UpdateToVersionTest extends CliTestBase {
                         e.assertReturnCode(ReturnCodes.SUCCESS);
                         assertThat(e.getCommandOutput())
                                 .contains("The update will downgrade following channels:")
-                                .contains("  * test-channel: 1.0.1  ->  1.0.0");
+                                .contains("  * test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0 (Logical version 1.0.0)");
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -140,7 +140,7 @@ public class UpdateToVersionTest extends CliTestBase {
 
         newRepo.deploy(
                 new DefaultArtifact("org.test", "test-channel", "manifest", "yaml","1.0.0"),
-                new ChannelManifest("test-manifest", null, null, List.of(
+                new ChannelManifest("test-manifest", "manifest-id", "Logical version 1.0.0", "description", null, List.of(
                         new Stream("org.wildfly.galleon-plugins", "wildfly-config-gen", GALLEON_PLUGINS_VERSION),
                         new Stream("org.wildfly.galleon-plugins", "wildfly-galleon-plugins", GALLEON_PLUGINS_VERSION),
                         new Stream("commons-io", "commons-io", COMMONS_IO_VERSION),
@@ -154,7 +154,7 @@ public class UpdateToVersionTest extends CliTestBase {
                         e.assertReturnCode(ReturnCodes.PROCESSING_ERROR);
                         assertThat(e.getCommandOutput())
                                 .contains("The update will downgrade following channels:")
-                                .contains("  * test-channel: 1.0.1  ->  1.0.0");
+                                .contains("  * test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0");
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -232,7 +232,7 @@ public class UpdateToVersionTest extends CliTestBase {
         // deploy test manifests updating the commons-io in each
         localRepository.deploy(
                 new DefaultArtifact("org.test", "test-channel", "manifest", "yaml","1.0.0"),
-                new ChannelManifest("test-manifest", null, null, List.of(
+                new ChannelManifest("test-manifest", "manifest-id", "Logical version 1.0.0", "Description", null, List.of(
                         new Stream("org.wildfly.galleon-plugins", "wildfly-config-gen", GALLEON_PLUGINS_VERSION),
                         new Stream("org.wildfly.galleon-plugins", "wildfly-galleon-plugins", GALLEON_PLUGINS_VERSION),
                         new Stream("commons-io", "commons-io", COMMONS_IO_VERSION),
@@ -241,7 +241,7 @@ public class UpdateToVersionTest extends CliTestBase {
 
         localRepository.deploy(
                 new DefaultArtifact("org.test", "test-channel", "manifest", "yaml","1.0.1"),
-                new ChannelManifest("test-manifest", null, null, List.of(
+                new ChannelManifest("test-manifest", "manifest-id", "Logical version 1.0.1", "Description", null, List.of(
                         new Stream("org.wildfly.galleon-plugins", "wildfly-config-gen", GALLEON_PLUGINS_VERSION),
                         new Stream("org.wildfly.galleon-plugins", "wildfly-galleon-plugins", GALLEON_PLUGINS_VERSION),
                         new Stream("commons-io", "commons-io", bump(COMMONS_IO_VERSION)),
@@ -250,7 +250,7 @@ public class UpdateToVersionTest extends CliTestBase {
 
         localRepository.deploy(
                 new DefaultArtifact("org.test", "test-channel", "manifest", "yaml","1.0.2"),
-                new ChannelManifest("test-manifest", null, null, List.of(
+                new ChannelManifest("test-manifest", "manifest-id", "Logical version 1.0.2", "Description", null, List.of(
                         new Stream("org.wildfly.galleon-plugins", "wildfly-config-gen", GALLEON_PLUGINS_VERSION),
                         new Stream("org.wildfly.galleon-plugins", "wildfly-galleon-plugins", GALLEON_PLUGINS_VERSION),
                         new Stream("commons-io", "commons-io", bump(bump(COMMONS_IO_VERSION))),

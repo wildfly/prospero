@@ -24,6 +24,7 @@ import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifest;
 import org.wildfly.channel.ChannelManifestCoordinate;
 import org.wildfly.channel.ChannelManifestMapper;
+import org.wildfly.channel.MavenCoordinate;
 import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.api.ChannelVersion;
 import org.wildfly.prospero.api.RepositoryUtils;
@@ -88,8 +89,21 @@ public class ChannelUpdateFinder {
     private static ArrayList<ChannelVersion> mapArtifactsToVersions(Channel channel, List<ArtifactResult> artifactResults) throws MetadataException {
         final ArrayList<ChannelVersion> channelVersions = new ArrayList<>();
         for (ArtifactResult artifactResult : artifactResults) {
+            String location;
+            if (channel.getManifestCoordinate().getMaven() != null) {
+                MavenCoordinate coord = channel.getManifestCoordinate().getMaven();
+                location = coord.getGroupId() + ":" + coord.getArtifactId();
+                if (coord.getVersion() != null) {
+                    location = location + ":" + coord.getVersion();
+                }
+            } else if (channel.getManifestCoordinate().getUrl() != null) {
+                location = channel.getManifestCoordinate().getUrl().toExternalForm();
+            } else {
+                throw new IllegalStateException("Unable to resolve channel manifest coordinate for channel " + channel.getName());
+            }
             channelVersions.add(new ChannelVersion.Builder()
                     .setChannelName(channel.getName())
+                    .setLocation(location)
                     .setPhysicalVersion(artifactResult.getArtifact().getVersion())
                     .setLogicalVersion(readLogicalName(artifactResult))
                     .build());

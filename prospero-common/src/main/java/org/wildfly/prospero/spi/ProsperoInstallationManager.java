@@ -7,6 +7,7 @@ import org.wildfly.channel.MavenCoordinate;
 import org.wildfly.channel.version.VersionMatcher;
 import org.wildfly.common.annotation.Nullable;
 import org.wildfly.installationmanager.ArtifactChange;
+import org.wildfly.installationmanager.AvailableManifestVersions;
 import org.wildfly.installationmanager.CandidateType;
 import org.wildfly.installationmanager.Channel;
 import org.wildfly.installationmanager.ChannelChange;
@@ -16,6 +17,7 @@ import org.wildfly.installationmanager.InstallationChanges;
 import org.wildfly.installationmanager.InstallationUpdates;
 import org.wildfly.installationmanager.ManifestVersion;
 import org.wildfly.installationmanager.ManifestVersionChange;
+import org.wildfly.installationmanager.ManifestVersionPair;
 import org.wildfly.installationmanager.MavenOptions;
 import org.wildfly.installationmanager.OperationNotAvailableException;
 import org.wildfly.installationmanager.Repository;
@@ -38,6 +40,7 @@ import org.wildfly.prospero.spi.internal.CliProvider;
 import org.wildfly.prospero.api.SavedState;
 import org.wildfly.prospero.api.exceptions.MetadataException;
 import org.wildfly.prospero.api.exceptions.OperationException;
+import org.wildfly.prospero.updates.ChannelsUpdateResult;
 import org.wildfly.prospero.updates.UpdateSet;
 
 import java.nio.file.Files;
@@ -47,6 +50,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -59,6 +63,9 @@ import java.util.stream.Stream;
 public class ProsperoInstallationManager implements InstallationManager {
 
     private static final Logger logger = Logger.getLogger(GalleonCallbackAdapter.class);
+
+    private static final Comparator<ManifestVersionPair> MANIFEST_VERSION_PAIR_COMPARATOR =
+            (p1, p2) -> VersionMatcher.COMPARATOR.compare(p1.getPhysicalVersion(), p2.getPhysicalVersion());
 
     private final ActionFactory actionFactory;
     private Path installationDir;
@@ -121,6 +128,11 @@ public class ProsperoInstallationManager implements InstallationManager {
         final InstallationHistoryAction historyAction = actionFactory.getHistoryAction();
         historyAction.prepareRevert(new SavedState(revision), actionFactory.mavenOptions,
                 map(repositories, ProsperoInstallationManager::mapRepository), targetDir);
+    }
+
+    @Override
+    public boolean prepareUpdate(Path candidatePath, List<Repository> repositories) throws Exception {
+        return prepareUpdate(candidatePath, repositories, false);
     }
 
     @Override
@@ -194,13 +206,17 @@ public class ProsperoInstallationManager implements InstallationManager {
         }
     }
 
-    @Override
-    public InstallationUpdates findUpdates(List<Repository> repositories) throws Exception {
-        return findUpdates(repositories, null);
+    public List<ArtifactChange> findUpdates(List<Repository> repositories) throws Exception {
+        return findInstallationUpdates(repositories, null).artifactUpdates();
     }
 
     @Override
-    public InstallationUpdates findUpdates(List<Repository> repositories, List<ManifestVersion> manifestVersions)
+    public InstallationUpdates findInstallationUpdates(List<Repository> repositories) throws Exception {
+        return findInstallationUpdates(repositories, null);
+    }
+
+    @Override
+    public InstallationUpdates findInstallationUpdates(List<Repository> repositories, List<ManifestVersion> manifestVersions)
             throws Exception {
         var mappedRepositories = map(repositories, ProsperoInstallationManager::mapRepository);
         try (UpdateAction updateAction = actionFactory.getUpdateAction(mappedRepositories, manifestVersions, true)) {
@@ -210,6 +226,41 @@ public class ProsperoInstallationManager implements InstallationManager {
                     .toList();
             List<ManifestVersionChange> channelUpdates = updates.getChannelVersionChanges().stream().map(ProsperoInstallationManager::mapChannelVersionChange).toList();
             return new InstallationUpdates(artifactUpdates, channelUpdates);
+        }
+    }
+
+    @Override
+    public List<AvailableManifestVersions> findAvailableManifestVersions(List<Repository> repositories, boolean includeDowngrades) throws Exception {
+        var mappedRepositories = map(repositories, ProsperoInstallationManager::mapRepository);
+        try (UpdateAction updateAction = actionFactory.getUpdateAction(mappedRepositories, true)) {
+            ChannelsUpdateResult channelUpdates = updateAction.findChannelUpdates(includeDowngrades);
+            ArrayList<AvailableManifestVersions> results = new ArrayList<>();
+
+            for (String channelName: channelUpdates.getUpdatedChannels()) {
+                ChannelsUpdateResult.ChannelResult channelUpdate = channelUpdates.getUpdatedVersion(channelName);
+
+                // Only include channels with updates
+                if (ChannelsUpdateResult.Status.UpdatesFound.equals(channelUpdate.getStatus())) {
+                    List<ManifestVersionPair> availableVersions = channelUpdate.getAvailableVersions().stream()
+                            // Exclude current version from the list of available versions
+                            .filter(v -> !v.getPhysicalVersion().equals(channelUpdate.getCurrentVersion().getPhysicalVersion()))
+                            .map(ProsperoInstallationManager::mapChannelVersion)
+                            // Sort in ascending order
+                            .sorted(MANIFEST_VERSION_PAIR_COMPARATOR).toList();
+
+                    String location = channelUpdate.getAvailableVersions().stream()
+                            .map(ChannelVersion::getLocation).findFirst().orElse(null);
+
+                    ChannelVersion currentVersion = channelUpdate.getCurrentVersion();
+                    ManifestVersionPair mappedCurrentVersions = new ManifestVersionPair(currentVersion.getPhysicalVersion(),
+                            currentVersion.getLogicalVersion());
+
+                    AvailableManifestVersions availableManifestVersions =
+                            new AvailableManifestVersions(channelName, location, mappedCurrentVersions, availableVersions);
+                    results.add(availableManifestVersions);
+                }
+            }
+            return results;
         }
     }
 
@@ -398,8 +449,16 @@ public class ProsperoInstallationManager implements InstallationManager {
     }
 
     private static ManifestVersionChange mapChannelVersionChange(org.wildfly.prospero.api.ChannelVersionChange change) {
+        ManifestVersionPair oldVersion = new ManifestVersionPair(change.oldVersion().getPhysicalVersion(),
+                change.oldVersion().getLogicalVersion());
+        ManifestVersionPair newVersion = new ManifestVersionPair(change.newVersion().getPhysicalVersion(),
+                change.newVersion().getLogicalVersion());
         return new ManifestVersionChange(change.channelName(), change.oldVersion().getLocation(),
-                change.oldVersion().getPhysicalVersion(), change.newVersion().getPhysicalVersion(), change.isDowngrade());
+                oldVersion, newVersion, change.isDowngrade());
+    }
+
+    private static ManifestVersionPair mapChannelVersion(ChannelVersion channelVersion) {
+        return new ManifestVersionPair(channelVersion.getPhysicalVersion(), channelVersion.getLogicalVersion());
     }
 
     private static ChannelChange mapChannelChange(org.wildfly.prospero.api.ChannelChange change) {

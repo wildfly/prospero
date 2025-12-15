@@ -98,7 +98,7 @@ public class UpdateListChannelCommandTest extends AbstractMavenCommandTest {
         final ChannelsUpdateResult updates = new ChannelsUpdateResult(
                 new ChannelsUpdateResult.ChannelResult(
                         "test-channel",
-                        "1.0.0",
+                        new ChannelVersion.Builder().setPhysicalVersion("1.0.0").build(),
                         List.of(new ChannelVersion.Builder().setPhysicalVersion("1.0.1").build()))
         );
         when(updateAction.findChannelUpdates(anyBoolean())).thenReturn(updates);

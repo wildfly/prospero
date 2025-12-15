@@ -61,8 +61,12 @@ public class ChannelUpdateFinderTest {
         final VersionRangeResult rangeRes = Mockito.mock(VersionRangeResult.class);
         when(rangeRes.getVersions()).thenReturn(List.of(versionScheme.parseVersion("1.0.1")));
         final ArtifactResult artifactRes = Mockito.mock(ArtifactResult.class);
+
         final File file = temp.newFile();
-        Files.writeString(file.toPath(), ChannelManifestMapper.toYaml(new ChannelManifest.Builder().build()));
+        ChannelManifest.Builder builder = new ChannelManifest.Builder();
+        builder.setLogicalVersion("Logical version 1.0.1");
+        Files.writeString(file.toPath(), ChannelManifestMapper.toYaml(builder.build()));
+
         when(artifactRes.getArtifact()).thenReturn(new DefaultArtifact("org.wildfly.channels", "wildfly-ee", "manifest", "yaml", "1.0.1", null, file));
         when(system.resolveVersionRange(eq(session), rangeRequests.capture())).thenReturn(rangeRes);
         when(system.resolveArtifacts(eq(session), any())).thenReturn(List.of(artifactRes));
@@ -75,7 +79,12 @@ public class ChannelUpdateFinderTest {
                         "1.0.0");
 
         assertThat(versions)
-                .containsExactly(new ChannelVersion.Builder().setChannelName("test-channel").setPhysicalVersion("1.0.1").build());
+                .containsExactly(new ChannelVersion.Builder()
+                        .setChannelName("test-channel")
+                        .setLocation("org.wildfly.channels:wildfly-ee")
+                        .setPhysicalVersion("1.0.1")
+                        .setLogicalVersion("Logical version 1.0.1")
+                        .build());
         assertThat(rangeRequests.getValue().getArtifact().getVersion())
                 .isEqualTo("(1.0.0,)");
     }
@@ -85,8 +94,12 @@ public class ChannelUpdateFinderTest {
         final VersionRangeResult rangeRes = Mockito.mock(VersionRangeResult.class);
         when(rangeRes.getVersions()).thenReturn(List.of(versionScheme.parseVersion("1.0.0"), versionScheme.parseVersion("1.0.1")));
         final ArtifactResult artifactRes = Mockito.mock(ArtifactResult.class);
+
         final File file = temp.newFile();
-        Files.writeString(file.toPath(), ChannelManifestMapper.toYaml(new ChannelManifest.Builder().build()));
+        ChannelManifest.Builder builder = new ChannelManifest.Builder();
+        builder.setLogicalVersion("Logical version 1.0.1");
+        Files.writeString(file.toPath(), ChannelManifestMapper.toYaml(builder.build()));
+
         when(artifactRes.getArtifact()).thenReturn(new DefaultArtifact("org.wildfly.channels", "wildfly-ee", "manifest", "yaml", "1.0.1", null, file));
         when(system.resolveVersionRange(eq(session), rangeRequests.capture())).thenReturn(rangeRes);
         when(system.resolveArtifacts(eq(session), any())).thenReturn(List.of(artifactRes));
@@ -98,7 +111,12 @@ public class ChannelUpdateFinderTest {
                                 .build());
 
         assertThat(versions)
-                .containsExactly(new ChannelVersion.Builder().setChannelName("test-channel").setPhysicalVersion("1.0.1").build());
+                .containsExactly(new ChannelVersion.Builder()
+                        .setChannelName("test-channel")
+                        .setLocation("org.wildfly.channels:wildfly-ee")
+                        .setPhysicalVersion("1.0.1")
+                        .setLogicalVersion("Logical version 1.0.1")
+                        .build());
         assertThat(rangeRequests.getValue().getArtifact().getVersion())
                 .isEqualTo("(0,)");
     }

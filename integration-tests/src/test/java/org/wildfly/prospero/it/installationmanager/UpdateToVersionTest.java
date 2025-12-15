@@ -17,13 +17,16 @@
 
 package org.wildfly.prospero.it.installationmanager;
 
+import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.wildfly.channel.Channel;
+import org.wildfly.installationmanager.AvailableManifestVersions;
 import org.wildfly.installationmanager.InstallationUpdates;
 import org.wildfly.installationmanager.ManifestVersion;
+import org.wildfly.installationmanager.ManifestVersionPair;
 import org.wildfly.installationmanager.MavenOptions;
 import org.wildfly.installationmanager.spi.InstallationManager;
 import org.wildfly.prospero.api.InstallationMetadata;
@@ -60,6 +63,7 @@ public class UpdateToVersionTest {
         TestLocalRepository localRepository = org.wildfly.prospero.it.cli.UpdateToVersionTest.prepareLocalRepository(localRepoPath);
         channel = new Channel.Builder()
                 .setName("test-channel")
+                .setDescription("channel description")
                 .addRepository("local-repo", localRepository.getUri().toString())
                 .setManifestCoordinate("org.test", "test-channel")
                 .build();
@@ -154,7 +158,8 @@ public class UpdateToVersionTest {
         });
         assertThat(updates.manifestUpdates()).satisfies(manifestUpdates -> {
             assertThat(manifestUpdates.size()).isEqualTo(1);
-            assertThat(manifestUpdates.get(0).getNewVersion()).isEqualTo("1.0.2");
+            assertThat(manifestUpdates.get(0).getNewVersion())
+                    .isEqualTo(new ManifestVersionPair("1.0.2", "Logical version 1.0.2"));
         });
     }
 
@@ -178,6 +183,45 @@ public class UpdateToVersionTest {
 
         assertThat(updates.artifactUpdates().size()).isEqualTo(1);
         assertThat(updates.artifactUpdates().get(0).getNewVersion()).isEqualTo("2.18.0");
+    }
+
+    @Test
+    public void findAvailableManifestVersions_upgradesOnly() throws Exception {
+        prepareInstallation("1.0.1");
+
+        List<AvailableManifestVersions> manifestsWithUpgrades = installationManager().findAvailableManifestVersions(Collections.emptyList(), false);
+
+        assertThat(manifestsWithUpgrades.size()).isEqualTo(1);
+        assertThat(manifestsWithUpgrades.get(0)).satisfies(manifestUpgrades -> {
+            assertThat(manifestUpgrades.getChannelName()).isEqualTo("test-channel");
+            assertThat(manifestUpgrades.getLocation()).isEqualTo("org.test:test-channel");
+            assertThat(manifestUpgrades.getCurrentVersion().getPhysicalVersion()).isEqualTo("1.0.1");
+            assertThat(manifestUpgrades.getCurrentVersion().getLogicalVersion()).isEqualTo("Logical version 1.0.1");
+            assertThat(manifestUpgrades.getAvailableVersions()).extracting("physicalVersion", "logicalVersion")
+                    .containsExactly(
+                            Tuple.tuple("1.0.2", "Logical version 1.0.2")
+                    );
+        });
+    }
+
+    @Test
+    public void findAvailableManifestVersions_includeDowngrades() throws Exception {
+        prepareInstallation("1.0.1");
+
+        List<AvailableManifestVersions> manifestsWithUpgrades = installationManager().findAvailableManifestVersions(Collections.emptyList(), true);
+
+        assertThat(manifestsWithUpgrades.size()).isEqualTo(1);
+        assertThat(manifestsWithUpgrades.get(0)).satisfies(manifestUpgrades -> {
+            assertThat(manifestUpgrades.getChannelName()).isEqualTo("test-channel");
+            assertThat(manifestUpgrades.getLocation()).isEqualTo("org.test:test-channel");
+            assertThat(manifestUpgrades.getCurrentVersion().getPhysicalVersion()).isEqualTo("1.0.1");
+            assertThat(manifestUpgrades.getCurrentVersion().getLogicalVersion()).isEqualTo("Logical version 1.0.1");
+            assertThat(manifestUpgrades.getAvailableVersions()).extracting("physicalVersion", "logicalVersion")
+                    .containsExactly(
+                            Tuple.tuple("1.0.0", "Logical version 1.0.0"),
+                            Tuple.tuple("1.0.2", "Logical version 1.0.2")
+                    );
+        });
     }
 
     private void prepareInstallation(String version) throws Exception {

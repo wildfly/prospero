@@ -65,7 +65,7 @@ public class ChannelsUpdateResult {
     public static class ChannelResult {
         private final Status status;
         private final String channelName;
-        private final String currentVersion;
+        private final ChannelVersion currentVersion;
         private final Set<ChannelVersion> availableVersions;
 
         /**
@@ -75,7 +75,7 @@ public class ChannelsUpdateResult {
          * @param currentVersion
          * @param availableVersions
          */
-        public ChannelResult(String channelName, String currentVersion, Collection<ChannelVersion> availableVersions) {
+        public ChannelResult(String channelName, ChannelVersion currentVersion, Collection<ChannelVersion> availableVersions) {
             Objects.requireNonNull(channelName);
             Objects.requireNonNull(availableVersions);
 
@@ -91,7 +91,7 @@ public class ChannelsUpdateResult {
          * @param channelName
          * @param currentVersion
          */
-        public ChannelResult(String channelName, String currentVersion) {
+        public ChannelResult(String channelName, ChannelVersion currentVersion) {
             Objects.requireNonNull(channelName);
 
             this.channelName = channelName;
@@ -104,7 +104,7 @@ public class ChannelsUpdateResult {
             return status;
         }
 
-        public String getCurrentVersion() {
+        public ChannelVersion getCurrentVersion() {
             return currentVersion;
         }
 

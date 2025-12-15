@@ -89,14 +89,14 @@ public class ChannelVersionChangesPrinter {
                 versionArg.append(channelName).append("::").append(availableVersions.iterator().next().getPhysicalVersion());
 
                 console.println(" - %s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListChannelName(), channelName));
-                console.println("   %s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListCurrentVersion(), channelResult.getCurrentVersion()));
+                console.println("   %s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListCurrentVersion(), channelResult.getCurrentVersion().getPhysicalVersion()));
                 console.println("   %s:".formatted(CliMessages.MESSAGES.channelVersionUpdateListAvailableVersions()));
                 for (ChannelVersion channelVersion : availableVersions) {
                     final String logicalVersion =  channelVersion.getLogicalVersion() == null ? "" : " (%s)".formatted(channelVersion.getLogicalVersion());
                     console.println("   - %s%s".formatted(channelVersion.getPhysicalVersion(), logicalVersion));
                 }
             } else {
-                versionArg.append(channelName).append("::").append(channelResult.getCurrentVersion());
+                versionArg.append(channelName).append("::").append(channelResult.getCurrentVersion().getPhysicalVersion());
             }
         }
 

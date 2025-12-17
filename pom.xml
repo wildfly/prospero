@@ -108,7 +108,7 @@
         <version.org.codehaus.plexus-interpolation>1.28</version.org.codehaus.plexus-interpolation>
         <version.org.codehaus.plexus-utils>3.5.0</version.org.codehaus.plexus-utils>
         <version.org.jboss.staxmapper>1.5.0.Final</version.org.jboss.staxmapper>
-        <version.org.jboss.galleon>6.0.6.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>7.0.0.Beta3</version.org.jboss.galleon>
         <version.org.eclipse.jgit>6.10.1.202505221210-r</version.org.eclipse.jgit>
         <version.com.fasterxml.jackson>2.17.0</version.com.fasterxml.jackson>
         <version.org.jboss.logmanager>2.1.19.Final</version.org.jboss.logmanager>
@@ -119,7 +119,7 @@
         <version.org.jboss.xnio>3.8.17.Final</version.org.jboss.xnio>
         <version.org.testcontainers>1.21.3</version.org.testcontainers>
         <version.org.wildfly.common>1.7.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>7.3.1.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>8.1.0.Beta4</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.installation-manager>2.0.0.Beta1</version.org.wildfly.installation-manager>
         <version.org.wildfly.maven.plugins.licenses-plugin>2.4.2.Final</version.org.wildfly.maven.plugins.licenses-plugin>
         <version.org.wildfly.prospero.prospero-metadata>1.3.1.Final</version.org.wildfly.prospero.prospero-metadata>

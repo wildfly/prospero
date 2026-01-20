@@ -79,6 +79,12 @@ public abstract class AbstractInstallCommand extends AbstractCommand {
     )
     Optional<Boolean> offline = Optional.empty();
 
+    @CommandLine.Option(
+            names = CliConstants.MAVEN_SETTINGS,
+            order = 7
+    )
+    Optional<Path> mavenSettings = Optional.empty();
+
     public AbstractInstallCommand(CliConsole console, ActionFactory actionFactory) {
         super(console, actionFactory);
     }
@@ -86,6 +92,7 @@ public abstract class AbstractInstallCommand extends AbstractCommand {
     protected MavenOptions getMavenOptions() throws ArgumentParsingException {
         final MavenOptions.Builder mavenOptions = localRepoOptions.toOptions();
         offline.map(mavenOptions::setOffline);
+        mavenSettings.map(mavenOptions::setMavenSettingsPath);
         return mavenOptions.build();
     }
 

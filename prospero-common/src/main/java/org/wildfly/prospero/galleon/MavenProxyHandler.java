@@ -29,17 +29,25 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import static org.wildfly.channel.maven.VersionResolverFactory.DEFAULT_REPOSITORY_POLICY;
-
-class MavenProxyHandler {
+/**
+ * Configures repository proxy settings based on java proxy system properties like:
+ * <code>
+ *     https.proxyHost=http://proxyhost
+ *     https.proxyPort=8080
+ *     https.proxyUser=username
+ *     https.proxyPassword=password
+ * </code>
+ */
+class MavenProxyHandler implements RepositoryConversionHandler {
     private static final Logger LOG = Logger.getLogger(GalleonEnvironment.class.getName());
 
-    public static RemoteRepository addProxySettings(Repository r) {
+    @Override
+    public void accept(Repository repository, RemoteRepository.Builder builder) {
+        addProxySettings(repository, builder);
+    }
 
-        final RemoteRepository.Builder builder = new RemoteRepository.Builder(r.getId(), "default", r.getUrl())
-                .setPolicy(DEFAULT_REPOSITORY_POLICY);
-        getDefinedProxy(r).ifPresent(builder::setProxy);
-        return builder.build();
+    static void addProxySettings(Repository repository, RemoteRepository.Builder remoteRepositoryBuilder) {
+        getDefinedProxy(repository).ifPresent(remoteRepositoryBuilder::setProxy);
     }
 
     private static Optional<Proxy> getDefinedProxy(Repository r) {

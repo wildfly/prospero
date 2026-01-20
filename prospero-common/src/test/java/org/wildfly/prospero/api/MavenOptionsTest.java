@@ -17,12 +17,15 @@
 
 package org.wildfly.prospero.api;
 
+import org.assertj.core.api.Assumptions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.nio.file.Path;
+import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -154,6 +157,21 @@ public class MavenOptionsTest {
                 .build();
         base.write(target);
         assertEquals(base, MavenOptions.read(target));
+    }
+
+    @Test
+    public void defaultMavenSettings() {
+        MavenOptions options = MavenOptions.builder().build();
+        assertThat(options.getMavenSettingsPath()).isEqualTo(Path.of(System.getProperty("user.home"), ".m2/settings.xml"));
+    }
+
+    @Test
+    public void notExistingMavenSettings() {
+        Path notExistingPath = Path.of(UUID.randomUUID().toString());
+        Assumptions.assumeThat(notExistingPath).doesNotExist();
+
+        MavenOptions options = MavenOptions.builder().setMavenSettingsPath(notExistingPath).build();
+        assertThat(options.getMavenSettings()).isNull();
     }
 
 }

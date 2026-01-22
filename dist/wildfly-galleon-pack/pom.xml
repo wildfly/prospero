@@ -2,7 +2,11 @@
   <parent>
     <groupId>org.wildfly.prospero</groupId>
     <artifactId>prospero-dist</artifactId>
+<<<<<<< HEAD
     <version>1.4.0.Beta3-SNAPSHOT</version>
+=======
+    <version>1.4.1.Beta2-SNAPSHOT</version>
+>>>>>>> 34f217fb ([maven-release-plugin] prepare for next development iteration)
   </parent>
 
   <modelVersion>4.0.0</modelVersion>

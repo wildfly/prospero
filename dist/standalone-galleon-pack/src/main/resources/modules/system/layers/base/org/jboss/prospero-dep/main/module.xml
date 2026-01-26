@@ -45,5 +45,9 @@
     <artifact name="${org.jboss.logging:jboss-logging}"/>
     <artifact name="${org.slf4j:jcl-over-slf4j}"></artifact>
     <artifact name="${org.jboss.slf4j:slf4j-jboss-logmanager}"/>
+    <artifact name="${io.smallrye.common:smallrye-common-net}"/>
+    <artifact name="${io.smallrye.common:smallrye-common-cpu}"/>
+    <artifact name="${io.smallrye.common:smallrye-common-os}"/>
+    <artifact name="${io.smallrye.common:smallrye-common-expression}"/>
   </resources>
 </module>

@@ -16,6 +16,18 @@
  */
 package org.wildfly.prospero.actions;
 
+import static org.jboss.galleon.diff.FsDiff.ADDED;
+import static org.jboss.galleon.diff.FsDiff.CONFLICT;
+import static org.jboss.galleon.diff.FsDiff.CONFLICTS_WITH_THE_UPDATED_VERSION;
+import static org.jboss.galleon.diff.FsDiff.FORCED;
+import static org.jboss.galleon.diff.FsDiff.HAS_BEEN_REMOVED_FROM_THE_UPDATED_VERSION;
+import static org.jboss.galleon.diff.FsDiff.HAS_CHANGED_IN_THE_UPDATED_VERSION;
+import static org.jboss.galleon.diff.FsDiff.MODIFIED;
+import static org.jboss.galleon.diff.FsDiff.REMOVED;
+import static org.jboss.galleon.diff.FsDiff.formatMessage;
+import static org.wildfly.prospero.metadata.ProsperoMetadataUtils.CURRENT_VERSION_FILE;
+import static org.wildfly.prospero.metadata.ProsperoMetadataUtils.METADATA_DIR;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -29,6 +41,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -39,9 +52,15 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.aether.artifact.Artifact;
-import org.jboss.galleon.Constants;
 import org.jboss.galleon.BaseErrors;
-
+import org.jboss.galleon.Constants;
+import org.jboss.galleon.ProvisioningException;
+import org.jboss.galleon.diff.FsDiff;
+import org.jboss.galleon.diff.FsEntry;
+import org.jboss.galleon.layout.SystemPaths;
+import org.jboss.galleon.util.HashUtils;
+import org.jboss.galleon.util.IoUtils;
+import org.jboss.galleon.util.PathsUtils;
 import org.jboss.logging.Logger;
 import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.api.ArtifactChange;
@@ -52,25 +71,6 @@ import org.wildfly.prospero.api.exceptions.ApplyCandidateException;
 import org.wildfly.prospero.api.exceptions.InvalidUpdateCandidateException;
 import org.wildfly.prospero.api.exceptions.MetadataException;
 import org.wildfly.prospero.api.exceptions.OperationException;
-import org.jboss.galleon.ProvisioningException;
-import org.jboss.galleon.diff.FsDiff;
-import static org.jboss.galleon.diff.FsDiff.ADDED;
-import static org.jboss.galleon.diff.FsDiff.CONFLICT;
-import static org.jboss.galleon.diff.FsDiff.CONFLICTS_WITH_THE_UPDATED_VERSION;
-import static org.jboss.galleon.diff.FsDiff.FORCED;
-import static org.jboss.galleon.diff.FsDiff.HAS_BEEN_REMOVED_FROM_THE_UPDATED_VERSION;
-import static org.jboss.galleon.diff.FsDiff.HAS_CHANGED_IN_THE_UPDATED_VERSION;
-import static org.jboss.galleon.diff.FsDiff.MODIFIED;
-import static org.jboss.galleon.diff.FsDiff.REMOVED;
-import static org.jboss.galleon.diff.FsDiff.formatMessage;
-import static org.wildfly.prospero.metadata.ProsperoMetadataUtils.CURRENT_VERSION_FILE;
-import static org.wildfly.prospero.metadata.ProsperoMetadataUtils.METADATA_DIR;
-
-import org.jboss.galleon.diff.FsEntry;
-import org.jboss.galleon.layout.SystemPaths;
-import org.jboss.galleon.util.HashUtils;
-import org.jboss.galleon.util.IoUtils;
-import org.jboss.galleon.util.PathsUtils;
 import org.wildfly.prospero.galleon.ArtifactCache;
 import org.wildfly.prospero.galleon.GalleonUtils;
 import org.wildfly.prospero.installation.git.GitStorage;
@@ -613,6 +613,10 @@ public class ApplyCandidateAction {
         return Collections.unmodifiableList(conflicts);
     }
 
+    public void deleteWithStreams(Path path) throws IOException {
+        Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+    }
+
     private List<FileConflict> doApplyUpdate(FsDiff fsDiff) throws IOException, ProvisioningException {
         List<FileConflict> conflicts = new ArrayList<>();
         // Handles user added/removed/modified files
@@ -693,7 +697,11 @@ public class ApplyCandidateAction {
                     if (ProsperoLogger.ROOT_LOGGER.isDebugEnabled()) {
                         ProsperoLogger.ROOT_LOGGER.debug("Deleting the file " + relative + " that doesn't exist in the update");
                     }
-                    IoUtils.recursiveDelete(file);
+                    try {
+                        deleteWithStreams(file);
+                    } catch (Exception e2) {
+                        ProsperoLogger.ROOT_LOGGER.debug("Problem during delete the file: " + relative + " with: " + e2.getMessage());
+                    }
                 }
                 return FileVisitResult.CONTINUE;
             }

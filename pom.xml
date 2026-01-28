@@ -118,7 +118,7 @@
         <version.org.jboss.modules>2.1.6.Final</version.org.jboss.modules>
         <version.org.jboss.xnio>3.8.17.Final</version.org.jboss.xnio>
         <version.org.testcontainers>1.21.3</version.org.testcontainers>
-        <version.org.wildfly.common>1.7.0.Final</version.org.wildfly.common>
+        <version.org.wildfly.common>2.0.1</version.org.wildfly.common>
         <version.org.wildfly.galleon-plugins>8.1.0.Beta4</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.installation-manager>1.2.0.Final</version.org.wildfly.installation-manager>
         <version.org.wildfly.maven.plugins.licenses-plugin>2.4.2.Final</version.org.wildfly.maven.plugins.licenses-plugin>
@@ -134,6 +134,7 @@
         <version.info.picocli>4.7.7</version.info.picocli>
         <version.system-rules>1.19.0</version.system-rules>
         <version.assertj>3.27.5</version.assertj>
+        <version.io.smallrye.smallrye-common>2.13.8</version.io.smallrye.smallrye-common>
 
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
     </properties>
@@ -146,6 +147,13 @@
 
     <dependencyManagement>
         <dependencies>
+             <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-bom</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                <groupId>org.wildfly.channel</groupId>
                <artifactId>channel-parent</artifactId>
@@ -184,6 +192,12 @@
                 <groupId>org.wildfly.common</groupId>
                 <artifactId>wildfly-common</artifactId>
                 <version>${version.org.wildfly.common}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.smallrye.common</groupId>
+                        <artifactId>smallrye-common-ref</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.installation-manager</groupId>

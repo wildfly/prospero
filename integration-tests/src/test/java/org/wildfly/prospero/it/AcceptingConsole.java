@@ -20,12 +20,13 @@ package org.wildfly.prospero.it;
 import java.util.List;
 
 import org.wildfly.prospero.api.ArtifactChange;
+import org.wildfly.prospero.api.ChannelVersionChange;
 import org.wildfly.prospero.cli.CliConsole;
 
 public class AcceptingConsole extends CliConsole {
 
     @Override
-    public void updatesFound(List<ArtifactChange> changes) {
+    public void updatesFound(List<ArtifactChange> artifactChanges, List<ChannelVersionChange> manifestChanges) {
         // no op
     }
 

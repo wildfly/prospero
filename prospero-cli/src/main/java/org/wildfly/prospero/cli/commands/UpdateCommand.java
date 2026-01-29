@@ -289,7 +289,9 @@ public class UpdateCommand extends AbstractParentCommand {
                 throw CliMessages.MESSAGES.notCandidate(candidateDir.toAbsolutePath());
             }
 
-            console.updatesFound(applyCandidateAction.findUpdates().getArtifactUpdates());
+            UpdateSet updates = applyCandidateAction.findUpdates();
+
+            console.updatesFound(updates.getArtifactUpdates(), updates.getChannelVersionChanges());
             final List<FileConflict> conflicts = applyCandidateAction.getConflicts();
             FileConflictPrinter.print(conflicts, console);
 
@@ -353,7 +355,7 @@ public class UpdateCommand extends AbstractParentCommand {
                 }
                 try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
                     final UpdateSet updateSet = updateAction.findUpdates();
-                    console.updatesFound(updateSet.getArtifactUpdates());
+                    console.updatesFound(updateSet.getArtifactUpdates(), updateSet.getChannelVersionChanges());
                 }
 
                 final float totalTime = (System.currentTimeMillis() - startTime) / 1000f;
@@ -584,7 +586,7 @@ public class UpdateCommand extends AbstractParentCommand {
                 log.infof("User confirmed downgrade operation");
             }
 
-            console.updatesFound(updateSet.getArtifactUpdates());
+            console.updatesFound(updateSet.getArtifactUpdates(), updateSet.getChannelVersionChanges());
             if (updateSet.isEmpty()) {
                 return false;
             }

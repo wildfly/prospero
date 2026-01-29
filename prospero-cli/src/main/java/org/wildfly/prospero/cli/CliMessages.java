@@ -110,8 +110,12 @@ public interface CliMessages {
         return bundle.getString("prospero.updates.no_updates");
     }
 
-    default String updatesFound() {
-        return bundle.getString("prospero.updates.header");
+    default String artifactUpdatesFound() {
+        return bundle.getString("prospero.artifact_updates.header");
+    }
+
+    default String manifestUpdatesFound() {
+        return bundle.getString("prospero.manifest_updates.header");
     }
 
     default String changesFound() {

@@ -521,7 +521,7 @@ public class ProsperoInstallationManager implements InstallationManager {
                             }
                             String newVersion = manifestVersion.getVersion();
                             String oldVersion = channelVersion.getPhysicalVersion();
-                            if (VersionMatcher.COMPARATOR.compare(newVersion, channelVersion.getPhysicalVersion()) < 0) {
+                            if (VersionMatcher.COMPARATOR.compare(newVersion, oldVersion) < 0) {
                                 String message = String.format("Manifest %s is being downgraded from %s to %s. Manifest downgrades need to be explicitly allowed in the command invocation.",
                                         channelVersion.getLocation(), oldVersion, newVersion);
                                 throw new RuntimeException(message);

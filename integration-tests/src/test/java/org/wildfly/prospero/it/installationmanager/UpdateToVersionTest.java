@@ -225,7 +225,7 @@ public class UpdateToVersionTest {
     }
 
     private void prepareInstallation(String version) throws Exception {
-        installation.install("org.test:pack-one:1.0.0", List.of(channel), CliConstants.VERSION, "test-channel::" + version);
+        installation.install("org.test:pack-one:1.0.0", List.of(channel), CliConstants.MANIFEST_VERSIONS, "test-channel::" + version);
 
         // Verify that we've provisioned the version we wanted
         try (InstallationMetadata installationMetadata = InstallationMetadata.loadInstallation(serverPath)) {

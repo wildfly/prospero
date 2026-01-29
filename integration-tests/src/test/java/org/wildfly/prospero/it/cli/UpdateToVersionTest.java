@@ -59,7 +59,7 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void installSpecificVersionOfManifest() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), CliConstants.VERSION, "test-channel::1.0.0");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0");
 
         testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION);
         testInstallation.verifyInstallationMetadataPresent();
@@ -67,9 +67,9 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void updateServerToNonLatestVersion() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), CliConstants.VERSION, "test-channel::1.0.0");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0");
 
-        testInstallation.update(CliConstants.VERSION, "test-channel::1.0.1");
+        testInstallation.update(CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.1");
 
         testInstallation.verifyModuleJar("commons-io", "commons-io", bump(COMMONS_IO_VERSION));
         testInstallation.verifyInstallationMetadataPresent();
@@ -77,9 +77,9 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void downgradeServerToNonLatestVersion() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--version=test-channel::1.0.1");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--manifest-versions=test-channel::1.0.1");
 
-        testInstallation.update(Collections.emptyList(), "--version=test-channel::1.0.0", CliConstants.YES);
+        testInstallation.update(Collections.emptyList(), "--manifest-versions=test-channel::1.0.0", CliConstants.YES);
 
         testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION);
         testInstallation.verifyInstallationMetadataPresent();
@@ -87,10 +87,10 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void updateWithPrepareApplyServerToNonLatestVersion() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), CliConstants.VERSION, "test-channel::1.0.0");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0");
 
         final Path candidatePath = temp.newFolder("candidate").toPath();
-        testInstallation.prepareUpdate(candidatePath, CliConstants.VERSION, "test-channel::1.0.1");
+        testInstallation.prepareUpdate(candidatePath, CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.1");
         testInstallation.apply(candidatePath);
 
         testInstallation.verifyModuleJar("commons-io", "commons-io", bump(COMMONS_IO_VERSION));
@@ -99,7 +99,7 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void warnIfDowngradeServerToNonLatestVersion() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--version=test-channel::1.0.1", "-vv");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--manifest-versions=test-channel::1.0.1", "-vv");
 
         testInstallation.updateWithCheck(
                 List.of(
@@ -116,7 +116,7 @@ public class UpdateToVersionTest extends CliTestBase {
                         throw new RuntimeException(ex);
                     }
                 },
-                "--version=test-channel::1.0.0", "-vv");
+                "--manifest-versions=test-channel::1.0.0", "-vv");
 
         testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION);
         testInstallation.verifyInstallationMetadataPresent();
@@ -124,7 +124,7 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void rejectDowngradeServerIfVersionNotSpecified() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--version=test-channel::1.0.1", "-vv");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--manifest-versions=test-channel::1.0.1", "-vv");
 
         final TestLocalRepository newRepo = new TestLocalRepository(temp.newFolder("downgrade-repo").toPath(), List.of(new URL("https://repo1.maven.org/maven2")));
 
@@ -158,7 +158,7 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void listChannelVersionUpdates() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--version=test-channel::1.0.1", "-vv");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--manifest-versions=test-channel::1.0.1", "-vv");
 
         assertThat(testInstallation.listChannelManifestUpdates(false).split("available versions")[1])
                 .contains("1.0.2")
@@ -167,7 +167,7 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void listAllChannelVersion() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--version=test-channel::1.0.1", "-vv");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--manifest-versions=test-channel::1.0.1", "-vv");
 
         assertThat(testInstallation.listChannelManifestUpdates(true).split("available versions")[1])
                 .contains("1.0.0", "1.0.1", "1.0.2");
@@ -175,9 +175,9 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Test
     public void listUpdatesToSpecificVersion() throws Exception {
-        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--version=test-channel::1.0.0", "-vv");
+        testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--manifest-versions=test-channel::1.0.0", "-vv");
 
-        assertThat(testInstallation.listUpdates(CliConstants.VERSION, "test-channel::1.0.1"))
+        assertThat(testInstallation.listUpdates(CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.1"))
                 .containsPattern("commons-io:commons-io\\s+2.18.0\\s+==>\\s+2.18.0.CP-01");
     }
 
@@ -186,7 +186,7 @@ public class UpdateToVersionTest extends CliTestBase {
         testInstallation.install("org.test:pack-one:1.0.0", List.of(testUrlChannel));
         testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION);
 
-        testInstallation.update(CliConstants.VERSION, "test-channel::" + manifestUrl2.toString());
+        testInstallation.update(CliConstants.MANIFEST_VERSIONS, "test-channel::" + manifestUrl2.toString());
 
         testInstallation.verifyModuleJar("commons-io", "commons-io", bump(COMMONS_IO_VERSION));
         testInstallation.verifyInstallationMetadataPresent();

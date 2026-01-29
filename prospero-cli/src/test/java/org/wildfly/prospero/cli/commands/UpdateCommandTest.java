@@ -249,7 +249,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.LIST,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-channel::2.0.1");
+                CliConstants.MANIFEST_VERSIONS, "test-channel::2.0.1");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         final ArgumentCaptor<List<Channel>> channelsCaptor = ArgumentCaptor.forClass(List.class);
@@ -373,7 +373,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toString(),
-                CliConstants.VERSION, "test-channel::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "test-channel::1.1.1");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -389,7 +389,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toString(),
-                CliConstants.VERSION, "test-one::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -400,7 +400,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     public void versionArgumentWithNoSeparatorIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -411,7 +411,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     public void errorWhenVersionOverrideDoesNotMatchAnyChannels() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "idontexist::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "idontexist::1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -422,7 +422,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     public void versionArgumentWithMissingDelimiterIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "channel1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "channel1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -433,7 +433,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     public void versionArgumentWithTooManyDelimitersIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "channel::1.0.0::extra");
+                CliConstants.MANIFEST_VERSIONS, "channel::1.0.0::extra");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -444,7 +444,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     public void versionArgumentWithEmptyChannelNameIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "::1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "::1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -455,7 +455,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     public void versionArgumentWithEmptyVersionIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "channel::");
+                CliConstants.MANIFEST_VERSIONS, "channel::");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -466,7 +466,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     public void versionArgumentWithWhitespaceOnlyChannelNameIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "   ::1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "   ::1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -477,7 +477,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     public void versionArgumentWithWhitespaceOnlyVersionIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "channel::   ");
+                CliConstants.MANIFEST_VERSIONS, "channel::   ");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -492,7 +492,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toString(),
-                CliConstants.VERSION, "  test-channel  ::  1.1.1  ");
+                CliConstants.MANIFEST_VERSIONS, "  test-channel  ::  1.1.1  ");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -512,8 +512,8 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-one::1.1.1",
-                CliConstants.VERSION, "test-two::2.2.2");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1",
+                CliConstants.MANIFEST_VERSIONS, "test-two::2.2.2");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -532,9 +532,9 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-one::1.1.1",
-                CliConstants.VERSION, "test-one::1.1.2",
-                CliConstants.VERSION, "test-two::2.2.2");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1",
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.2",
+                CliConstants.MANIFEST_VERSIONS, "test-two::2.2.2");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -552,7 +552,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-one::http://new.channel.com");
+                CliConstants.MANIFEST_VERSIONS, "test-one::http://new.channel.com");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -572,7 +572,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-one::file:foo.yaml");
+                CliConstants.MANIFEST_VERSIONS, "test-one::file:foo.yaml");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -591,7 +591,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-channel::1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         // expecting two confirmations - one to verify downgrade, another to verify the component list
@@ -612,7 +612,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-channel::1.0.0",
+                CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0",
                 CliConstants.YES);
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);

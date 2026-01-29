@@ -326,7 +326,7 @@ public class UpdateCommand extends AbstractParentCommand {
     public static class ListCommand extends AbstractMavenCommand {
 
         @CommandLine.Option(
-                names = CliConstants.VERSION,
+                names = CliConstants.MANIFEST_VERSIONS,
                 split = ","
         )
         protected List<String> versions = new ArrayList<>();
@@ -535,7 +535,7 @@ public class UpdateCommand extends AbstractParentCommand {
         protected CommandLine.Model.CommandSpec spec;
 
         @CommandLine.Option(
-                names = CliConstants.VERSION,
+                names = CliConstants.MANIFEST_VERSIONS,
                 split = ","
         )
         protected List<String> versions = new ArrayList<>();

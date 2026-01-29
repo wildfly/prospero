@@ -109,7 +109,7 @@ public class InstallCommand extends AbstractInstallCommand {
     StabilityLevels stabilityLevels = new StabilityLevels();
 
     @CommandLine.Option(
-            names = CliConstants.VERSION,
+            names = CliConstants.MANIFEST_VERSIONS,
             split = ","
     )
     List<String> versions = new ArrayList<>();

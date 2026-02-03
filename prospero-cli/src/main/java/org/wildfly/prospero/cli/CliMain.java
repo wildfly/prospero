@@ -136,9 +136,10 @@ public class CliMain {
     }
 
     static int execute(String[] args) {
-        CliConsole console = new CliConsole();
-        CommandLine commandLine = createCommandLine(console, args);
-        return commandLine.execute(args);
+        try (CliConsole console = new CliConsole()) {
+            CommandLine commandLine = createCommandLine(console, args);
+            return commandLine.execute(args);
+        }
     }
 
     static void logException(Exception e) {

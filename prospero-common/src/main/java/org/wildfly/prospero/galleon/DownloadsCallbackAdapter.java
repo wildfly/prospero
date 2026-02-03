@@ -26,7 +26,6 @@ import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.api.Console;
 import org.wildfly.prospero.api.ProvisioningProgressEvent;
 
-import java.io.File;
 import java.util.HashSet;
 
 import static org.wildfly.prospero.galleon.GalleonEnvironment.TRACK_JB_ARTIFACTS_RESOLVE;
@@ -97,7 +96,8 @@ class DownloadsCallbackAdapter extends AbstractTransferListener implements Progr
             ProsperoLogger.ROOT_LOGGER.debug("Downloaded artifact: " + item);
         }
 
-        final int fileNameIndex = item.lastIndexOf(File.separator);
+        // note the fileName has Unix separators regardless of the actual OS
+        final int fileNameIndex = item.lastIndexOf("/");
         item = item.substring(fileNameIndex + 1);
         if (console != null) {
             if ("maven-metadata.xml".equals(item)) {

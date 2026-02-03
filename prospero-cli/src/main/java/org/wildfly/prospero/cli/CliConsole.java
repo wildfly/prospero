@@ -24,12 +24,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
-import org.apache.commons.lang3.StringUtils;
+import org.fusesource.jansi.AnsiConsole;
 import org.wildfly.prospero.api.Console;
 import org.wildfly.prospero.api.ProvisioningProgressEvent;
 import org.wildfly.prospero.api.ArtifactChange;
 import picocli.CommandLine;
 
+import static org.fusesource.jansi.Ansi.ansi;
 import static org.jboss.galleon.Constants.TRACK_CONFIGS;
 import static org.jboss.galleon.Constants.TRACK_LAYOUT_BUILD;
 import static org.jboss.galleon.Constants.TRACK_PACKAGES;
@@ -39,20 +40,15 @@ import static org.wildfly.prospero.galleon.GalleonEnvironment.TRACK_JB_ARTIFACTS
 import static org.wildfly.prospero.galleon.GalleonEnvironment.TRACK_RESOLVING_VERSIONS;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
-public class CliConsole implements Console {
+public class CliConsole implements Console,AutoCloseable {
 
-    private static final int MAX_LENGTH = 120;
+    private static final int MAX_LENGTH = AnsiConsole.getTerminalWidth() == 0 ? 120 : AnsiConsole.getTerminalWidth();
+    protected static final String DOTS_SEPARATOR = "...";
 
     private static class ProgressLogger {
         private final String starting;
         private  final String completed;
         private final String progress;
-
-        ProgressLogger(String starting, String completed, String progress) {
-            this.starting = starting;
-            this.completed = completed;
-            this.progress = progress;
-        }
 
         ProgressLogger(String starting, String completed) {
             this.starting = starting;
@@ -71,26 +67,27 @@ public class CliConsole implements Console {
         }
     }
 
-    private class Cli {
-        int lastLength;
+    private class Cli implements AutoCloseable {
         PrintStream out;
 
         Cli(PrintStream out) {
+            AnsiConsole.systemInstall();
             this.out = out;
         }
 
-        synchronized void  print(String msg) {
-            final String eraser = StringUtils.repeat(' ', this.lastLength);
-            out.print("\r" + eraser + "\r");
-            lastLength = msg.length();
+        synchronized void print(String msg) {
+            out.print(ansi().cursorToColumn(0).eraseLine());
             out.print(msg);
         }
 
         synchronized void println(String msg) {
-            final String eraser = StringUtils.repeat(' ', this.lastLength);
-            out.print("\r" + eraser + "\r");
-            lastLength = msg.length();
+            out.print(ansi().cursorToColumn(0).eraseLine());
             out.println(msg);
+        }
+
+        @Override
+        public void close() {
+            AnsiConsole.systemUninstall();
         }
     }
 
@@ -120,14 +117,12 @@ public class CliConsole implements Console {
 
             final String item;
             if (update.isSlowPhase()) {
-                item = " " + CliMessages.MESSAGES.installProgressWait() + "...";
+                item = " " + CliMessages.MESSAGES.installProgressWait() + DOTS_SEPARATOR;
             } else {
                  item = update.getCurrentItem();
             }
 
             final String progressMsg;
-            final String details = item == null ? "" : item;
-
             if (update.getTotal() > 0) {
                 progressMsg = String.format(" %d/%d(%.0f%%) ", update.getCompleted(), update.getTotal(), update.getProgress());
             } else {
@@ -135,12 +130,13 @@ public class CliConsole implements Console {
             }
 
             final String text;
-            if (logger.progress.length() + progressMsg.length() > MAX_LENGTH) {
+            final String details = item == null ? "" : item;
+            int textLength = logger.progress.length() + progressMsg.length();
+            if (textLength > MAX_LENGTH) {
                 text = (logger.progress() + progressMsg).substring(0, MAX_LENGTH);
-            } else if (logger.progress.length() + progressMsg.length() + details.length() > MAX_LENGTH) {
-                int used = logger.progress.length() + progressMsg.length();
-                int left = MAX_LENGTH - used;
-                text = logger.progress() + progressMsg + "..." + details.substring(details.length() - left);
+            } else if (textLength + details.length() > MAX_LENGTH) {
+                int left = MAX_LENGTH - textLength - DOTS_SEPARATOR.length();
+                text = logger.progress() + progressMsg + DOTS_SEPARATOR + details.substring(details.length() - left);
             } else {
                 text = logger.progress() + progressMsg + details;
             }
@@ -262,4 +258,8 @@ public class CliConsole implements Console {
         }
     }
 
+    @Override
+    public void close() {
+        cli.close();
+    }
 }

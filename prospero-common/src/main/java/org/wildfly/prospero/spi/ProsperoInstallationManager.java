@@ -239,26 +239,21 @@ public class ProsperoInstallationManager implements InstallationManager {
             for (String channelName: channelUpdates.getUpdatedChannels()) {
                 ChannelsUpdateResult.ChannelResult channelUpdate = channelUpdates.getUpdatedVersion(channelName);
 
-                // Only include channels with updates
-                if (ChannelsUpdateResult.Status.UpdatesFound.equals(channelUpdate.getStatus())) {
-                    List<ManifestVersionPair> availableVersions = channelUpdate.getAvailableVersions().stream()
-                            // Exclude current version from the list of available versions
-                            .filter(v -> !v.getPhysicalVersion().equals(channelUpdate.getCurrentVersion().getPhysicalVersion()))
-                            .map(ProsperoInstallationManager::mapChannelVersion)
-                            // Sort in ascending order
-                            .sorted(MANIFEST_VERSION_PAIR_COMPARATOR).toList();
+                List<ManifestVersionPair> availableVersions = channelUpdate.getAvailableVersions().stream()
+                        // Exclude current version from the list of available versions
+                        .filter(v -> !v.getPhysicalVersion().equals(channelUpdate.getCurrentVersion().getPhysicalVersion()))
+                        .map(ProsperoInstallationManager::mapChannelVersion)
+                        // Sort in ascending order
+                        .sorted(MANIFEST_VERSION_PAIR_COMPARATOR).toList();
 
-                    String location = channelUpdate.getAvailableVersions().stream()
-                            .map(ChannelVersion::getLocation).findFirst().orElse(null);
+                ChannelVersion currentVersion = channelUpdate.getCurrentVersion();
+                String location = currentVersion.getLocation();
+                ManifestVersionPair mappedCurrentVersions = new ManifestVersionPair(currentVersion.getPhysicalVersion(),
+                        currentVersion.getLogicalVersion());
 
-                    ChannelVersion currentVersion = channelUpdate.getCurrentVersion();
-                    ManifestVersionPair mappedCurrentVersions = new ManifestVersionPair(currentVersion.getPhysicalVersion(),
-                            currentVersion.getLogicalVersion());
-
-                    AvailableManifestVersions availableManifestVersions =
-                            new AvailableManifestVersions(channelName, location, mappedCurrentVersions, availableVersions);
-                    results.add(availableManifestVersions);
-                }
+                AvailableManifestVersions availableManifestVersions =
+                        new AvailableManifestVersions(channelName, location, mappedCurrentVersions, availableVersions);
+                results.add(availableManifestVersions);
             }
             return results;
         }

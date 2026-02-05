@@ -151,5 +151,5 @@ public class OverrideBuilder {
         return builder.build();
     }
 
-    private static record VersionOverride(String channelName, String version) {}
+    private record VersionOverride(String channelName, String version) {}
 }

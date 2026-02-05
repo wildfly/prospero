@@ -1,4 +1,4 @@
-package org.wildfly.prospero.cli.commands;
+package org.wildfly.prospero.actions;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -14,48 +14,46 @@ import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifestCoordinate;
 import org.wildfly.channel.Repository;
 import org.wildfly.prospero.ProsperoLogger;
-import org.wildfly.prospero.VersionOverride;
-import org.wildfly.prospero.cli.ArgumentParsingException;
-import org.wildfly.prospero.cli.CliMessages;
 
 
 /**
  * Creates a list of channels with appropriate overrides. Currently, supports overrides manifest versions and
  * repository definitions. If no overrides are defined, returns an empty list.
  */
-class OverrideBuilder {
+public class OverrideBuilder {
 
     private static final ProsperoLogger logger = ProsperoLogger.ROOT_LOGGER;
 
     private final List<Channel> channels;
-    private List<Repository> shadowRepositories = Collections.emptyList();
-    private List<String> versions = Collections.emptyList();
+    private List<Repository> shadowRepositories = null;
+    private List<String> versions = null;
 
     OverrideBuilder(List<Channel> channels) {
         this.channels = channels;
     }
 
-    static OverrideBuilder from(List<Channel> channels) {
+    public static OverrideBuilder from(List<Channel> channels) {
         return new OverrideBuilder(channels);
     }
 
-    List<Channel> build() throws ArgumentParsingException {
+    public List<Channel> build() throws IllegalArgumentException {
         final Map<String, VersionOverride> channelsMap = new HashMap<>();
-        if (!versions.isEmpty()) {
+
+        if ((shadowRepositories == null || shadowRepositories.isEmpty())
+                && (versions == null || versions.isEmpty())) {
+            logger.debugf("No version overrides or shadow repositories provided, returning empty list");
+            // we don't need to alter the channels, can return an empty collection
+            return Collections.emptyList();
+        }
+
+        if (versions != null && !versions.isEmpty()) {
             logger.debugf("Processing %d version override(s): %s", versions.size(), versions);
 
             for (String version : versions) {
-                logger.debugf("Parsing version override: '%s'", version);
-
-                final String[] parts = version.split("::");
-
-                validateVersionOverrideFormat(parts, version);
-
-                final VersionOverride override = new VersionOverride(parts[0].trim(), parts[1].trim());
-
+                VersionOverride override = parseVersionOverrideString(version);
                 if (channelsMap.containsKey(override.channelName())) {
                     logger.debugf("Duplicate override detected for channel: '%s'", override.channelName());
-                    throw CliMessages.MESSAGES.duplicatedVersionOverride(override.channelName());
+                    throw ProsperoLogger.ROOT_LOGGER.duplicatedVersionOverride(override.channelName());
                 }
                 channelsMap.put(override.channelName(), override);
                 logger.debugf("Successfully added version override: %s -> %s", override.channelName(), override.version());
@@ -67,21 +65,17 @@ class OverrideBuilder {
             for (String overrideKey : channelsMap.keySet()) {
                 if (!existingChannelNames.contains(overrideKey)) {
                     logger.debugf("Channel '%s' specified in override does not exist in available channels", overrideKey);
-                    throw CliMessages.MESSAGES.channelNotFoundException(overrideKey);
+                    throw ProsperoLogger.ROOT_LOGGER.channelNotFoundException(overrideKey);
                 }
             }
 
             if (existingChannelNames.size() != channelsMap.size() || !existingChannelNames.containsAll(channelsMap.keySet())) {
                 logger.debugf("Version overrides incomplete - provided: %s, required: %s",
                     channelsMap.keySet(), existingChannelNames);
-                throw CliMessages.MESSAGES.versionOverrideHasToApplyToAllChannels();
+                throw ProsperoLogger.ROOT_LOGGER.versionOverrideHasToApplyToAllChannels();
             }
 
             logger.infof("Applied version overrides to %d channel(s)", channelsMap.size());
-        } else if (shadowRepositories.isEmpty()) {
-            logger.debugf("No version overrides or shadow repositories provided, returning empty list");
-            // we don't need to alter the channels, can return an empty collection
-            return Collections.emptyList();
         }
 
 
@@ -98,7 +92,7 @@ class OverrideBuilder {
         return list;
     }
 
-    OverrideBuilder withRepositories(List<Repository> shadowRepositories) {
+    public OverrideBuilder withRepositories(List<Repository> shadowRepositories) {
         this.shadowRepositories = shadowRepositories;
         return this;
     }
@@ -108,14 +102,14 @@ class OverrideBuilder {
         return this;
     }
 
-    private void validateVersionOverrideFormat(String[] parts, String version) throws ArgumentParsingException {
-        parts = (" " + version + " ").split("::");
+    private VersionOverride parseVersionOverrideString(String version) throws IllegalArgumentException {
+        String[] parts = (" " + version + " ").split("::");
         if (parts.length != 2) {
             logger.debugf("Invalid format - found %d parts after splitting by '::', expected 2", parts.length);
             if (parts.length == 1) {
-                throw CliMessages.MESSAGES.invalidVersionOverrideMissingDelimiter(version);
+                throw ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideMissingDelimiter(version);
             } else {
-                throw CliMessages.MESSAGES.invalidVersionOverrideTooManyDelimiters(version);
+                throw ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideTooManyDelimiters(version);
             }
         }
 
@@ -126,12 +120,14 @@ class OverrideBuilder {
 
         if (channelName.isEmpty()) {
             logger.debugf("Channel name is empty after trimming");
-            throw CliMessages.MESSAGES.invalidVersionOverrideEmptyChannel(version);
+            throw ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyChannel(version);
         }
         if (versionStr.isEmpty()) {
             logger.debugf("Version string is empty after trimming");
-            throw CliMessages.MESSAGES.invalidVersionOverrideEmptyVersion(version);
+            throw ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyVersion(version);
         }
+
+        return new VersionOverride(channelName, versionStr);
     }
 
     private Channel overrideChannel(Channel c, VersionOverride version) {
@@ -148,10 +144,12 @@ class OverrideBuilder {
                 builder.setManifestCoordinate(coord.getGroupId(), coord.getArtifactId(), version.version());
             }
         }
-        if (!shadowRepositories.isEmpty()) {
+        if (shadowRepositories != null && !shadowRepositories.isEmpty()) {
             builder.setRepositories(shadowRepositories);
         }
 
         return builder.build();
     }
+
+    private static record VersionOverride(String channelName, String version) {}
 }

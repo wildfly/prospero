@@ -25,7 +25,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 public class SavedState {
 
@@ -102,14 +101,11 @@ public class SavedState {
     }
 
     public String shortDescription() {
-        final String msg;
         if (manifestVersions.isEmpty()) {
-            msg = this.msg;
+            return String.format("[%s] %s - %s %s", hash, timestamp.toString(), type.toString().toLowerCase(Locale.ROOT), msg);
         } else {
-            final String versions = manifestVersions.stream().map(Version::getDisplayVersion).collect(Collectors.joining("+"));
-            msg = "[" + versions + "]";
+            return String.format("[%s] %s - %s", hash, timestamp.toString(), type.toString().toLowerCase(Locale.ROOT));
         }
-        return String.format("[%s] %s - %s %s", hash, timestamp.toString(), type.toString().toLowerCase(Locale.ROOT), msg);
     }
 
     @Override
@@ -185,7 +181,7 @@ public class SavedState {
 
         public String getDisplayVersion() {
             if (logicalVersion != null) {
-                return physicalVersion + " (" + logicalVersion + ")";
+                return identifier + ":" + physicalVersion + " (" + logicalVersion + ")";
             } else {
                 return identifier + ":" + physicalVersion;
             }

@@ -111,11 +111,10 @@ public class ProsperoInstallationManagerTest {
         final InstallationChanges changes = mgr.revisionDetails("abcd");
 
         final org.wildfly.installationmanager.ChannelChange channelChange = changes.channelChanges().get(0);
-        final org.wildfly.installationmanager.Channel oldChannel = channelChange.getOldChannel().orElse(null);
-        final org.wildfly.installationmanager.Channel newChannel = channelChange.getNewChannel().orElse(null);
-
+        assertFalse(channelChange.getOldChannel().isPresent());
+        assertTrue(channelChange.getNewChannel().isPresent());
+        final org.wildfly.installationmanager.Channel newChannel = channelChange.getNewChannel().get();
         assertEquals("channel-1", channelChange.getName());
-        assertNull(oldChannel);
         assertEquals("foo:bar", newChannel.getManifestCoordinate().get());
         assertEquals(2, newChannel.getRepositories().size());
         assertEquals("repo1", newChannel.getRepositories().get(0).getId());
@@ -125,7 +124,7 @@ public class ProsperoInstallationManagerTest {
     @Test
     public void findUpdateWithNullRepositoryListPassesEmptyList() throws Exception {
         final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
-        when(actionFactory.getUpdateAction(Collections.emptyList())).thenReturn(updateAction);
+        when(actionFactory.getUpdateAction(Collections.emptyList(), null, true)).thenReturn(updateAction);
         when(updateAction.findUpdates()).thenReturn(new UpdateSet(Collections.emptyList()));
 
         mgr.findUpdates(null);
@@ -134,7 +133,7 @@ public class ProsperoInstallationManagerTest {
     @Test
     public void findUpdateWithEmptyRepositoryListPassesEmptyList() throws Exception {
         final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
-        when(actionFactory.getUpdateAction(Collections.emptyList())).thenReturn(updateAction);
+        when(actionFactory.getUpdateAction(Collections.emptyList(), null, true)).thenReturn(updateAction);
         when(updateAction.findUpdates()).thenReturn(new UpdateSet(Collections.emptyList()));
 
         mgr.findUpdates(null);
@@ -143,7 +142,7 @@ public class ProsperoInstallationManagerTest {
     @Test
     public void findUpdateWithRepositoryListPassesEmptyList() throws Exception {
         final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
-        when(actionFactory.getUpdateAction(List.of(new Repository("test", "http://test.te")))).thenReturn(updateAction);
+        when(actionFactory.getUpdateAction(List.of(new Repository("test", "http://test.te")), null, true)).thenReturn(updateAction);
         when(updateAction.findUpdates()).thenReturn(new UpdateSet(Collections.emptyList()));
 
         mgr.findUpdates(List.of(new org.wildfly.installationmanager.Repository("test", "http://test.te")));
@@ -152,37 +151,37 @@ public class ProsperoInstallationManagerTest {
     @Test
     public void prepareUpdateWithNullRepositoryListPassesEmptyList() throws Exception {
         final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
-        when(actionFactory.getUpdateAction(Collections.emptyList())).thenReturn(updateAction);
+        when(actionFactory.getUpdateAction(Collections.emptyList(), false)).thenReturn(updateAction);
         when(updateAction.buildUpdate(any())).thenReturn(true);
 
-        mgr.prepareUpdate(Path.of("test"), null);
+        mgr.prepareUpdate(Path.of("test"), null, false);
     }
 
     @Test
     public void prepareUpdateReturnsStatusOfCandidate() throws Exception {
         final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
-        when(actionFactory.getUpdateAction(Collections.emptyList())).thenReturn(updateAction);
+        when(actionFactory.getUpdateAction(Collections.emptyList(), false)).thenReturn(updateAction);
         when(updateAction.buildUpdate(any())).thenReturn(false);
 
-        assertFalse(mgr.prepareUpdate(Path.of("test"), null));
+        assertFalse(mgr.prepareUpdate(Path.of("test"), null, false));
     }
 
     @Test
     public void prepareUpdateWithEmptyRepositoryListPassesEmptyList() throws Exception {
         final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
-        when(actionFactory.getUpdateAction(Collections.emptyList())).thenReturn(updateAction);
+        when(actionFactory.getUpdateAction(Collections.emptyList(), false)).thenReturn(updateAction);
         when(updateAction.buildUpdate(any())).thenReturn(true);
 
-        mgr.prepareUpdate(Path.of("test"), Collections.emptyList());
+        mgr.prepareUpdate(Path.of("test"), Collections.emptyList(), false);
     }
 
     @Test
     public void prepareUpdateWithRepositoryListPassesEmptyList() throws Exception {
         final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
-        when(actionFactory.getUpdateAction(List.of(new Repository("test", "http://test.te")))).thenReturn(updateAction);
+        when(actionFactory.getUpdateAction(List.of(new Repository("test", "http://test.te")), false)).thenReturn(updateAction);
         when(updateAction.buildUpdate(any())).thenReturn(true);
 
-        mgr.prepareUpdate(Path.of("test"), List.of(new org.wildfly.installationmanager.Repository("test", "http://test.te")));
+        mgr.prepareUpdate(Path.of("test"), List.of(new org.wildfly.installationmanager.Repository("test", "http://test.te")), false);
     }
 
     @Test

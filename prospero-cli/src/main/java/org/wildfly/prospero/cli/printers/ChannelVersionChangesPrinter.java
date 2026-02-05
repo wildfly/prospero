@@ -1,9 +1,11 @@
 package org.wildfly.prospero.cli.printers;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.wildfly.prospero.DistributionInfo;
 import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.api.ChannelVersion;
@@ -60,7 +62,7 @@ public class ChannelVersionChangesPrinter {
             logger.debugf("Building version arg for unexpected downgrade: %s::%s",
                 downgrade.channelName(),
                 downgrade.newVersion().getPhysicalVersion());
-            versionArg.append("--version=")
+            versionArg.append("--manifest-versions=")
                     .append(downgrade.channelName())
                     .append("::")
                     .append(downgrade.newVersion().getPhysicalVersion())
@@ -80,31 +82,29 @@ public class ChannelVersionChangesPrinter {
             return;
         }
 
-        final StringBuilder versionArg = new StringBuilder();
+        final List<String> currentManifestVersions = new ArrayList<>();
         console.println(CliMessages.MESSAGES.channelVersionUpdateListHeader());
         for (String channelName : result.getUpdatedChannels()) {
             final ChannelsUpdateResult.ChannelResult channelResult = result.getUpdatedVersion(channelName);
             if (channelResult.getStatus() == ChannelsUpdateResult.Status.UpdatesFound) {
                 final Set<ChannelVersion> availableVersions = channelResult.getAvailableVersions();
-                versionArg.append(channelName).append("::").append(availableVersions.iterator().next().getPhysicalVersion());
 
                 console.println(" - %s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListChannelName(), channelName));
-                console.println("   %s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListCurrentVersion(), channelResult.getCurrentVersion()));
+                console.println("   %s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListCurrentVersion(), channelResult.getCurrentVersion().getPhysicalVersion()));
                 console.println("   %s:".formatted(CliMessages.MESSAGES.channelVersionUpdateListAvailableVersions()));
                 for (ChannelVersion channelVersion : availableVersions) {
                     final String logicalVersion =  channelVersion.getLogicalVersion() == null ? "" : " (%s)".formatted(channelVersion.getLogicalVersion());
                     console.println("   - %s%s".formatted(channelVersion.getPhysicalVersion(), logicalVersion));
                 }
-            } else {
-                versionArg.append(channelName).append("::").append(channelResult.getCurrentVersion());
             }
+            currentManifestVersions.add(channelName + "::" + channelResult.getCurrentVersion().getPhysicalVersion());
         }
 
         console.println("");
 
         final String updateCmd = "  %s %s %s %s %s %s %s".formatted(
                 DistributionInfo.DIST_NAME, CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
-                CliConstants.DIR, serverDir, CliConstants.VERSION, versionArg.toString());
+                CliConstants.DIR, serverDir, CliConstants.MANIFEST_VERSIONS, StringUtils.join(currentManifestVersions, ","));
         console.println(CliMessages.MESSAGES.channelVersionUpdateListUpdateCommandSuggestion(updateCmd));
     }
 

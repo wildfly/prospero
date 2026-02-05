@@ -27,7 +27,7 @@ public class UpdateSet {
 
     public static final UpdateSet EMPTY = new UpdateSet(Collections.emptyList());
     private final List<ArtifactChange> artifactUpdates;
-    private List<ChannelVersionChange> channelChanges;
+    private final List<ChannelVersionChange> channelChanges;
 
     public UpdateSet(List<ArtifactChange> updates) {
         this(updates, Collections.emptyList());

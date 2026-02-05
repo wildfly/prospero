@@ -406,4 +406,28 @@ public interface ProsperoLogger extends BasicLogger {
     @Message(id = 276, value = "Unable to resolve version information for channel %s with coordinates %s:%s in repositories %s")
     MetadataException unableToResolveChannelVersionInformation(String channelName, String groupId, String artifactId, String repos, @Cause Exception e);
 
+    @Message(id = 277, value = "Version overwrite [%s] in not formatted correctly. It should consist of <channel_name>::<version>.")
+    IllegalArgumentException invalidVersionOverrideString(String versionString);
+
+    @Message(value = "Version overwrite defines channel [%s] multiple times. Please make sure each channel is specified only once.")
+    IllegalArgumentException duplicatedVersionOverride(String channelName);
+
+    @Message(value = "The channel [%s] specified in the version overwrite does not exist in the current configuration. Please check the configuration and version value and try again.")
+    IllegalArgumentException channelNotFoundException(String channelName);
+
+    @Message(value = "The version overwrite argument needs to specify versions for all the channels used by the server.")
+    IllegalArgumentException versionOverrideHasToApplyToAllChannels();
+
+    @Message(value = "Version overwrite [%s] is missing the '::' delimiter. It should be formatted as <channel_name>::<version>.")
+    IllegalArgumentException invalidVersionOverrideMissingDelimiter(String versionString);
+
+    @Message(value = "Version overwrite [%s] contains too many '::' delimiters. It should be formatted as <channel_name>::<version>.")
+    IllegalArgumentException invalidVersionOverrideTooManyDelimiters(String versionString);
+
+    @Message(value = "Version overwrite [%s] has an empty channel name. It should be formatted as <channel_name>::<version>.")
+    IllegalArgumentException invalidVersionOverrideEmptyChannel(String versionString);
+
+    @Message(value = "Version overwrite [%s] has an empty version. It should be formatted as <channel_name>::<version>.")
+    IllegalArgumentException invalidVersionOverrideEmptyVersion(String versionString);
+
 }

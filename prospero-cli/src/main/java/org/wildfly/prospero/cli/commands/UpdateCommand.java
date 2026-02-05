@@ -45,6 +45,7 @@ import org.wildfly.channel.Repository;
 import org.wildfly.prospero.DistributionInfo;
 import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.actions.ApplyCandidateAction;
+import org.wildfly.prospero.actions.OverrideBuilder;
 import org.wildfly.prospero.actions.SubscribeNewServerAction;
 import org.wildfly.prospero.actions.UpdateAction;
 import org.wildfly.prospero.api.ChannelVersionChange;
@@ -288,7 +289,9 @@ public class UpdateCommand extends AbstractParentCommand {
                 throw CliMessages.MESSAGES.notCandidate(candidateDir.toAbsolutePath());
             }
 
-            console.updatesFound(applyCandidateAction.findUpdates().getArtifactUpdates());
+            UpdateSet updates = applyCandidateAction.findUpdates();
+
+            console.updatesFound(updates.getArtifactUpdates(), updates.getChannelVersionChanges());
             final List<FileConflict> conflicts = applyCandidateAction.getConflicts();
             FileConflictPrinter.print(conflicts, console);
 
@@ -323,7 +326,7 @@ public class UpdateCommand extends AbstractParentCommand {
     public static class ListCommand extends AbstractMavenCommand {
 
         @CommandLine.Option(
-                names = CliConstants.VERSION,
+                names = CliConstants.MANIFEST_VERSIONS,
                 split = ","
         )
         protected List<String> versions = new ArrayList<>();
@@ -352,7 +355,7 @@ public class UpdateCommand extends AbstractParentCommand {
                 }
                 try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
                     final UpdateSet updateSet = updateAction.findUpdates();
-                    console.updatesFound(updateSet.getArtifactUpdates());
+                    console.updatesFound(updateSet.getArtifactUpdates(), updateSet.getChannelVersionChanges());
                 }
 
                 final float totalTime = (System.currentTimeMillis() - startTime) / 1000f;
@@ -532,7 +535,7 @@ public class UpdateCommand extends AbstractParentCommand {
         protected CommandLine.Model.CommandSpec spec;
 
         @CommandLine.Option(
-                names = CliConstants.VERSION,
+                names = CliConstants.MANIFEST_VERSIONS,
                 split = ","
         )
         protected List<String> versions = new ArrayList<>();
@@ -583,7 +586,7 @@ public class UpdateCommand extends AbstractParentCommand {
                 log.infof("User confirmed downgrade operation");
             }
 
-            console.updatesFound(updateSet.getArtifactUpdates());
+            console.updatesFound(updateSet.getArtifactUpdates(), updateSet.getChannelVersionChanges());
             if (updateSet.isEmpty()) {
                 return false;
             }

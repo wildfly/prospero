@@ -171,8 +171,9 @@ public class UpdateToVersionTest extends CliTestBase {
         testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--manifest-versions=test-channel::1.0.1", "-vv");
 
         assertThat(testInstallation.listChannelManifestUpdates(false).split("available versions")[1])
-                .contains("1.0.2")
-                .doesNotContain("1.0.0", "1.0.1");
+                .contains("1.0.2 (Logical version 1.0.2)")
+                .doesNotContain("1.0.0 (Logical version 1.0.0)",
+                        "1.0.1 (Logical version 1.0.1)");
     }
 
     @Test

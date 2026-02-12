@@ -33,10 +33,12 @@ import org.wildfly.prospero.test.TestLocalRepository;
 
 public class UpdateToVersionTest extends CliTestBase {
     protected static final String COMMONS_IO_VERSION = BuildProperties.getProperty("version.commons-io");
+    protected static final String COMMONS_CODEC_VERSION = BuildProperties.getProperty("version.commons-codec");
 
     private TestLocalRepository testLocalRepository;
     private TestInstallation testInstallation;
     private Channel testChannel;
+    private Channel testChannel2;
     private Channel testUrlChannel;
     private URL manifestUrl;
     private URL manifestUrl2;
@@ -57,6 +59,11 @@ public class UpdateToVersionTest extends CliTestBase {
                 .setName("test-channel")
                 .addRepository("local-repo", testLocalRepository.getUri().toString())
                 .setManifestCoordinate("org.test", "test-channel")
+                .build();
+        testChannel2 = new Channel.Builder()
+                .setName("another-channel")
+                .addRepository("local-repo", testLocalRepository.getUri().toString())
+                .setManifestCoordinate("org.test", "another-channel")
                 .build();
         manifestUrl = testLocalRepository.getUri().resolve("org/test/test-channel/1.0.0/test-channel-1.0.0-manifest.yaml").toURL();
         manifestUrl2 = testLocalRepository.getUri().resolve("org/test/test-channel/1.0.1/test-channel-1.0.1-manifest.yaml").toURL();
@@ -167,6 +174,84 @@ public class UpdateToVersionTest extends CliTestBase {
     }
 
     @Test
+    public void installMultiChannelAllManifestsRequired() throws Exception {
+        ExecutionUtils.ExecutionResult result = testInstallation.install(ReturnCodes.INVALID_ARGUMENTS,
+                "org.test:pack-two:1.0.0", List.of(testChannel, testChannel2),
+                "--manifest-versions=test-channel::1.0.1", "-vv");
+        assertThat(result.getCommandOutput()).contains("specify versions for all the channels");
+    }
+
+    @Test
+    public void updateMultiChannelAllManifestRequired() throws Exception {
+        testInstallation.install("org.test:pack-two:1.0.0", List.of(testChannel, testChannel2),
+                "--manifest-versions=test-channel::1.0.0,another-channel::1.0.0", "-vv");
+
+        ExecutionUtils.ExecutionResult result = testInstallation.update(ReturnCodes.INVALID_ARGUMENTS, Collections.emptyList(),
+                "--manifest-versions=test-channel::1.0.0", CliConstants.YES, "-vv");
+        assertThat(result.getCommandOutput()).contains("specify versions for all the channels");
+    }
+
+    @Test
+    public void updateMultiChannelUpdateSingle() throws Exception {
+        testInstallation.install("org.test:pack-two:1.0.0", List.of(testChannel, testChannel2),
+                "--manifest-versions=test-channel::1.0.0,another-channel::1.0.0", "-vv");
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION);
+        testInstallation.verifyModuleJar("commons-codec", "commons-codec", COMMONS_CODEC_VERSION);
+
+        testInstallation.update(Collections.emptyList(), "--manifest-versions=test-channel::1.0.1,another-channel::1.0.0", CliConstants.YES, "-vv");
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION + ".CP-01"); // modified
+        testInstallation.verifyModuleJar("commons-codec", "commons-codec", COMMONS_CODEC_VERSION); // not modified
+    }
+
+    @Test
+    public void updateMultiChannelUpdateAll() throws Exception {
+        testInstallation.install("org.test:pack-two:1.0.0", List.of(testChannel, testChannel2),
+                "--manifest-versions=test-channel::1.0.0,another-channel::1.0.0", "-vv");
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION);
+        testInstallation.verifyModuleJar("commons-codec", "commons-codec", COMMONS_CODEC_VERSION);
+
+        testInstallation.update(Collections.emptyList(), "--manifest-versions=test-channel::1.0.1,another-channel::1.0.1", CliConstants.YES, "-vv");
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION + ".CP-01"); // modified
+        testInstallation.verifyModuleJar("commons-codec", "commons-codec", COMMONS_CODEC_VERSION + ".CP-01"); // modified
+    }
+
+    @Test
+    public void downgradeMultiChannelRejected() throws Exception {
+        testInstallation.install("org.test:pack-two:1.0.0", List.of(testChannel, testChannel2),
+                "--manifest-versions=test-channel::1.0.1,another-channel::1.0.0", "-vv");
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION + ".CP-01");
+        testInstallation.verifyModuleJar("commons-codec", "commons-codec", COMMONS_CODEC_VERSION);
+
+        testInstallation.updateWithCheck(List.of(
+                        Pair.of(CliMessages.MESSAGES.continueWithUpdate(), "n")
+                ),
+                (ExecutionUtils.ExecutionResult e) -> {
+                    try {
+                        e.assertReturnCode(ReturnCodes.PROCESSING_ERROR);
+                        assertThat(e.getCommandOutput())
+                                .contains("The update will downgrade following channels:")
+                                .contains("  * test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0 (Logical version 1.0.0)");
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }, "--manifest-versions=test-channel::1.0.0,another-channel::1.0.0", "-vv");
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION + ".CP-01");
+        testInstallation.verifyModuleJar("commons-codec", "commons-codec", COMMONS_CODEC_VERSION);
+    }
+
+    @Test
+    public void downgradeAndUpgradeMultiChannel() throws Exception {
+        testInstallation.install("org.test:pack-two:1.0.0", List.of(testChannel, testChannel2),
+                "--manifest-versions=test-channel::1.0.1,another-channel::1.0.0", "-vv");
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION + ".CP-01");
+        testInstallation.verifyModuleJar("commons-codec", "commons-codec", COMMONS_CODEC_VERSION);
+
+        testInstallation.update(Collections.emptyList(), "--manifest-versions=test-channel::1.0.0,another-channel::1.0.1", CliConstants.YES, "-vv");
+        testInstallation.verifyModuleJar("commons-io", "commons-io", COMMONS_IO_VERSION); // downgraded
+        testInstallation.verifyModuleJar("commons-codec", "commons-codec", COMMONS_CODEC_VERSION + ".CP-01"); // upgraded
+    }
+
+    @Test
     public void listChannelVersionUpdates() throws Exception {
         testInstallation.install("org.test:pack-one:1.0.0", List.of(testChannel), "--manifest-versions=test-channel::1.0.1", "-vv");
 
@@ -225,7 +310,14 @@ public class UpdateToVersionTest extends CliTestBase {
 
         localRepository.deployGalleonPlugins();
 
+        // Install different versions of commons-io
         Artifact resolved = localRepository.resolveAndDeploy(new DefaultArtifact("commons-io", "commons-io", "jar", COMMONS_IO_VERSION));
+        resolved = resolved.setVersion(bump(resolved.getVersion()));
+        localRepository.deploy(resolved);
+        localRepository.deploy(resolved.setVersion(bump(resolved.getVersion())));
+
+        // Install different versions of commons-codec
+        resolved = localRepository.resolveAndDeploy(new DefaultArtifact("commons-codec", "commons-codec", "jar", COMMONS_CODEC_VERSION));
         resolved = resolved.setVersion(bump(resolved.getVersion()));
         localRepository.deploy(resolved);
         localRepository.deploy(resolved.setVersion(bump(resolved.getVersion())));
@@ -258,8 +350,28 @@ public class UpdateToVersionTest extends CliTestBase {
                         new Stream("org.test", "pack-one", "1.0.0")
                 )));
 
+        // deploy a different manifest that contains commons-codec (for multi-channel tests)
+        localRepository.deploy(
+                new DefaultArtifact("org.test", "another-channel", "manifest", "yaml","1.0.0"),
+                new ChannelManifest("test-manifest", "another-manifest-id", "Logical version 1.0.0", "Description", null, List.of(
+                        new Stream("commons-codec", "commons-codec", COMMONS_CODEC_VERSION),
+                        new Stream("org.test", "pack-two", "1.0.0")
+                )));
+
+        localRepository.deploy(
+                new DefaultArtifact("org.test", "another-channel", "manifest", "yaml","1.0.1"),
+                new ChannelManifest("test-manifest", "another-manifest-id", "Logical version 1.0.1", "Description", null, List.of(
+                        new Stream("commons-codec", "commons-codec", bump(COMMONS_CODEC_VERSION)),
+                        new Stream("org.test", "pack-two", "1.0.0")
+                )));
+
         localRepository.deploy(TestInstallation.fpBuilder("org.test:pack-one:1.0.0")
                 .addModule("commons-io", "commons-io", COMMONS_IO_VERSION)
+                .build());
+
+        localRepository.deploy(TestInstallation.fpBuilder("org.test:pack-two:1.0.0")
+                .addModule("commons-io", "commons-io", COMMONS_IO_VERSION)
+                .addModule("commons-codec", "commons-codec", COMMONS_CODEC_VERSION)
                 .build());
 
         return localRepository;

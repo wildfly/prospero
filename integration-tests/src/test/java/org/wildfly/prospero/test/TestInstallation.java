@@ -100,31 +100,19 @@ public class TestInstallation {
         return InstallationMetadata.loadInstallation(serverRoot);
     }
 
-    /**
-     * see {@link #install(String, List, Console, List)}
-     *
-     * @param fplName
-     * @param channels
-     * @param args
-     * @throws ProvisioningException
-     * @throws MalformedURLException
-     * @throws OperationException
-     */
-    public void install(String fplName, List<Channel> channels, String... args) throws Exception {
-        install(fplName, channels, new AcceptingConsole(), args);
+    public ExecutionUtils.ExecutionResult install(String fplName, List<Channel> channels, String... args) throws Exception {
+        return install(fplName, channels, new AcceptingConsole(), args);
     }
 
-    /**
-     * see {@link #install(String, List, Console, List)}
-     *
-     * @param fplName
-     * @param channels
-     * @param console
-     * @throws ProvisioningException
-     * @throws MalformedURLException
-     * @throws OperationException
-     */
-    public void install(String fplName, List<Channel> channels, Console console, String... args)
+    public ExecutionUtils.ExecutionResult install(int expectedReturnCode, String fplName, List<Channel> channels, String... args) throws Exception {
+        return install(expectedReturnCode, fplName, channels, new AcceptingConsole(), args);
+    }
+
+    public ExecutionUtils.ExecutionResult install(String fplName, List<Channel> channels, Console console, String... args) throws Exception {
+        return install(ReturnCodes.SUCCESS, fplName, channels, console, args);
+    }
+
+    public ExecutionUtils.ExecutionResult install(int expectedReturnCode, String fplName, List<Channel> channels, Console console, String... args)
             throws Exception {
 
         Path tempFile = null;
@@ -143,10 +131,11 @@ public class TestInstallation {
 
             Collections.addAll(argList, args);
 
-            ExecutionUtils.prosperoExecution(argList.toArray(new String[]{}))
+            ExecutionUtils.ExecutionResult executionResult = ExecutionUtils.prosperoExecution(argList.toArray(new String[]{}))
                     .withTimeLimit(10, TimeUnit.MINUTES)
                     .execute()
-                    .assertReturnCode(ReturnCodes.SUCCESS);
+                    .assertReturnCode(expectedReturnCode);
+            return executionResult;
 
         } finally {
             if (tempFile != null) {
@@ -174,25 +163,18 @@ public class TestInstallation {
         install(fplName, channels, console, CliConstants.REPOSITORIES, repoUrls.toString());
     }
 
-    /**
-     * see {@link #update(Console)}
-     * @return
-     * @throws ProvisioningException
-     * @throws OperationException
-     */
-    public List<FileConflict> update(String... args) throws Exception {
+    public ExecutionUtils.ExecutionResult update(String... args) throws Exception {
         return update(List.of(Pair.of(CliMessages.MESSAGES.continueWithUpdate(), "y")), args);
+    }
+
+    public ExecutionUtils.ExecutionResult update(Collection<Pair<String, String>> prompts, String... args) throws Exception {
+        return update(ReturnCodes.SUCCESS, prompts, args);
     }
 
     /**
      * Performs update on the test server
-     *
-     * @param console
-     * @return
-     * @throws ProvisioningException
-     * @throws OperationException
      */
-    public List<FileConflict> update(Collection<Pair<String, String>> prompts, String... args) throws Exception {
+    public ExecutionUtils.ExecutionResult update(int expectedReturnCode, Collection<Pair<String, String>> prompts, String... args) throws Exception {
         final ArrayList<String> argList = new ArrayList<>();
         Collections.addAll(argList,
                 CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
@@ -203,11 +185,9 @@ public class TestInstallation {
         final ExecutionUtils.Execution execution = ExecutionUtils.prosperoExecution(argList.toArray(new String[]{}))
                 .withTimeLimit(10, TimeUnit.MINUTES);
         prompts.forEach(p->execution.withPrompt(p.getKey(), p.getValue()));
-        execution
-                .execute()
-                .assertReturnCode(ReturnCodes.SUCCESS);
-
-        return Collections.emptyList();
+        ExecutionUtils.ExecutionResult executionResult = execution.execute()
+                .assertReturnCode(expectedReturnCode);
+        return executionResult;
     }
 
     public List<FileConflict> updateWithCheck(Collection<Pair<String, String>> prompts, Consumer<ExecutionUtils.ExecutionResult> verifier , String... args) throws Exception {

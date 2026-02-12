@@ -55,6 +55,7 @@
     <artifact name="${org.apache.maven.resolver:maven-resolver-transport-file}"/>
     <artifact name="${org.apache.maven.resolver:maven-resolver-transport-http}"/>
     <artifact name="${org.apache.maven.resolver:maven-resolver-util}"/>
+    <artifact name="${org.fusesource.jansi:jansi}"/>
   </resources>
 
   <dependencies>

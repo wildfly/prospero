@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.wildfly.prospero.test.TestLocalRepository.GALLEON_PLUGINS_VERSION;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -23,6 +24,7 @@ import org.wildfly.prospero.cli.CliMessages;
 import org.wildfly.prospero.cli.ReturnCodes;
 import org.wildfly.prospero.cli.commands.CliConstants;
 import org.wildfly.prospero.it.ExecutionUtils;
+import org.wildfly.prospero.it.utils.TestProperties;
 import org.wildfly.prospero.test.BuildProperties;
 import org.wildfly.prospero.test.TestInstallation;
 import org.wildfly.prospero.test.TestLocalRepository;
@@ -36,8 +38,15 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Before
     public void setUp() throws Exception {
-        testLocalRepository = new TestLocalRepository(temp.newFolder("local-repo").toPath(),
-                List.of(new URL("https://repo1.maven.org/maven2")));
+        List<URL> baseRepositories = TestProperties.TEST_REPO_URLS.stream().map(url -> {
+            try {
+                return new URL(url);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }).toList();
+
+        testLocalRepository = new TestLocalRepository(temp.newFolder("local-repo").toPath(), baseRepositories);
 
         prepareRequiredArtifacts(testLocalRepository);
 

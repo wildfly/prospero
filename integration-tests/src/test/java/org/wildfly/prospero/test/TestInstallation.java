@@ -298,11 +298,11 @@ public class TestInstallation {
     public String listChannelManifestUpdates(boolean allVersions) throws Exception {
         final ArrayList<String> argList = new ArrayList<>();
         Collections.addAll(argList,
-                CliConstants.Commands.UPDATE, CliConstants.Commands.LIST_CHANNELS,
+                CliConstants.Commands.UPDATE, CliConstants.Commands.LIST_MANIFEST_VERSIONS,
                 CliConstants.DIR, serverRoot.toAbsolutePath().toString());
 
         if (allVersions) {
-            argList.add(CliConstants.ALL);
+            argList.add(CliConstants.INCLUDE_DOWNGRADES);
         }
 
         final ExecutionUtils.ExecutionResult result = ExecutionUtils.prosperoExecution(argList.toArray(new String[]{}))

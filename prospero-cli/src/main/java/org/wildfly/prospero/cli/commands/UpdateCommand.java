@@ -366,10 +366,10 @@ public class UpdateCommand extends AbstractParentCommand {
         }
     }
 
-    @CommandLine.Command(name = CliConstants.Commands.LIST_CHANNELS, sortOptions = false)
+    @CommandLine.Command(name = CliConstants.Commands.LIST_MANIFEST_VERSIONS, sortOptions = false)
     public static class ListChannelsCommand extends AbstractMavenCommand {
 
-        @CommandLine.Option(names = CliConstants.ALL)
+        @CommandLine.Option(names = CliConstants.INCLUDE_DOWNGRADES)
         boolean all;
 
         public ListChannelsCommand(CliConsole console, ActionFactory actionFactory) {

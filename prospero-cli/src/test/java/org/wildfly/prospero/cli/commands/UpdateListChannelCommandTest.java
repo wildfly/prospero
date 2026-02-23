@@ -60,7 +60,7 @@ public class UpdateListChannelCommandTest extends AbstractMavenCommandTest {
 
     @Test
     public void currentDirNotValidInstallation() {
-        int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.LIST_CHANNELS);
+        int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.LIST_MANIFEST_VERSIONS);
 
         Assert.assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
@@ -122,7 +122,7 @@ public class UpdateListChannelCommandTest extends AbstractMavenCommandTest {
 
     @Override
     protected String[] getDefaultArguments() {
-        return new String[] {CliConstants.Commands.UPDATE, CliConstants.Commands.LIST_CHANNELS, CliConstants.DIR, installationDir.toString()};
+        return new String[] {CliConstants.Commands.UPDATE, CliConstants.Commands.LIST_MANIFEST_VERSIONS, CliConstants.DIR, installationDir.toString()};
     }
 
     @Override

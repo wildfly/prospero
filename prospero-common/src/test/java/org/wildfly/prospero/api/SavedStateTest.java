@@ -28,7 +28,7 @@ public class SavedStateTest {
     public void versionDisplayDefaultsToLogicalVersion() {
         final SavedState.Version version = new SavedState.Version("abcd", "1.0.0", "Logical version");
 
-        assertEquals("1.0.0 (Logical version)", version.getDisplayVersion());
+        assertEquals("abcd:1.0.0 (Logical version)", version.getDisplayVersion());
     }
 
     @Test

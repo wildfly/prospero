@@ -477,7 +477,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
     public void versionStringWithChannelNameAndVersionIsAppliedToAChannel() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "wildfly-core::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "wildfly-core::1.1.1");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         Mockito.verify(provisionAction).provisionWithChannels(any(), any(), channelCaptor.capture());
@@ -493,29 +493,29 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
                 CliConstants.CHANNELS, channelFile.toUri().toString(),
-                CliConstants.VERSION, "test-one::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.versionOverrideHasToApplyToAllChannels().getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.versionOverrideHasToApplyToAllChannels().getMessage());
     }
 
     @Test
     public void versionArgumentWithNoSeparatorIsInvalid() {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideMissingDelimiter("1.1.1").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideMissingDelimiter("1.1.1").getMessage());
     }
 
     @Test
     public void versionStringNeedsToConsistOfChannelNameAndVersion() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "wildfly-core::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "wildfly-core::1.1.1");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         Mockito.verify(provisionAction).provisionWithChannels(any(), any(), channelCaptor.capture());
@@ -529,84 +529,84 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
     public void errorWhenVersionOverrideDoesNotMatchAnyChannels() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "idontexist::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "idontexist::1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.channelNotFoundException("idontexist").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.channelNotFoundException("idontexist").getMessage());
     }
 
     @Test
     public void versionArgumentWithMissingDelimiterIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "channel1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "channel1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideMissingDelimiter("channel1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideMissingDelimiter("channel1.0.0").getMessage());
     }
 
     @Test
     public void versionArgumentWithTooManyDelimitersIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "wildfly-core::1.0.0::extra");
+                CliConstants.MANIFEST_VERSIONS, "wildfly-core::1.0.0::extra");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideTooManyDelimiters("wildfly-core::1.0.0::extra").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideTooManyDelimiters("wildfly-core::1.0.0::extra").getMessage());
     }
 
     @Test
     public void versionArgumentWithEmptyChannelNameIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "::1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "::1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyChannel("::1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyChannel("::1.0.0").getMessage());
     }
 
     @Test
     public void versionArgumentWithEmptyVersionIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "wildfly-core::");
+                CliConstants.MANIFEST_VERSIONS, "wildfly-core::");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyVersion("wildfly-core::").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyVersion("wildfly-core::").getMessage());
     }
 
     @Test
     public void versionArgumentWithWhitespaceOnlyChannelNameIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "   ::1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "   ::1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyChannel("   ::1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyChannel("   ::1.0.0").getMessage());
     }
 
     @Test
     public void versionArgumentWithWhitespaceOnlyVersionIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "wildfly-core::   ");
+                CliConstants.MANIFEST_VERSIONS, "wildfly-core::   ");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyVersion("wildfly-core::   ").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyVersion("wildfly-core::   ").getMessage());
     }
 
     @Test
     public void versionArgumentTrimsWhitespaceAroundValidValues() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
-                CliConstants.VERSION, "  wildfly-core  ::  1.1.1  ");
+                CliConstants.MANIFEST_VERSIONS, "  wildfly-core  ::  1.1.1  ");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         Mockito.verify(provisionAction).provisionWithChannels(any(), any(), channelCaptor.capture());
@@ -623,8 +623,8 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
                 CliConstants.CHANNELS, config.toUri().toString(),
-                CliConstants.VERSION, "test-one::1.1.1",
-                CliConstants.VERSION, "test-two::2.2.2");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1",
+                CliConstants.MANIFEST_VERSIONS, "test-two::2.2.2");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -644,13 +644,13 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
                 CliConstants.CHANNELS, config.toUri().toString(),
-                CliConstants.VERSION, "test-one::1.1.1",
-                CliConstants.VERSION, "test-one::1.1.2",
-                CliConstants.VERSION, "test-two::2.2.2");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1",
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.2",
+                CliConstants.MANIFEST_VERSIONS, "test-two::2.2.2");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.duplicatedVersionOverride("test-one").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.duplicatedVersionOverride("test-one").getMessage());
     }
 
     @Test
@@ -659,7 +659,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
                 CliConstants.CHANNELS, channelFile.toUri().toString(),
-                CliConstants.VERSION, "test-one::http://new.channel.com");
+                CliConstants.MANIFEST_VERSIONS, "test-one::http://new.channel.com");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         Mockito.verify(provisionAction).provisionWithChannels(any(), any(), channelCaptor.capture());
@@ -675,7 +675,7 @@ public class InstallCommandTest extends AbstractMavenCommandTest {
         int exitCode = commandLine.execute(CliConstants.Commands.INSTALL, CliConstants.DIR, "test",
                 CliConstants.PROFILE, "known-fpl",
                 CliConstants.CHANNELS, channelFile.toUri().toString(),
-                CliConstants.VERSION, "test-one::file:foo.yaml");
+                CliConstants.MANIFEST_VERSIONS, "test-one::file:foo.yaml");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         Mockito.verify(provisionAction).provisionWithChannels(any(), any(), channelCaptor.capture());

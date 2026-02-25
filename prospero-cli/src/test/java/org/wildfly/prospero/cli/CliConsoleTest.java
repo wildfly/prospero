@@ -22,6 +22,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.wildfly.prospero.api.ArtifactChange;
+import org.wildfly.prospero.api.ChannelVersion;
+import org.wildfly.prospero.api.ChannelVersionChange;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,9 +51,25 @@ public class CliConsoleTest extends AbstractConsoleTest {
     public void testUpdatesFoundWithUpdates_ArtifactChange_update() {
         final List<ArtifactChange> artifactChanges = new ArrayList<>();
         final ArtifactChange artifactChange = ArtifactChange.updated(new DefaultArtifact("test.group", "test-artifact2", "jar", "2.0.0"), new DefaultArtifact("test.group", "test-artifact2", "jar", "2.1.0"), "channel-1");
-
         artifactChanges.add(artifactChange);
-        cliConsole.updatesFound(artifactChanges);
+
+        final List<ChannelVersionChange> manifestChanges = new ArrayList<>();
+        ChannelVersion originalManifest = new ChannelVersion.Builder()
+                .setLocation("groupId:artifactId")
+                .setType(ChannelVersion.Type.MAVEN)
+                .setPhysicalVersion("1.0.0")
+                .setChannelName("channel-0")
+                .build();
+        ChannelVersion newManifest = new ChannelVersion.Builder()
+                .setLocation("groupId:artifactId")
+                .setType(ChannelVersion.Type.MAVEN)
+                .setPhysicalVersion("1.0.1")
+                .setChannelName("channel-0")
+                .build();
+        final ChannelVersionChange manifestChange = new ChannelVersionChange("channel-0", originalManifest, newManifest);
+        manifestChanges.add(manifestChange);
+
+        cliConsole.updatesFound(artifactChanges, manifestChanges);
         final String capturedOutput = outputStream.toString();
 
         assertThat(capturedOutput)
@@ -62,9 +80,25 @@ public class CliConsoleTest extends AbstractConsoleTest {
     public void testUpdatesFoundWithUpdates_ArtifactChange_add() {
         final List<ArtifactChange> artifactChanges = new ArrayList<>();
         final ArtifactChange artifactChange = ArtifactChange.added(new DefaultArtifact("test.group", "test-artifact2", "jar", "2.0.0"), "channel-1");
-
         artifactChanges.add(artifactChange);
-        cliConsole.updatesFound(artifactChanges);
+
+        final List<ChannelVersionChange> manifestChanges = new ArrayList<>();
+        ChannelVersion originalManifest = new ChannelVersion.Builder()
+                .setLocation("groupId:artifactId")
+                .setType(ChannelVersion.Type.MAVEN)
+                .setPhysicalVersion("1.0.0")
+                .setChannelName("channel-0")
+                .build();
+        ChannelVersion newManifest = new ChannelVersion.Builder()
+                .setLocation("groupId:artifactId")
+                .setType(ChannelVersion.Type.MAVEN)
+                .setPhysicalVersion("1.0.1")
+                .setChannelName("channel-0")
+                .build();
+        final ChannelVersionChange manifestChange = new ChannelVersionChange("channel-0", originalManifest, newManifest);
+        manifestChanges.add(manifestChange);
+
+        cliConsole.updatesFound(artifactChanges, manifestChanges);
         final String capturedOutput = outputStream.toString();
 
         assertThat(capturedOutput)

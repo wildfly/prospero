@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Scanner;
 
 import org.apache.commons.lang3.StringUtils;
+import org.wildfly.prospero.api.ChannelVersion;
+import org.wildfly.prospero.api.ChannelVersionChange;
 import org.wildfly.prospero.api.Console;
 import org.wildfly.prospero.api.ProvisioningProgressEvent;
 import org.wildfly.prospero.api.ArtifactChange;
@@ -152,11 +154,28 @@ public class CliConsole implements Console {
         }
     }
 
-    public void updatesFound(List<ArtifactChange> artifactUpdates) {
-        if (artifactUpdates.isEmpty()) {
+    public void updatesFound(List<ArtifactChange> artifactUpdates, List<ChannelVersionChange> manifestUpdates) {
+        if (artifactUpdates.isEmpty() && manifestUpdates.isEmpty()) {
             println(CliMessages.MESSAGES.noUpdatesFound());
-        } else {
-            println(CliMessages.MESSAGES.updatesFound());
+            return;
+        }
+
+        if (!manifestUpdates.isEmpty()) {
+            println(CliMessages.MESSAGES.manifestUpdatesFound());
+            for (ChannelVersionChange manifestUpdate : manifestUpdates) {
+                String channelName = manifestUpdate.channelName();
+                ChannelVersion original = manifestUpdate.oldVersion();
+                ChannelVersion updated = manifestUpdate.newVersion();
+                String channelDescription = String.format("%s (%s)", original.getLocation(), channelName);
+
+                printf("  %s%-40s    %20s  ==>  %-20s%n", downgradeMarker(manifestUpdate.isDowngrade()),
+                        channelDescription, original.getPhysicalVersion(), updated.getPhysicalVersion(), channelName);
+            }
+            println("");
+        }
+
+        if (!artifactUpdates.isEmpty()) {
+            println(CliMessages.MESSAGES.artifactUpdatesFound());
             for (ArtifactChange artifactUpdate : artifactUpdates) {
                 final Optional<String> newVersion = artifactUpdate.getNewVersion();
                 final Optional<String> oldVersion = artifactUpdate.getOldVersion();
@@ -164,7 +183,8 @@ public class CliConsole implements Console {
                 final String channelName = artifactUpdate.getChannelName().map(name -> "[" + name + "]")
                         .orElse("");
 
-                printf("  %s%-50s    %-20s ==>  %-20s   %-20s%n", artifactUpdate.isDowngrade()?"@|fg(yellow) [*]|@":"", artifactName, oldVersion.orElse("[]"),
+                printf("  %s%-50s    %20s  ==>  %-20s   %-20s%n",
+                        downgradeMarker(artifactUpdate.isDowngrade()), artifactName, oldVersion.orElse("[]"),
                         newVersion.orElse("[]"), channelName);
             }
 
@@ -172,6 +192,10 @@ public class CliConsole implements Console {
                 printf(CliMessages.MESSAGES.possibleDowngrade());
             }
         }
+    }
+
+    private static String downgradeMarker(boolean downgrade) {
+        return downgrade ? "@|fg(yellow) [*]|@" : "";
     }
 
     public void printArtifactChanges(List<ArtifactChange> artifactUpdates) {

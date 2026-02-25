@@ -47,7 +47,7 @@ public final class CliConstants {
         public static final String HISTORY = "history";
         public static final String INSTALL = "install";
         public static final String LIST = "list";
-        public static final String LIST_CHANNELS = "list-channels";
+        public static final String LIST_MANIFEST_VERSIONS = "list-manifest-versions";
         public static final String PERFORM = "perform";
         public static final String PREPARE = "prepare";
         public static final String PRINT_LICENSES = "print-licenses";
@@ -60,7 +60,7 @@ public final class CliConstants {
     }
 
     public static final String ACCEPT_AGREEMENTS = "--accept-license-agreements";
-    public static final String ALL = "--all";
+    public static final String INCLUDE_DOWNGRADES = "--include-downgrades";
     public static final String ARG_PATH = "--path";
     public static final String CANDIDATE_DIR = "--candidate-dir";
     public static final String CHANNEL = "--channel";
@@ -101,6 +101,7 @@ public final class CliConstants {
     public static final String V = "-v";
     public static final String VERBOSE = "--verbose";
     public static final String VERSION = "--version";
+    public static final String MANIFEST_VERSIONS = "--manifest-versions";
     public static final String VV = "-vv";
     public static final String Y = "-y";
     public static final String YES = "--yes";

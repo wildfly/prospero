@@ -56,6 +56,9 @@ public class HistoryCommand extends AbstractCommand {
             List<SavedState> revisions = historyAction.getRevisions();
             for (SavedState savedState : revisions) {
                 console.println(savedState.shortDescription());
+                for (SavedState.Version manifestVersion: savedState.getManifestVersions()) {
+                    console.println("  * " + manifestVersion.getDisplayVersion());
+                }
             }
         } else {
             InstallationChanges changes = historyAction.getRevisionChanges(new SavedState(revision.get()));

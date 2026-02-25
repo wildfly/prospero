@@ -212,14 +212,14 @@ public class UpdateAction implements AutoCloseable {
                     // add the discovered versions to the result list
                     results.add(new ChannelsUpdateResult.ChannelResult(
                             channel.getName(),
-                            channelVersion.getPhysicalVersion(),
+                            channelVersion,
                             availableChannelVersions));
                 } else {
                     // only Maven channels can have manifest versions.
                     // If it is not a maven channel, mark it as unsupported
                     results.add(new ChannelsUpdateResult.ChannelResult(
                             channel.getName(),
-                            channelVersion.getPhysicalVersion()));
+                            channelVersion));
                 }
             }
         }

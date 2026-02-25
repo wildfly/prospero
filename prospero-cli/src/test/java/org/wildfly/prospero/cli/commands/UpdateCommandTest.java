@@ -43,6 +43,7 @@ import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifestCoordinate;
 import org.wildfly.channel.ChannelMapper;
 import org.wildfly.channel.Repository;
+import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.actions.ApplyCandidateAction;
 import org.wildfly.prospero.actions.UpdateAction;
 import org.wildfly.prospero.api.ArtifactChange;
@@ -248,7 +249,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.LIST,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-channel::2.0.1");
+                CliConstants.MANIFEST_VERSIONS, "test-channel::2.0.1");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         final ArgumentCaptor<List<Channel>> channelsCaptor = ArgumentCaptor.forClass(List.class);
@@ -372,7 +373,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toString(),
-                CliConstants.VERSION, "test-channel::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "test-channel::1.1.1");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -388,99 +389,99 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toString(),
-                CliConstants.VERSION, "test-one::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.versionOverrideHasToApplyToAllChannels().getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.versionOverrideHasToApplyToAllChannels().getMessage());
     }
 
     @Test
     public void versionArgumentWithNoSeparatorIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideMissingDelimiter("1.1.1").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideMissingDelimiter("1.1.1").getMessage());
     }
 
     @Test
     public void errorWhenVersionOverrideDoesNotMatchAnyChannels() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "idontexist::1.1.1");
+                CliConstants.MANIFEST_VERSIONS, "idontexist::1.1.1");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.channelNotFoundException("idontexist").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.channelNotFoundException("idontexist").getMessage());
     }
 
     @Test
     public void versionArgumentWithMissingDelimiterIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "channel1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "channel1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideMissingDelimiter("channel1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideMissingDelimiter("channel1.0.0").getMessage());
     }
 
     @Test
     public void versionArgumentWithTooManyDelimitersIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "channel::1.0.0::extra");
+                CliConstants.MANIFEST_VERSIONS, "channel::1.0.0::extra");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideTooManyDelimiters("channel::1.0.0::extra").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideTooManyDelimiters("channel::1.0.0::extra").getMessage());
     }
 
     @Test
     public void versionArgumentWithEmptyChannelNameIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "::1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "::1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyChannel("::1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyChannel("::1.0.0").getMessage());
     }
 
     @Test
     public void versionArgumentWithEmptyVersionIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "channel::");
+                CliConstants.MANIFEST_VERSIONS, "channel::");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyVersion("channel::").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyVersion("channel::").getMessage());
     }
 
     @Test
     public void versionArgumentWithWhitespaceOnlyChannelNameIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "   ::1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "   ::1.0.0");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyChannel("   ::1.0.0").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyChannel("   ::1.0.0").getMessage());
     }
 
     @Test
     public void versionArgumentWithWhitespaceOnlyVersionIsInvalid() throws Exception {
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "channel::   ");
+                CliConstants.MANIFEST_VERSIONS, "channel::   ");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.invalidVersionOverrideEmptyVersion("channel::   ").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.invalidVersionOverrideEmptyVersion("channel::   ").getMessage());
     }
 
     @Test
@@ -491,7 +492,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toString(),
-                CliConstants.VERSION, "  test-channel  ::  1.1.1  ");
+                CliConstants.MANIFEST_VERSIONS, "  test-channel  ::  1.1.1  ");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -511,8 +512,8 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-one::1.1.1",
-                CliConstants.VERSION, "test-two::2.2.2");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1",
+                CliConstants.MANIFEST_VERSIONS, "test-two::2.2.2");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -531,13 +532,13 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-one::1.1.1",
-                CliConstants.VERSION, "test-one::1.1.2",
-                CliConstants.VERSION, "test-two::2.2.2");
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.1",
+                CliConstants.MANIFEST_VERSIONS, "test-one::1.1.2",
+                CliConstants.MANIFEST_VERSIONS, "test-two::2.2.2");
 
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains(CliMessages.MESSAGES.duplicatedVersionOverride("test-one").getMessage());
+                .contains(ProsperoLogger.ROOT_LOGGER.duplicatedVersionOverride("test-one").getMessage());
     }
 
     @Test
@@ -551,7 +552,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-one::http://new.channel.com");
+                CliConstants.MANIFEST_VERSIONS, "test-one::http://new.channel.com");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -571,7 +572,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-one::file:foo.yaml");
+                CliConstants.MANIFEST_VERSIONS, "test-one::file:foo.yaml");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
 
@@ -590,7 +591,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-channel::1.0.0");
+                CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0");
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         // expecting two confirmations - one to verify downgrade, another to verify the component list
@@ -611,7 +612,7 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
 
         int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
                 CliConstants.DIR, installationDir.toAbsolutePath().toString(),
-                CliConstants.VERSION, "test-channel::1.0.0",
+                CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0",
                 CliConstants.YES);
 
         assertEquals(ReturnCodes.SUCCESS, exitCode);

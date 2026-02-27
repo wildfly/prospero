@@ -136,6 +136,10 @@ public class UpdateCommand extends AbstractParentCommand {
                 }
 
                 try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
+                    if(updateAction.findUpdates().isEmpty()) {
+                        console.println(CliMessages.MESSAGES.noUpdatesFound());
+                        return ReturnCodes.SUCCESS;
+                    }
                     if (!performUpdate(updateAction, console, installationDir, noConflictsOnly)) {
                         return ReturnCodes.PROCESSING_ERROR;
                     }

@@ -297,6 +297,19 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
     }
 
     @Test
+    public void testPerformUpdateDoesNothingWhenUpdatesNotAvailable() throws Exception {
+        System.setProperty(UpdateCommand.JBOSS_MODULE_PATH, installationDir.toString());
+        when(updateAction.findUpdates()).thenReturn(new UpdateSet(Collections.emptyList()));
+
+        int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
+                CliConstants.DIR, installationDir.toAbsolutePath().toString());
+
+        assertEquals(ReturnCodes.SUCCESS, exitCode);
+        Mockito.verify(actionFactory).update(eq(installationDir.toAbsolutePath()), anyList(), any(), any());
+        assertEquals(0, getAskedConfirmation());
+    }
+
+    @Test
     public void testBuildUpdateTargetHasToBeEmptyDirectory() throws Exception {
         final Path updatePath = tempFolder.newFolder().toPath();
         Files.writeString(updatePath.resolve("test.txt"), "test");

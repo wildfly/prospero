@@ -17,16 +17,6 @@
 
 package org.wildfly.prospero.galleon;
 
-import org.apache.commons.io.FileUtils;
-import org.jboss.galleon.ProvisioningException;
-import org.jboss.galleon.diff.FsDiff;
-import org.jboss.galleon.universe.FeaturePackLocation;
-import org.jboss.galleon.universe.UniverseResolver;
-import org.jboss.galleon.universe.maven.repo.MavenRepoManager;
-import org.jboss.logging.Logger;
-import org.wildfly.channel.UnresolvedMavenArtifactException;
-import org.wildfly.prospero.ProsperoLogger;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,17 +32,26 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.xml.stream.XMLStreamException;
+
+import org.apache.commons.io.FileUtils;
+import org.jboss.galleon.ProvisioningException;
 import org.jboss.galleon.api.GalleonBuilder;
 import org.jboss.galleon.api.Provisioning;
 import org.jboss.galleon.api.ProvisioningBuilder;
 import org.jboss.galleon.api.config.GalleonProvisioningConfig;
+import org.jboss.galleon.diff.FsDiff;
+import org.jboss.galleon.universe.FeaturePackLocation;
+import org.jboss.galleon.universe.UniverseResolver;
+import org.jboss.galleon.universe.maven.repo.MavenRepoManager;
+import org.jboss.logging.Logger;
+import org.wildfly.channel.UnresolvedMavenArtifactException;
+import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.api.MavenOptions;
 import org.wildfly.prospero.api.exceptions.MetadataException;
 import org.wildfly.prospero.api.exceptions.OperationException;
 import org.wildfly.prospero.wfchannel.MavenSessionManager;
 
 public class GalleonUtils {
-
     public static final String MAVEN_REPO_LOCAL = "maven.repo.local";
     protected static final String JBOSS_MODULES_SETTINGS_XML_URL = "jboss.modules.settings.xml.url";
     public static final String JBOSS_FORK_EMBEDDED_PROPERTY = "jboss-fork-embedded";
@@ -70,16 +69,37 @@ public class GalleonUtils {
     private static final String CLASSPATH_SCHEME = "classpath";
     private static final String FILE_SCHEME = "file";
     private static final String OPTION_RESET_EMBEDDED_SYSTEM_PROPERTIES = "jboss-reset-embedded-system-properties";
+    private static final boolean IS_MODULAR;
 
     private static final Logger logger = Logger.getLogger(GalleonUtils.class.getName());
+
+    static {
+        boolean modular;
+        try {
+            Class.forName("org.jboss.modules.ModuleClassLoader", false, ClassLoader.getSystemClassLoader());
+            modular = true;
+        } catch (ClassNotFoundException ex) {
+            modular = false;
+        }
+        IS_MODULAR = modular;
+    }
 
     public static void executeGalleon(GalleonExecution execution, Path localRepository) throws ProvisioningException, UnresolvedMavenArtifactException {
         final Map<String, String> substitutedProperties = new HashMap<>();
         try {
             substitutedProperties.putAll(substituteProvisioningProperties(localRepository));
-
             final Map<String, String> options = new HashMap<>();
-            options.put(JBOSS_FORK_EMBEDDED_PROPERTY, JBOSS_FORK_EMBEDDED_VALUE);
+
+            // we need to set FORK EMBEDDED to false when the logger is in DEBUG
+            // https://github.com/wildfly/prospero/issues/1011
+            if (logger.isDebugEnabled() && !IS_MODULAR) {
+                logger.debug("Debug mode detected; disabling forked process to allow debugger attachment when start as a non JBoss Module way.");
+                options.put(JBOSS_FORK_EMBEDDED_PROPERTY, "false");
+            } else {
+                //When prospero is started as a JBoss Module, we MUST fork the embedded server, we don't have other alternative.
+                options.put(JBOSS_FORK_EMBEDDED_PROPERTY, JBOSS_FORK_EMBEDDED_VALUE);
+            }
+
             options.put(JBOSS_BULK_RESOLVE_PROPERTY, JBOSS_BULK_RESOLVE_VALUE);
             options.put(PRINT_ONLY_CONFLICTS_PROPERTY, PRINT_ONLY_CONFLICTS_VALUE);
             options.put(STORE_INPUT_PROVISIONING_CONFIG_PROPERTY, STORE_INPUT_PROVISIONING_CONFIG_VALUE);

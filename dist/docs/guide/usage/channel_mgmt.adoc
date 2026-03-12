@@ -11,6 +11,17 @@ Command `prospero channel list` prints a summary of subscribed channels.
 $ ./prospero.sh channel list --dir wfly-27
 Server /tmp/wfly-27 is subscribed to following channels:
 
+Use the --full parameter for a complete overview.
+wildfly-test org.wildfly.channels:wfly-27
+----
+
+As described, you can use the `--full` paramenter for a complete channel information.
+
+[bash, source]
+----
+$ ./prospero.sh channel list --dir wfly-27 --full
+Server /tmp/wfly-27 is subscribed to following channels:
+
 -------
 # channel-0
   manifest: org.wildfly.channel:wfly-27

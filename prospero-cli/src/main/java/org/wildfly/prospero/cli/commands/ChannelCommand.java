@@ -80,7 +80,7 @@ public class ChannelCommand extends AbstractCommand {
                     console.println(ChannelMapper.toYaml(channels));
                 } else {
                         ChannelManifestCoordinate coordinate = channel.getManifestCoordinate();
-                        console.println("Use the --full parameter for a complete overview.");
+                        console.println("Use the --full parameter for a complete overview.\n");
                         if (coordinate != null) {
                             // Full Maven GAV
                             if (coordinate.getVersion() != null && !coordinate.getVersion().isEmpty()) {

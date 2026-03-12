@@ -13,6 +13,56 @@ If any updates are available, Prospero will print the update summary and prompt 
 
 NOTE: The server has to be stopped during `update perform` operation
 
+#### Upgrade or downgrade to a specific WildFly channel manifest
+
+Channel manifests define the specific component versions available in a server installation. Sometimes you may need to upgrade to a specific version (not necessarily the latest) or downgrade to a previous version for compatibility or rollback purposes.
+
+*List possible updates for the installation*
+
+[source, bash]
+----
+./prospero.sh update list-manifest-versions --dir installation-dir
+----
+
+*List possible updates for the installation with `--include-downgrades` parameter*
+
+[source, bash]
+----
+./prospero.sh update list-manifest-versions --dir installation-dir --include-downgrades
+----
+
+Note that the `--include-downgrades` parameter will include older manifest versions in the list of available manifests.
+
+*List the components upgraded or downgraded on the manifest*
+
+Before applying the update, you can preview which components will change by using the `--manifest-versions` parameter with the format `<CHANNEL_NAME>::<VERSION>`:
+
+[source, bash]
+----
+./prospero.sh update list --dir installation-dir --manifest-versions wildfly::38.0.1.Final
+----
+
+*Prepare or perform the upgrade or downgrade*
+
+You can either use the two-step approach (prepare + apply) or perform the upgrade/downgrade in a single step:
+
+[source, bash]
+----
+# Option 1: Two-step approach (allows server to keep running during prepare)
+./prospero.sh update prepare --candidate-dir candidate-dir --dir installation-dir --manifest-versions wildfly::38.0.1.Final
+
+./prospero.sh update apply --candidate-dir candidate-dir --dir installation-dir
+
+# Option 2: Single-step approach (requires server to be stopped)
+./prospero.sh update perform --dir installation-dir --manifest-versions wildfly::38.0.1.Final
+----
+
+WARNING: Downgrading the manifest version will cause a warning to prevent accidental downgrades. When prompted with "The update will downgrade the following channels: ... Do you want to continue? [y/N]", select `y` to proceed.
+
+NOTE: Before performing the upgrade operation, the installation manager will print a list of changes to be performed. When prompted with "Do you want to continue? [y/N]", select `y` to proceed.
+
+NOTE: Use the `--yes` flag for non-interactive upgrades/downgrades. This parameter overrides the system prompts mentioned above.
+
 #### Checking updates
 
 `prospero update list` command can be used to check if any updates are available:
@@ -21,7 +71,6 @@ NOTE: The server has to be stopped during `update perform` operation
 ----
 $ ./prospero.sh update list --dir wfly-27
 ----
-
 
 #### Working with update candidates
 

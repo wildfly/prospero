@@ -1,0 +1,44 @@
+### Printing License Agreements
+
+Before installing a new server, it may be useful to review the license agreements that will need to be accepted during installation. The `print-licenses` command allows users to preview these agreements without performing the actual installation.
+
+#### Usage
+
+The `print-licenses` command accepts the same parameters as the `install` command, but instead of installing the server, it displays the license agreements that would be required.
+
+[source, bash]
+----
+$ ./prospero.sh print-licenses \
+      --profile wildfly \
+      --manifest /path/to/wildfly-manifest.yaml \
+      --repositories https://repo1.maven.org/maven2/
+----
+
+This command will output all licenses that need to be accepted, along with their full text.
+
+#### Using with custom feature packs
+
+When planning to install a server with custom feature packs or provisioning configurations, the `print-licenses` command can be used to preview all licenses across all components:
+
+[source, bash]
+----
+$ ./prospero.sh print-licenses \
+      --definition provisioning.xml \
+      --manifest /path/to/wildfly-manifest.yaml \
+      --repositories https://repo1.maven.org/maven2/
+----
+
+#### Accepting licenses during installation
+
+During actual installation, licenses can be accepted interactively when prompted, or automatically accepted using the `--accept-license-agreements` flag:
+
+[source, bash]
+----
+$ ./prospero.sh install \
+      --dir wfly-31 \
+      --profile wildfly \
+      --manifest /path/to/wildfly-manifest.yaml \
+      --accept-license-agreements
+----
+
+NOTE: The `--accept-license-agreements` flag should only be used when you have reviewed and agreed to all applicable licenses, such as by using the `print-licenses` command beforehand.

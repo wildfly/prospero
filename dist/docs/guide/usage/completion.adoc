@@ -1,0 +1,64 @@
+### Shell Completion
+
+Prospero provides shell completion support for bash and zsh shells. Shell completion allows you to use the Tab key to auto-complete commands, options, and arguments.
+
+#### Installing bash completion
+
+To enable bash completion for the current shell session:
+
+[source, bash]
+----
+$ source <(./prospero.sh completion)
+----
+
+To make completion permanent, add the completion script to your bash profile:
+
+[source, bash]
+----
+$ ./prospero.sh completion >> ~/.bashrc
+----
+
+Or on macOS:
+
+[source, bash]
+----
+$ ./prospero.sh completion >> ~/.bash_profile
+----
+
+#### Installing zsh completion
+
+For zsh, the completion script can also be generated and loaded:
+
+[source, bash]
+----
+$ source <(./prospero.sh completion)
+----
+
+To make it permanent for zsh:
+
+[source, bash]
+----
+$ ./prospero.sh completion > "${fpath[1]}/_prospero"
+----
+
+Then restart your shell or run:
+
+[source, bash]
+----
+$ autoload -U compinit && compinit
+----
+
+#### Using completion
+
+Once enabled, you can use Tab to complete Prospero commands:
+
+[source, bash]
+----
+$ ./prospero.sh up<TAB>
+# Completes to: ./prospero.sh update
+
+$ ./prospero.sh update <TAB>
+# Shows: apply  list  perform  prepare  subscribe  list-manifest-versions
+----
+
+Completion also works for command options and can complete file paths and directory names where appropriate.

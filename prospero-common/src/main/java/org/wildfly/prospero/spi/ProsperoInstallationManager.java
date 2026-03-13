@@ -444,12 +444,12 @@ public class ProsperoInstallationManager implements InstallationManager {
     }
 
     private static ManifestVersionChange mapChannelVersionChange(org.wildfly.prospero.api.ChannelVersionChange change) {
-        ManifestVersionPair oldVersion = new ManifestVersionPair(change.oldVersion().getPhysicalVersion(),
+        ManifestVersionPair oldVersion = change.oldVersion() == null ? null : new ManifestVersionPair(change.oldVersion().getPhysicalVersion(),
                 change.oldVersion().getLogicalVersion());
         ManifestVersionPair newVersion = new ManifestVersionPair(change.newVersion().getPhysicalVersion(),
                 change.newVersion().getLogicalVersion());
-        return new ManifestVersionChange(change.channelName(), change.oldVersion().getLocation(),
-                oldVersion, newVersion, change.isDowngrade());
+        var location = change.oldVersion() == null ? null : change.oldVersion().getLocation();
+        return new ManifestVersionChange(change.channelName(), location, oldVersion, newVersion, change.isDowngrade());
     }
 
     private static ManifestVersionPair mapChannelVersion(ChannelVersion channelVersion) {

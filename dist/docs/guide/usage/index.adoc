@@ -2,7 +2,11 @@
 
 include::install.adoc[]
 
+include::print_licenses.adoc[]
+
 include::update.adoc[]
+
+include::advanced_update.adoc[]
 
 include::channel_mgmt.adoc[]
 
@@ -11,3 +15,5 @@ include::history.adoc[]
 include::clone.adoc[]
 
 include::add_feature_pack.adoc[]
+
+include::completion.adoc[]

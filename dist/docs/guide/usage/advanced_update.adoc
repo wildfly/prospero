@@ -1,0 +1,87 @@
+### Advanced Update Operations
+
+#### Listing Available Manifest Versions
+
+When working with channels that publish multiple manifest versions, the `update list-manifest-versions` command can be used to see all available versions for each subscribed channel.
+
+[source, bash]
+----
+$ ./prospero.sh update list-manifest-versions --dir wfly-31
+Channel: wildfly
+  [✓] 31.0.0.Final [installed]
+  [ ] 31.0.1.Final
+  [ ] 31.0.2.Final
+----
+
+The command displays all manifest versions available in the channel's repository, with the currently installed version marked.
+
+##### Including downgrades
+
+By default, only versions newer than the currently installed version are shown. To see all available versions, including older versions (downgrades), use the `--include-downgrades` flag:
+
+[source, bash]
+----
+$ ./prospero.sh update list-manifest-versions --dir wfly-31 --include-downgrades
+Channel: wildfly
+  [ ] 30.0.0.Final
+  [ ] 30.0.1.Final
+  [✓] 31.0.0.Final [installed]
+  [ ] 31.0.1.Final
+  [ ] 31.0.2.Final
+----
+
+This can be useful when you need to revert to a specific manifest version or understand the full version history of a channel.
+
+##### Updating to specific manifest version
+
+While Prospero does not provide a direct command to update to a specific manifest version, you can achieve this by:
+
+1. Using `update list-manifest-versions` to find the revision hash
+2. Using `history` to find the corresponding state
+3. Using `revert` to go back to that state
+
+Alternatively, you can manually edit the channel configuration to point to a specific manifest version and then run `update perform`.
+
+#### Viewing Channel Versions
+
+The `channel versions` command displays detailed version information about the manifests used by each subscribed channel:
+
+[source, bash]
+----
+$ ./prospero.sh channel versions --dir wfly-31
+Channel: wildfly
+  manifest: org.wildfly.channel:wildfly-31.0.0.Final
+  version: 31.0.0.Final
+----
+
+This is useful for troubleshooting channel configuration or verifying which exact manifest versions are currently in use by the installation.
+
+#### Subscribing Existing Servers
+
+For servers that were not originally installed with Prospero, the `update subscribe` command can generate the necessary Prospero metadata to enable update management.
+
+[source, bash]
+----
+$ ./prospero.sh update subscribe \
+       --dir /opt/wildfly-31.0.0.Final \
+       --product wildfly \
+       --version 31.0.0.Final
+----
+
+This command:
+1. Analyzes the existing installation
+2. Creates `.prospero/` metadata directory
+3. Generates manifest with current component versions
+4. Subscribes the server to appropriate channels based on product and version
+
+##### Parameters
+
+* `--product`: The product name or feature pack identifier (e.g., "wildfly", "eap")
+* `--version`: The version of the installed product/feature pack
+* `--dir`: Directory containing the existing server installation
+
+Once subscribed, the server can be managed like any other Prospero installation, including receiving updates, viewing history, and reverting changes.
+
+NOTE: The `update subscribe` command requires an existing server installation and will fail if the directory is empty or does not contain a valid server structure.
+
+NOTE: After subscribing, the first update operation will establish the baseline for future updates by recording the initial state in Git history.

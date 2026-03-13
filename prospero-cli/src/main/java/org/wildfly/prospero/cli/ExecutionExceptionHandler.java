@@ -200,7 +200,7 @@ public class ExecutionExceptionHandler implements CommandLine.IExecutionExceptio
             console.error(" " + CliMessages.MESSAGES.attemptedRepositories());
             for (Repository repository : repositories) {
                 boolean isOffline = isOffline(b, repository);
-                String repo = String.format("%s::%s", repository.getId(), repository.getUrl());
+                String repo = String.format("%s::%s", repository.getId(), repository.getUrl()).replace("%", "%%");
                 console.error("  *" + repo + (isOffline ? " ["+ CliMessages.MESSAGES.offline() + "]" : ""));
             }
         }

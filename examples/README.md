@@ -13,18 +13,18 @@ Prospero needs two required inputs, to be able to provision an installation:
 <dl>
     <dt>Galleon Feature Pack</dt>
     <dd>
-        The *Galleon feature pack* is a package containing all the metadata required to compose an installation of the Wildfly 
+        The <i>Galleon feature pack</i> is a package containing all the metadata required to compose an installation of the Wildfly 
         or JBoss EAP application server. Among other things, the feature pack contains coordinates (GAVs) to Maven artifacts
         that the Wildfly server is composed of.
     </dd>
     <dt>Wildfly Channel</dt>
     <dd>
-        The *Wildfly Channel* is another bit of metadata. It's composed of two things: a reference to a
-        *Wildfly Channel manifest*, and a list of Maven repositories where above Maven artifacts can be found.
+        The <i>Wildfly Channel</i> is another bit of metadata. It's composed of two things: a reference to a
+        <i>Wildfly Channel Manifest</i>, and a list of Maven repositories where above Maven artifacts can be found.
     </dd>
     <dt>Wildfly Channel Manifest</dt>
     <dd>
-        The *Wildfly Channel Manifest* specifies versions of all the Maven artifacts that given feature
+        The <i>Wildfly Channel Manifest</i> specifies versions of all the Maven artifacts that given feature
         pack depends on (these version override the original Maven artifacts versions defined in the feature pack).
     </dd>
 </dl>
@@ -85,3 +85,48 @@ Description:
 * The `--fpl` option defines a feature pack to be installed.
 * The `--manifest` option defines a Wildfly Channel Manifest (specifies Maven artifacts versions).
 * The `--repositories` options defines Maven repositories to download Maven artifacts from.
+
+## Upgrade or downgrade to a specific Wildfly channel manifest
+
+You can upgrade or downgrade the Wildfly to a specific version of the channel manifest that is not the latest version. You can also choose to downgrade the channel manifest to a specific previous version.
+
+* List possible updates for the installation:
+
+```shell
+./prospero update list-manifest-versions --dir installation-dir
+```
+
+* List possible updates for the installation with `--include-downgrades` parameter:
+
+```shell
+./prospero update list-manifest-versions --dir installation-dir --include-downgrades
+```
+
+Note that the option `--include-downgrades` paramenter will include older manifest versions in the list of available manifests.
+
+* List the components updagraded or downgraded on the manifest:
+
+```shell
+./prospero update list --dir installation-dir --manifest-versions wildfly::38.0.1.Final
+```
+
+The `--manifest-versions` is the `<CHANNEL_NAME>::<VERSION>` value that will be upgraded or downgraded.
+
+* Prepare or perform the upgrade or downgrade:
+
+```shell
+
+# 1. Prepare command
+./prospero update prepare --candidate-dir candidate-dir --dir installation-dir --manifest-versions wildfly::38.0.1.Final
+
+./prospero update apply --candidate-dir candidate-dir --dir installation-dir
+
+# 2. Perform command
+./prospero update perform --dir installation-dir --manifest-versions wildfly::38.0.1.Final
+```
+
+_Downgrading the manifest version will cause a warning to issue to prevent accidental downgrade. When prompted, "The update will downgrade the following channels: ... Do you want to continue? [y/N]", select `y`._
+
+_Before performing the upgrade operation, the installation manager will print a list of changes to be performed. When prompted, "Do you want to continue? [y/N]", select `y`._
+
+**NOTE: Use the `--yes` flag for non-interactive downgrades. This parameter overrides the system prompts mentioned above.**

@@ -34,6 +34,8 @@ import org.wildfly.prospero.actions.ApplyCandidateAction;
 import org.wildfly.prospero.actions.InstallationHistoryAction;
 import org.wildfly.prospero.actions.UpdateAction;
 import org.wildfly.prospero.api.ChannelChange;
+import org.wildfly.prospero.api.ChannelVersion;
+import org.wildfly.prospero.api.ChannelVersionChange;
 import org.wildfly.prospero.api.SavedState;
 import org.wildfly.prospero.updates.UpdateSet;
 
@@ -285,5 +287,45 @@ public class ProsperoInstallationManagerTest {
         assertThatThrownBy(() -> mgr.verifyCandidate(Path.of("candidate"), CandidateType.UPDATE))
                 .hasMessageContaining("has been modified after the candidate has been created");
 
+    }
+
+    @Test
+    public void findUpdatesWithNewlyAddedChannelShouldNotThrowNPE() throws Exception {
+        final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
+
+        ChannelVersion newVersion = new ChannelVersion.Builder()
+                .setChannelName("new-channel")
+                .setLocation("org.example:fake-manifest")
+                .setPhysicalVersion("1.0.0")
+                .setLogicalVersion("1.0.0")
+                .setType(ChannelVersion.Type.MAVEN)
+                .build();
+
+        ChannelVersionChange addedChannel = new ChannelVersionChange("new-channel", null, newVersion);
+
+        when(actionFactory.getUpdateAction(Collections.emptyList(), null, true)).thenReturn(updateAction);
+        when(updateAction.findUpdates()).thenReturn(new UpdateSet(Collections.emptyList(), List.of(addedChannel)));
+
+        mgr.findUpdates(null);
+    }
+
+    @Test
+    public void findUpdatesWithRemovedChannelShouldNotThrowNPE() throws Exception {
+        final ProsperoInstallationManager mgr = new ProsperoInstallationManager(actionFactory);
+
+        ChannelVersion oldVersion = new ChannelVersion.Builder()
+                .setChannelName("new-channel")
+                .setLocation("org.example:fake-manifest")
+                .setPhysicalVersion("1.0.0")
+                .setLogicalVersion("1.0.0")
+                .setType(ChannelVersion.Type.MAVEN)
+                .build();
+
+        ChannelVersionChange addedChannel = new ChannelVersionChange("new-channel", oldVersion, null);
+
+        when(actionFactory.getUpdateAction(Collections.emptyList(), null, true)).thenReturn(updateAction);
+        when(updateAction.findUpdates()).thenReturn(new UpdateSet(Collections.emptyList(), List.of(addedChannel)));
+
+        mgr.findUpdates(null);
     }
 }

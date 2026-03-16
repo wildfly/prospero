@@ -443,12 +443,23 @@ public class ProsperoInstallationManager implements InstallationManager {
         }
     }
 
-    private static ManifestVersionChange mapChannelVersionChange(org.wildfly.prospero.api.ChannelVersionChange change) {
-        ManifestVersionPair oldVersion = new ManifestVersionPair(change.oldVersion().getPhysicalVersion(),
-                change.oldVersion().getLogicalVersion());
-        ManifestVersionPair newVersion = new ManifestVersionPair(change.newVersion().getPhysicalVersion(),
-                change.newVersion().getLogicalVersion());
-        return new ManifestVersionChange(change.channelName(), change.oldVersion().getLocation(),
+    static ManifestVersionChange mapChannelVersionChange(org.wildfly.prospero.api.ChannelVersionChange change) {
+        ManifestVersionPair oldVersion = null;
+        ManifestVersionPair newVersion = null;
+        String location = null;
+        if (change.oldVersion() != null) {
+            oldVersion = new ManifestVersionPair(change.oldVersion().getPhysicalVersion(),
+                    change.oldVersion().getLogicalVersion());
+            location = change.oldVersion().getLocation();
+        }
+        if (change.newVersion() != null) {
+            newVersion = new ManifestVersionPair(change.newVersion().getPhysicalVersion(),
+                    change.newVersion().getLogicalVersion());
+            if (location == null) {
+                location = change.newVersion().getLocation();
+            }
+        }
+        return new ManifestVersionChange(change.channelName(), location,
                 oldVersion, newVersion, change.isDowngrade());
     }
 

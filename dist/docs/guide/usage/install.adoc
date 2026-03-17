@@ -8,6 +8,8 @@ To provision a server, Prospero requires following information:
 
 #### Installing predefined server profile
 
+*Install using a Manifest YAML file*:
+
 Prospero provides a set of predefined profiles providing a simple way to install standard servers.
 
 [source, bash]
@@ -19,6 +21,30 @@ $ ./prospero.sh install \
 ----
 
 The profile defines a feature-pack name and required repositories. It can also provide manifest information, if that manifest is published in a Maven repository.
+
+*Install latest version using available Maven artifacts*
+
+Instead of providing a YAML manifest file, Prospero can install using Maven artifacts directly from repositories. This is useful when you want to quickly install the latest version without downloading a manifest file.
+
+Prospero provides the possibility to install using available Maven artifacts present on https://mvnrepository.com/artifact/org.wildfly.channels[WildFly Channel page], by using `groupID:artifactID` on the `--manifest` parameter.
+
+[source, bash]
+----
+$ ./prospero.sh install --dir wf-latest --profile wildfly-ee --manifest org.wildfly.channels:wildfly-ee
+----
+
+*Install specific version using available Maven artifacts*
+
+To install a specific version of WildFly, use the `--manifest-versions <CHANNEL_NAME>::<VERSION>` and `--profile <PROFILE_NAME>`. This is useful when you need to install a particular release for testing or compatibility reasons.
+
+[source, bash]
+----
+$ ./prospero.sh install --dir wf-38 --profile wildfly-ee --manifest-versions wildfly-ee::38.0.0.Final
+----
+
+WARNING: Specifying a full version string (e.g., `--manifest org.wildfly.channels:wildfly-ee:38.0.0.Final`) pins the installation to that specific release. Consequently, subsequent update commands will not detect or apply newer versions unless the manifest version is manually updated.
+
+NOTE: You can check available versions on https://mvnrepository.com/artifact/org.wildfly.channels/wildfly-ee[Maven Repository].
 
 #### Installing a feature pack
 

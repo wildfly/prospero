@@ -71,7 +71,6 @@ public class ChannelUpdateFinder {
     public Collection<ChannelVersion> findNewerChannelVersions(Channel channel, String channelVersion)
             throws MetadataException {
         Objects.requireNonNull(channel);
-        Objects.requireNonNull(channelVersion);
 
         return retrieveArtifactVersions(channel, channelVersion);
     }

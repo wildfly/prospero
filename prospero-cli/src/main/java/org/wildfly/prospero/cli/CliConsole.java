@@ -167,9 +167,11 @@ public class CliConsole implements Console {
                 ChannelVersion original = manifestUpdate.oldVersion();
                 ChannelVersion updated = manifestUpdate.newVersion();
                 String channelDescription = String.format("%s (%s)", original.getLocation(), channelName);
+                String originalPhysicalVersion = original.getPhysicalVersion();
+                String updatedPhysicalVersion = updated != null ? updated.getPhysicalVersion() : "-";
 
                 printf("  %s%-40s    %20s  ==>  %-20s%n", downgradeMarker(manifestUpdate.isDowngrade()),
-                        channelDescription, original.getPhysicalVersion(), updated.getPhysicalVersion(), channelName);
+                        channelDescription, originalPhysicalVersion, updatedPhysicalVersion, channelName);
             }
             println("");
         }

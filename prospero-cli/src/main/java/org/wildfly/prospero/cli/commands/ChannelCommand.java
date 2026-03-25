@@ -75,12 +75,15 @@ public class ChannelCommand extends AbstractCommand {
                 channels = metadataAction.getChannels();
             }
 
+            if(!fullList) {
+                console.println("Use the --full parameter for a complete overview.\n");
+            }
+
             for (Channel channel : channels) {
                 if (fullList) {
                     console.println(ChannelMapper.toYaml(channels));
                 } else {
                         ChannelManifestCoordinate coordinate = channel.getManifestCoordinate();
-                        console.println("Use the --full parameter for a complete overview.\n");
                         if (coordinate != null) {
                             // Full Maven GAV
                             if (coordinate.getVersion() != null && !coordinate.getVersion().isEmpty()) {

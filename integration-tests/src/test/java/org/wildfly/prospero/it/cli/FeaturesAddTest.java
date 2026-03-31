@@ -48,19 +48,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FeaturesAddTest {
-    protected static final String DATASOURCES_FP_VERSION = "4.0.0.Final";
+
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
 
     private File targetDir;
-    private String profileName;
+    private String profileName = TestProperties.SERVER_PROFILE;
     private String datasourceGalleonFp;
     private static final String DS_GROUP_ID = "org.postgresql";
     private static final String DS_ARTIFACT_ID = "postgresql";
@@ -68,19 +67,10 @@ public class FeaturesAddTest {
     protected static final Path MODULE_PATH = Path.of("modules", DS_GROUP_ID.replace('.', '/'), "jdbc");
     private Path wfChannelsFile;
 
-
     @Before
     public void setUp() throws IOException {
         targetDir = tempDir.newFolder("wildfly");
-
-        final Properties properties = new Properties();
-        properties.load(this.getClass().getClassLoader().getResourceAsStream("properties-from-pom.properties"));
-        datasourceGalleonFp = String.format("%s:%s",
-                properties.getProperty("prospero.test.datasources-feature-pack.groupId"),
-                properties.getProperty("prospero.test.datasources-feature-pack.artifactId"));
-
-        profileName = properties.getProperty("prospero.test.server.profile");
-
+        datasourceGalleonFp = String.format("%s:%s", TestProperties.DATASOURCE_FP_GROUPID, TestProperties.DATASOURCE_FP_ARTIFACTID);
         wfChannelsFile = tempDir.newFile("wf-channel.yaml").toPath();
         final List<Repository> repositories = MetadataTestUtils.defaultRemoteRepositories().stream()
                 .map(r->new Repository(r.getId(), r.getUrl())).collect(Collectors.toList());
@@ -249,10 +239,12 @@ public class FeaturesAddTest {
     }
 
     private Path generateDatasourcesManifest() throws IOException {
+
         final ChannelManifest manifest = new ChannelManifest(null, null, null, List.of(
-                new Stream("org.wildfly", "wildfly-datasources-galleon-pack", DATASOURCES_FP_VERSION),
+                new Stream(TestProperties.DATASOURCE_FP_GROUPID, TestProperties.DATASOURCE_FP_ARTIFACTID, TestProperties.DATASOURCE_FP_VERSION),
                 new Stream(DS_GROUP_ID, DS_ARTIFACT_ID, DS_VERSION))
         );
+
         final Path manifestPath = tempDir.newFile("datasources-manifest.yaml").toPath();
         Files.writeString(manifestPath, ChannelManifestMapper.toYaml(manifest));
         return manifestPath;

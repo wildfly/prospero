@@ -18,6 +18,8 @@
 package org.wildfly.prospero.it.utils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -35,6 +37,10 @@ public class TestProperties {
             WF_CHANNEL_VERSION = properties.getProperty("prospero.test.base.channel.version");
             final String testRepoUrls = properties.getProperty("prospero.test.base.repositories");
             TEST_REPO_URLS = Arrays.asList(testRepoUrls.split(","));
+            DATASOURCE_FP_GROUPID = properties.getProperty("prospero.test.datasources-feature-pack.groupId");
+            DATASOURCE_FP_ARTIFACTID = properties.getProperty("prospero.test.datasources-feature-pack.artifactId");
+            DATASOURCE_FP_VERSION = properties.getProperty("prospero.test.datasources-feature-pack.version");
+            SERVER_PROFILE = properties.getProperty("prospero.test.server.profile");
         } catch (IOException e) {
             throw new RuntimeException("Unable to read properties file", e);
         }
@@ -44,4 +50,19 @@ public class TestProperties {
     public static final String WF_CHANNEL_ARTIFACT_ID;
     public static final String WF_CHANNEL_VERSION;
     public static final List<String> TEST_REPO_URLS;
+    public static final String DATASOURCE_FP_GROUPID;
+    public static final String DATASOURCE_FP_ARTIFACTID;
+    public static final String DATASOURCE_FP_VERSION;
+    public static final String SERVER_PROFILE;
+
+    public static List<URL> testReposToUrls() {
+        return TEST_REPO_URLS.stream().map(url -> {
+            try {
+                return new URL(url);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }).toList();
+    }
+
 }

@@ -80,6 +80,7 @@
         <prospero.test.base.repositories>https://repo1.maven.org/maven2/,https://repository.jboss.org/nexus/content/groups/public/</prospero.test.base.repositories>
         <prospero.test.datasources-feature-pack.groupId>org.wildfly</prospero.test.datasources-feature-pack.groupId>
         <prospero.test.datasources-feature-pack.artifactId>wildfly-datasources-galleon-pack</prospero.test.datasources-feature-pack.artifactId>
+        <prospero.test.datasources-feature-pack.version>4.0.0.Final</prospero.test.datasources-feature-pack.version>
         <prospero.test.generate.server.profile>${prospero.test.server.profile}</prospero.test.generate.server.profile>
         <prospero.test.generate.server_dist.version>28.0.0.Final</prospero.test.generate.server_dist.version>
         <prospero.test.generate.server_dist.url>https://repo1.maven.org/maven2/org/wildfly/wildfly-dist/28.0.0.Final/wildfly-dist-28.0.0.Final.zip</prospero.test.generate.server_dist.url>

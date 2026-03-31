@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.wildfly.prospero.test.TestLocalRepository.GALLEON_PLUGINS_VERSION;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -27,15 +27,13 @@ import org.wildfly.prospero.cli.commands.CliConstants;
 import org.wildfly.prospero.it.ExecutionUtils;
 import org.wildfly.prospero.it.utils.TestProperties;
 import org.wildfly.prospero.metadata.ManifestVersionRecord;
-import org.wildfly.prospero.test.BuildProperties;
 import org.wildfly.prospero.test.TestInstallation;
 import org.wildfly.prospero.test.TestLocalRepository;
 
 public class UpdateToVersionTest extends CliTestBase {
-    protected static final String COMMONS_IO_VERSION = BuildProperties.getProperty("version.commons-io");
-    protected static final String COMMONS_CODEC_VERSION = BuildProperties.getProperty("version.commons-codec");
+    protected static final String COMMONS_IO_VERSION = "2.18.0";
+    protected static final String COMMONS_CODEC_VERSION = "1.17.1";
 
-    private TestLocalRepository testLocalRepository;
     private TestInstallation testInstallation;
     private Channel testChannel;
     private Channel testChannel2;
@@ -45,15 +43,8 @@ public class UpdateToVersionTest extends CliTestBase {
 
     @Before
     public void setUp() throws Exception {
-        List<URL> baseRepositories = TestProperties.TEST_REPO_URLS.stream().map(url -> {
-            try {
-                return new URL(url);
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-        }).toList();
 
-        testLocalRepository = prepareLocalRepository(temp.newFolder("local-repo").toPath());
+        TestLocalRepository testLocalRepository = prepareLocalRepository(temp.newFolder("local-repo").toPath());
         testInstallation = new TestInstallation(temp.newFolder("server").toPath());
         testChannel = new Channel.Builder()
                 .setName("test-channel")
@@ -305,8 +296,10 @@ public class UpdateToVersionTest extends CliTestBase {
     }
 
     public static TestLocalRepository prepareLocalRepository(Path repoPath) throws Exception {
-        TestLocalRepository localRepository = new TestLocalRepository(repoPath,
-                List.of(new URL("https://repo1.maven.org/maven2")));
+        List<URL> testRepositories = new ArrayList<>(TestProperties.testReposToUrls());
+        testRepositories.add(new URL("https://repo1.maven.org/maven2"));
+        TestLocalRepository localRepository = new TestLocalRepository(repoPath, testRepositories);
+
 
         localRepository.deployGalleonPlugins();
 

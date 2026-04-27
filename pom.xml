@@ -129,7 +129,7 @@
         <version.org.yaml.snakeyaml>2.4</version.org.yaml.snakeyaml>
         <version.junit>4.13.2</version.junit>
         <version.maven-shade-plugin>3.6.0</version.maven-shade-plugin>
-        <version.org.wildfly.channel>1.2.2.Final</version.org.wildfly.channel>
+        <version.org.wildfly.channel>1.2.3.Final</version.org.wildfly.channel>
         <version.maven-compiler-plugin>3.10.1</version.maven-compiler-plugin>
         <version.org.wildfly.galleon-pack>39.0.0.Final</version.org.wildfly.galleon-pack>
         <version.info.picocli>4.7.7</version.info.picocli>

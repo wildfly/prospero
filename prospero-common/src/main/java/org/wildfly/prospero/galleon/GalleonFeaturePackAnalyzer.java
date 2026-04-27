@@ -46,12 +46,14 @@ public class GalleonFeaturePackAnalyzer {
     private final List<Channel> channels;
     private final MavenSessionManager mavenSessionManager;
     private final Settings mavenSettings;
+    private final Path filterManifest;
 
     public GalleonFeaturePackAnalyzer(List<Channel> channels, MavenSessionManager mavenSessionManager,
-                                      Settings mavenSettings) {
+                                      Settings mavenSettings, Path filterManifest) {
         this.channels = channels;
         this.mavenSessionManager = mavenSessionManager;
         this.mavenSettings = mavenSettings;
+        this.filterManifest = filterManifest;
     }
 
     /**
@@ -148,6 +150,7 @@ public class GalleonFeaturePackAnalyzer {
                 .setProvisioningConfig(provisioningConfig)
                 .setResolvedFpTracker(fps::add)
                 .setMavenSettings(mavenSettings)
+                .setFilterManifest(filterManifest)
                 .build();
         return galleonEnv;
     }

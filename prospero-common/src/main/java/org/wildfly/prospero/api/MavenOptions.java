@@ -50,6 +50,7 @@ public class MavenOptions {
     private final Optional<Boolean> noLocalCache;
     @JsonIgnore
     private final Optional<Path> mavenSettingsPath;
+    private final Path filterManifest;
 
     public static final MavenOptions DEFAULT_OPTIONS = builder().build();
     public static final MavenOptions OFFLINE_NO_CACHE = builder()
@@ -73,13 +74,15 @@ public class MavenOptions {
         this.noLocalCache = Optional.of(noLocalCache);
         this.offline = Optional.of(offline);
         this.mavenSettingsPath = Optional.of(DEFAULT_MAVEN_SETTINGS);
+        this.filterManifest = null;
     }
 
-    private MavenOptions(Optional<Path> localCache, Optional<Boolean> offline, Optional<Boolean> noLocalCache, Optional<Path> mavenSettings) {
+    private MavenOptions(Optional<Path> localCache, Optional<Boolean> offline, Optional<Boolean> noLocalCache, Optional<Path> mavenSettings, Path filterManifest) {
         this.localCache = localCache;
         this.noLocalCache = noLocalCache;
         this.offline = offline;
         this.mavenSettingsPath = mavenSettings;
+        this.filterManifest = filterManifest;
     }
 
     public Path getLocalCache() {
@@ -119,6 +122,10 @@ public class MavenOptions {
         }
     }
 
+    public Path getFilterManifest() {
+        return filterManifest;
+    }
+
     @Override
     public String toString() {
         return "MavenOptions{" +
@@ -154,6 +161,13 @@ public class MavenOptions {
         } else if (this.mavenSettingsPath.isPresent()) {
             builder.setMavenSettingsPath(this.getMavenSettingsPath());
         }
+
+        if (override.filterManifest != null) {
+            builder.setFilterManifest(override.getFilterManifest());
+        } else if (this.filterManifest != null) {
+            builder.setFilterManifest(this.getFilterManifest());
+        }
+
         return builder.build();
     }
 
@@ -189,12 +203,13 @@ public class MavenOptions {
         private Optional<Boolean> noLocalCache = Optional.empty();
         private Optional<Path> localCachePath = Optional.empty();
         private Optional<Path> mavenSettingsPath = Optional.of(MavenOptions.DEFAULT_MAVEN_SETTINGS);
+        private Path filterManifest = null;
 
         private Builder() {
         }
 
         public MavenOptions build() {
-            return new MavenOptions(localCachePath, offline, noLocalCache, mavenSettingsPath);
+            return new MavenOptions(localCachePath, offline, noLocalCache, mavenSettingsPath, filterManifest);
         }
 
         public Builder setOffline(boolean offline) {
@@ -221,6 +236,16 @@ public class MavenOptions {
          */
         public Builder setMavenSettingsPath(Path mavenSettings) {
             this.mavenSettingsPath = Optional.of(mavenSettings);
+            return this;
+        }
+
+        /**
+         * Set filter manifest used to
+         * @param filterManifest
+         * @return
+         */
+        public Builder setFilterManifest(Path filterManifest) {
+            this.filterManifest = filterManifest;
             return this;
         }
     }

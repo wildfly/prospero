@@ -108,8 +108,8 @@ public class GalleonEnvironment implements AutoCloseable {
 
         MavenVersionsResolver.Factory factory;
         try {
-            factory = new CachedVersionResolverFactory(new VersionResolverFactory(system, session, repositoryFactory),
-                    sourceServerPath, system, session);
+            factory = new ProsperoVersionResolverFactory(new VersionResolverFactory(system, session, repositoryFactory),
+                    sourceServerPath, system, session, builder.filterManifest);
         } catch (IOException e) {
             ProsperoLogger.ROOT_LOGGER.debug("Unable to read artifact cache, falling back to Maven resolver.", e);
             factory = new VersionResolverFactory(system, session, repositoryFactory);
@@ -287,6 +287,7 @@ public class GalleonEnvironment implements AutoCloseable {
         private List<ManifestVersionRecord.MavenManifest> restoredManifestVersions;
         private final boolean useDefaultCore;
         private Settings mavenSettings;
+        private Path filterManifest;
 
         private GalleonProvisioningConfig config;
 
@@ -350,8 +351,20 @@ public class GalleonEnvironment implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Maven settings file to use for retrieving authentication credentials.
+         */
         public Builder setMavenSettings(Settings mavenSettings) {
             this.mavenSettings = mavenSettings;
+            return this;
+        }
+
+        /**
+         * Manifest used by version resolver to filter component versions. This is used to identify component versions
+         * intended for specific product stream.
+         */
+        public Builder setFilterManifest(Path filterManifest) {
+            this.filterManifest = filterManifest;
             return this;
         }
 

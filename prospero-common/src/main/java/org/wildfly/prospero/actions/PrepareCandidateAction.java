@@ -158,7 +158,7 @@ class PrepareCandidateAction implements AutoCloseable {
 
         try {
             Settings mavenSettings = prosperoConfig.getMavenOptions().getMavenSettings();
-            final GalleonFeaturePackAnalyzer galleonFeaturePackAnalyzer = new GalleonFeaturePackAnalyzer(galleonEnv.getChannels(), mavenSessionManager, mavenSettings);
+            final GalleonFeaturePackAnalyzer galleonFeaturePackAnalyzer = new GalleonFeaturePackAnalyzer(galleonEnv.getChannels(), mavenSessionManager, mavenSettings, null);
             galleonFeaturePackAnalyzer.cacheGalleonArtifacts(targetDir, provisioningConfig);
         } catch (Exception e) {
             throw new RuntimeException(e);

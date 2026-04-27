@@ -126,6 +126,7 @@ public class ProvisioningAction {
                 .setConsole(console)
                 .setProvisioningConfig(provisioningConfig)
                 .setMavenSettings(mvnOptions.getMavenSettings())
+                .setFilterManifest(mvnOptions.getFilterManifest())
                 .build()) {
 
             try {
@@ -169,7 +170,7 @@ public class ProvisioningAction {
 
         try {
             final GalleonFeaturePackAnalyzer galleonFeaturePackAnalyzer = new GalleonFeaturePackAnalyzer(channels,
-                    mavenSessionManager, mvnOptions.getMavenSettings());
+                    mavenSessionManager, mvnOptions.getMavenSettings(), mvnOptions.getFilterManifest());
 
             if (ProsperoLogger.ROOT_LOGGER.isDebugEnabled()) {
                 ProsperoLogger.ROOT_LOGGER.debug("Recording accepted licenses");
@@ -215,7 +216,7 @@ public class ProvisioningAction {
         Objects.requireNonNull(channels);
 
         final GalleonFeaturePackAnalyzer exporter = new GalleonFeaturePackAnalyzer(channels, mavenSessionManager,
-                mvnOptions.getMavenSettings());
+                mvnOptions.getMavenSettings(), mvnOptions.getFilterManifest());
         return getPendingLicenses(provisioningConfig, exporter);
     }
 

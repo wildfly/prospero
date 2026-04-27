@@ -85,6 +85,12 @@ public abstract class AbstractInstallCommand extends AbstractCommand {
     )
     Optional<Path> mavenSettings = Optional.empty();
 
+    @CommandLine.Option(
+            names = CliConstants.FILTER_MANIFEST,
+            order = 8
+    )
+    Optional<Path> filterManifest = Optional.empty();
+
     public AbstractInstallCommand(CliConsole console, ActionFactory actionFactory) {
         super(console, actionFactory);
     }
@@ -93,6 +99,7 @@ public abstract class AbstractInstallCommand extends AbstractCommand {
         final MavenOptions.Builder mavenOptions = localRepoOptions.toOptions();
         offline.map(mavenOptions::setOffline);
         mavenSettings.map(mavenOptions::setMavenSettingsPath);
+        filterManifest.map(mavenOptions::setFilterManifest);
         return mavenOptions.build();
     }
 

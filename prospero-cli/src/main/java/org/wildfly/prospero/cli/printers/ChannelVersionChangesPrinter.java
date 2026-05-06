@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.wildfly.prospero.DistributionInfo;
 import org.wildfly.prospero.ProsperoLogger;
 import org.wildfly.prospero.api.ChannelVersion;
@@ -57,18 +56,14 @@ public class ChannelVersionChangesPrinter {
 
     public void printUnexpectedDowngradesError(Collection<ChannelVersionChange> downgrades, CommandLine.Model.CommandSpec spec) {
         logger.errorf("Displaying unexpected downgrade error to user for %d channel(s)", downgrades.size());
-        final StringBuilder versionArg = new StringBuilder();
-        for (ChannelVersionChange downgrade : downgrades) {
+        List<String> formattedDowngrades = downgrades.stream().map(downgrade -> {
             logger.debugf("Building version arg for unexpected downgrade: %s::%s",
-                downgrade.channelName(),
-                downgrade.newVersion().getPhysicalVersion());
-            versionArg.append("--manifest-versions=")
-                    .append(downgrade.channelName())
-                    .append("::")
-                    .append(downgrade.newVersion().getPhysicalVersion())
-                    .append(" ");
-        }
-        console.println(CliMessages.MESSAGES.unexpectedVersionsHeader(buildCommandString(spec) + versionArg));
+                    downgrade.channelName(), downgrade.newVersion().getPhysicalVersion());
+            return downgrade.channelName() + "::" + downgrade.newVersion().getPhysicalVersion();
+        }).toList();
+        String versionArg = buildManifestVersionsSuggestion(formattedDowngrades);
+        String suggestedCommand = buildCommandString(spec) + " " + versionArg;
+        console.println(CliMessages.MESSAGES.unexpectedVersionsHeader(suggestedCommand));
     }
 
     public void printAvailableChannelChanges(ChannelsUpdateResult result, String serverDir) {
@@ -102,9 +97,9 @@ public class ChannelVersionChangesPrinter {
 
         console.println("");
 
-        final String updateCmd = "  %s %s %s %s %s %s %s".formatted(
+        final String updateCmd = "  %s %s %s %s %s %s".formatted(
                 DistributionInfo.DIST_NAME, CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
-                CliConstants.DIR, serverDir, CliConstants.MANIFEST_VERSIONS, StringUtils.join(currentManifestVersions, ","));
+                CliConstants.DIR, serverDir, buildManifestVersionsSuggestion(currentManifestVersions));
         console.println(CliMessages.MESSAGES.channelVersionUpdateListUpdateCommandSuggestion(updateCmd));
     }
 
@@ -116,5 +111,10 @@ public class ChannelVersionChangesPrinter {
         args.forEach(a->sb.append(a).append(" "));
 
         return sb.toString().trim();
+    }
+
+    private String buildManifestVersionsSuggestion(List<String> manifestVersions) {
+        return CliConstants.MANIFEST_VERSIONS + CliConstants.Others.FLAG_SEPARATOR
+                + String.join(CliConstants.Others.VALUE_DELIMETER, manifestVersions);
     }
 }

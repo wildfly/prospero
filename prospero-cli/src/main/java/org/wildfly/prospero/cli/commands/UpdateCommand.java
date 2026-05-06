@@ -76,10 +76,7 @@ import picocli.CommandLine;
 
 import org.jboss.galleon.api.config.GalleonProvisioningConfig;
 
-@CommandLine.Command(
-        name = CliConstants.Commands.UPDATE,
-        sortOptions = false
-)
+@CommandLine.Command(name = CliConstants.Commands.UPDATE, sortOptions = false)
 public class UpdateCommand extends AbstractParentCommand {
 
     private static final Logger log = Logger.getLogger(UpdateCommand.class);
@@ -94,7 +91,7 @@ public class UpdateCommand extends AbstractParentCommand {
         @CommandLine.Option(names = CliConstants.SELF)
         boolean self;
 
-        @CommandLine.Option(names = {CliConstants.NO_CONFLICTS_ONLY})
+        @CommandLine.Option(names = { CliConstants.NO_CONFLICTS_ONLY })
         boolean noConflictsOnly;
 
         public PerformCommand(CliConsole console, ActionFactory actionFactory) {
@@ -135,8 +132,9 @@ public class UpdateCommand extends AbstractParentCommand {
                             .build();
                 }
 
-                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
-                    if(updateAction.findUpdates().isEmpty()) {
+                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions,
+                        console)) {
+                    if (updateAction.findUpdates().isEmpty()) {
                         console.println(CliMessages.MESSAGES.noUpdatesFound());
                         return ReturnCodes.SUCCESS;
                     }
@@ -152,7 +150,8 @@ public class UpdateCommand extends AbstractParentCommand {
             return ReturnCodes.SUCCESS;
         }
 
-        private boolean performUpdate(UpdateAction updateAction, CliConsole console, Path installDir, boolean noConflictsOnly) throws OperationException, ProvisioningException {
+        private boolean performUpdate(UpdateAction updateAction, CliConsole console, Path installDir,
+                boolean noConflictsOnly) throws OperationException, ProvisioningException {
             Path targetDir = null;
             try {
                 targetDir = Files.createTempDirectory("update-candidate");
@@ -169,7 +168,8 @@ public class UpdateCommand extends AbstractParentCommand {
                             throw CliMessages.MESSAGES.cancelledByConfilcts();
                         }
 
-                        if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), "", CliMessages.MESSAGES.updateCancelled())) {
+                        if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), "",
+                                CliMessages.MESSAGES.updateCancelled())) {
                             return false;
                         }
                     }
@@ -216,7 +216,6 @@ public class UpdateCommand extends AbstractParentCommand {
 
                 console.println(CliMessages.MESSAGES.buildUpdateCandidateHeader(installationDir));
 
-
                 verifyTargetDirectoryIsEmpty(candidateDirectory);
 
                 final List<Channel> overrideChannels;
@@ -257,13 +256,13 @@ public class UpdateCommand extends AbstractParentCommand {
         @CommandLine.Option(names = CliConstants.REMOVE)
         boolean remove;
 
-        @CommandLine.Option(names = {CliConstants.Y, CliConstants.YES})
+        @CommandLine.Option(names = { CliConstants.Y, CliConstants.YES })
         boolean yes;
 
-        @CommandLine.Option(names = {CliConstants.NO_CONFLICTS_ONLY})
+        @CommandLine.Option(names = { CliConstants.NO_CONFLICTS_ONLY })
         boolean noConflictsOnly;
 
-        @CommandLine.Option(names = {CliConstants.DRY_RUN})
+        @CommandLine.Option(names = { CliConstants.DRY_RUN })
         boolean dryRun;
 
         public ApplyCommand(CliConsole console, ActionFactory actionFactory) {
@@ -276,17 +275,20 @@ public class UpdateCommand extends AbstractParentCommand {
 
             final Path installationDir = determineInstallationDirectory(directory);
 
-            if(!verifyDirectoryContainsInstallation(candidateDir)){
+            if (!verifyDirectoryContainsInstallation(candidateDir)) {
                 throw CliMessages.MESSAGES.invalidInstallationDir(candidateDir);
             }
 
             console.println(CliMessages.MESSAGES.updateHeader(installationDir));
 
-            final ApplyCandidateAction applyCandidateAction = actionFactory.applyUpdate(installationDir.toAbsolutePath(), candidateDir.toAbsolutePath());
+            final ApplyCandidateAction applyCandidateAction = actionFactory
+                    .applyUpdate(installationDir.toAbsolutePath(), candidateDir.toAbsolutePath());
 
-            final ApplyCandidateAction.ValidationResult result = applyCandidateAction.verifyCandidate(ApplyCandidateAction.Type.UPDATE);
+            final ApplyCandidateAction.ValidationResult result = applyCandidateAction
+                    .verifyCandidate(ApplyCandidateAction.Type.UPDATE);
             if (ApplyCandidateAction.ValidationResult.STALE == result) {
-                throw CliMessages.MESSAGES.updateCandidateStateNotMatched(installationDir, candidateDir.toAbsolutePath());
+                throw CliMessages.MESSAGES.updateCandidateStateNotMatched(installationDir,
+                        candidateDir.toAbsolutePath());
             } else if (ApplyCandidateAction.ValidationResult.WRONG_TYPE == result) {
                 throw CliMessages.MESSAGES.updateCandidateWrongType(installationDir, ApplyCandidateAction.Type.UPDATE);
             } else if (ApplyCandidateAction.ValidationResult.NOT_CANDIDATE == result) {
@@ -308,19 +310,19 @@ public class UpdateCommand extends AbstractParentCommand {
             }
 
             // there always should be updates, so confirm update
-            if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), CliMessages.MESSAGES.applyingUpdates(), CliMessages.MESSAGES.updateCancelled())) {
+            if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(),
+                    CliMessages.MESSAGES.applyingUpdates(), CliMessages.MESSAGES.updateCancelled())) {
                 return ReturnCodes.SUCCESS;
             }
 
             applyCandidateAction.applyUpdate(ApplyCandidateAction.Type.UPDATE);
             console.updatesComplete();
 
-            if(remove) {
+            if (remove) {
                 applyCandidateAction.removeCandidate(candidateDir.toFile());
             }
             final float totalTime = (System.currentTimeMillis() - startTime) / 1000f;
             console.println(CliMessages.MESSAGES.operationCompleted(totalTime));
-
 
             return ReturnCodes.SUCCESS;
         }
@@ -329,15 +331,13 @@ public class UpdateCommand extends AbstractParentCommand {
     @CommandLine.Command(name = CliConstants.Commands.LIST, sortOptions = false)
     public static class ListCommand extends AbstractMavenCommand {
 
-        @CommandLine.Option(
-                names = CliConstants.MANIFEST_VERSIONS,
-                split = ","
-        )
+        @CommandLine.Option(names = CliConstants.MANIFEST_VERSIONS, split = ",")
         protected List<String> versions = new ArrayList<>();
 
         public ListCommand(CliConsole console, ActionFactory actionFactory) {
             super(console, actionFactory);
         }
+
         @Override
         public Integer call() throws Exception {
             final long startTime = System.currentTimeMillis();
@@ -357,7 +357,8 @@ public class UpdateCommand extends AbstractParentCommand {
                             .withManifestVersions(versions)
                             .build();
                 }
-                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
+                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions,
+                        console)) {
                     final UpdateSet updateSet = updateAction.findUpdates();
                     console.updatesFound(updateSet.getArtifactUpdates(), updateSet.getChannelVersionChanges());
                 }
@@ -379,6 +380,7 @@ public class UpdateCommand extends AbstractParentCommand {
         public ListChannelsCommand(CliConsole console, ActionFactory actionFactory) {
             super(console, actionFactory);
         }
+
         @Override
         public Integer call() throws Exception {
             final long startTime = System.currentTimeMillis();
@@ -398,9 +400,11 @@ public class UpdateCommand extends AbstractParentCommand {
                             .build();
                 }
 
-                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions, console)) {
+                try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels, mavenOptions,
+                        console)) {
                     final ChannelsUpdateResult result = updateAction.findChannelUpdates(all);
-                    new ChannelVersionChangesPrinter(console).printAvailableChannelChanges(result, installationDir.toString());
+                    new ChannelVersionChangesPrinter(console).printAvailableChannelChanges(result,
+                            installationDir.toString());
                 }
 
                 final float totalTime = (System.currentTimeMillis() - startTime) / 1000f;
@@ -420,7 +424,7 @@ public class UpdateCommand extends AbstractParentCommand {
         @CommandLine.Option(names = CliConstants.VERSION)
         String version;
 
-        @CommandLine.Option(names = {CliConstants.Y, CliConstants.YES})
+        @CommandLine.Option(names = { CliConstants.Y, CliConstants.YES })
         boolean yes;
 
         public SubscribeCommand(CliConsole console, ActionFactory actionFactory) {
@@ -431,7 +435,7 @@ public class UpdateCommand extends AbstractParentCommand {
         public Integer call() throws Exception {
             final Path installDir = directory.orElse(currentDir()).toAbsolutePath();
             if (Files.exists(ProsperoMetadataUtils.manifestPath(installDir))
-              || Files.exists(ProsperoMetadataUtils.configurationPath(installDir))) {
+                    || Files.exists(ProsperoMetadataUtils.configurationPath(installDir))) {
                 console.println(CliMessages.MESSAGES.metadataExistsAlready(installDir, DistributionInfo.DIST_NAME));
                 return ReturnCodes.INVALID_ARGUMENTS;
             }
@@ -451,28 +455,32 @@ public class UpdateCommand extends AbstractParentCommand {
             try (TemporaryFilesManager temporaryFiles = TemporaryFilesManager.newInstance()) {
                 final List<Repository> repositories = RepositoryUtils.unzipArchives(
                         RepositoryDefinition.from(temporaryRepositories), temporaryFiles);
-                final List<Channel> tempChannels = TemporaryRepositoriesHandler.overrideRepositories(channels, repositories);
+                final List<Channel> tempChannels = TemporaryRepositoriesHandler.overrideRepositories(channels,
+                        repositories);
 
-                SubscribeNewServerAction subscribeNewServerAction = actionFactory.subscribeNewServerAction(parseMavenOptions(), console);
-                SubscribeNewServerAction.GenerateResult generateResult = subscribeNewServerAction.generateServerMetadata(tempChannels, loc);
+                SubscribeNewServerAction subscribeNewServerAction = actionFactory
+                        .subscribeNewServerAction(parseMavenOptions(), console);
+                SubscribeNewServerAction.GenerateResult generateResult = subscribeNewServerAction
+                        .generateServerMetadata(tempChannels, loc);
                 generateMeta(installDir, generateResult);
             }
 
             return ReturnCodes.SUCCESS;
         }
 
-        private void generateMeta(Path installDir, SubscribeNewServerAction.GenerateResult generateResult) throws IOException, ProvisioningException {
+        private void generateMeta(Path installDir, SubscribeNewServerAction.GenerateResult generateResult)
+                throws IOException, ProvisioningException {
             // compare hashes
             FsEntryFactory fsEntryFactory = FsEntryFactory.getInstance()
-              .filterGalleonPaths()
-              .filter(ProsperoMetadataUtils.METADATA_DIR);
+                    .filterGalleonPaths()
+                    .filter(ProsperoMetadataUtils.METADATA_DIR);
             final FsEntry originalState = fsEntryFactory.forPath(generateResult.getProvisionDir());
             final FsEntry currentState = fsEntryFactory.forPath(installDir);
             final FsDiff diff = FsDiff.diff(originalState, currentState);
 
             if (!yes && hasChangedEntries(diff)
                     && !console.confirm(CliMessages.MESSAGES.conflictsWhenGenerating(diff.toString()),
-                    CliMessages.MESSAGES.continueGenerating(), CliMessages.MESSAGES.quitGenerating())) {
+                            CliMessages.MESSAGES.continueGenerating(), CliMessages.MESSAGES.quitGenerating())) {
                 return;
             }
 
@@ -498,12 +506,14 @@ public class UpdateCommand extends AbstractParentCommand {
             List<Channel> channels = generateResult.getChannels();
             if (!generateResult.isManifestCoordDefined()) {
                 // if manifest is not defined, make a copy of manifest
-                Path manifestPathCopy = manifestPath.getParent().resolve("manifest-" + product + "-" + version + ".yaml");
+                Path manifestPathCopy = manifestPath.getParent()
+                        .resolve("manifest-" + product + "-" + version + ".yaml");
                 Files.copy(manifestPath, manifestPathCopy, StandardCopyOption.REPLACE_EXISTING);
                 channels = channels.stream().map(c -> {
                     try {
                         return new Channel(c.getName(), c.getDescription(), c.getVendor(), c.getRepositories(),
-                          new ChannelManifestCoordinate(manifestPathCopy.toUri().toURL()), c.getBlocklistCoordinate(), c.getNoStreamStrategy());
+                                new ChannelManifestCoordinate(manifestPathCopy.toUri().toURL()),
+                                c.getBlocklistCoordinate(), c.getNoStreamStrategy());
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }
@@ -518,10 +528,13 @@ public class UpdateCommand extends AbstractParentCommand {
             return diff.hasAddedEntries() || diff.hasModifiedEntries() || diff.hasRemovedEntries();
         }
 
-        private FeaturePackLocation getFpl(InstallationProfile knownFeaturePack, String version) throws MetadataException, ProvisioningException {
-            GalleonProvisioningConfig config = GalleonUtils.readProvisioningConfig(knownFeaturePack.getGalleonConfiguration());
+        private FeaturePackLocation getFpl(InstallationProfile knownFeaturePack, String version)
+                throws MetadataException, ProvisioningException {
+            GalleonProvisioningConfig config = GalleonUtils
+                    .readProvisioningConfig(knownFeaturePack.getGalleonConfiguration());
             if (config.getFeaturePackDeps().isEmpty()) {
-                throw new ProvisioningException("At least one feature pack location must be specified in the provisioning configuration");
+                throw new ProvisioningException(
+                        "At least one feature pack location must be specified in the provisioning configuration");
             }
             FeaturePackLocation fpl = config.getFeaturePackDeps().iterator().next().getLocation();
             String[] split = fpl.toString().split(":");
@@ -532,16 +545,13 @@ public class UpdateCommand extends AbstractParentCommand {
 
     public abstract static class UpdateBuildCommand extends AbstractMavenCommand {
 
-        @CommandLine.Option(names = {CliConstants.Y, CliConstants.YES})
+        @CommandLine.Option(names = { CliConstants.Y, CliConstants.YES })
         boolean yes;
 
         @CommandLine.Spec
         protected CommandLine.Model.CommandSpec spec;
 
-        @CommandLine.Option(
-                names = CliConstants.MANIFEST_VERSIONS,
-                split = ","
-        )
+        @CommandLine.Option(names = CliConstants.MANIFEST_VERSIONS, split = ",")
         protected List<String> versions = new ArrayList<>();
 
         public UpdateBuildCommand(CliConsole console, ActionFactory actionFactory) {
@@ -549,7 +559,7 @@ public class UpdateCommand extends AbstractParentCommand {
         }
 
         protected boolean buildUpdate(UpdateAction updateAction, Path updateDirectory,
-                                           Supplier<Boolean> confirmation) throws OperationException, ProvisioningException {
+                Supplier<Boolean> confirmation) throws OperationException, ProvisioningException {
             // Log version overrides being applied
             if (!versions.isEmpty()) {
                 log.infof("Applying version overrides: %s", versions);
@@ -561,14 +571,15 @@ public class UpdateCommand extends AbstractParentCommand {
             final List<ChannelVersionChange> channelChanges = updateSet.getChannelVersionChanges();
             log.debugf("Found %d channel version changes", channelChanges.size());
 
-            final List<ChannelVersionChange> downgrades = channelChanges.stream().filter(ChannelVersionChange::isDowngrade).toList();
+            final List<ChannelVersionChange> downgrades = channelChanges.stream()
+                    .filter(ChannelVersionChange::isDowngrade).toList();
             if (!downgrades.isEmpty()) {
                 log.warnf("Detected %d potential downgrade(s)", downgrades.size());
                 for (ChannelVersionChange downgrade : downgrades) {
                     log.warnf("Downgrade detected: %s: %s -> %s",
-                        downgrade.channelName(),
-                        downgrade.oldVersion().getPhysicalVersion(),
-                        downgrade.newVersion().getPhysicalVersion());
+                            downgrade.channelName(),
+                            downgrade.oldVersion().getPhysicalVersion(),
+                            downgrade.newVersion().getPhysicalVersion());
                 }
 
                 // check that each flagged downgrade is listed specifically in the versions
@@ -583,7 +594,8 @@ public class UpdateCommand extends AbstractParentCommand {
                     log.infof("All downgrades are explicitly requested via version overrides");
                 }
 
-                if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), "", CliMessages.MESSAGES.updateCancelled())) {
+                if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), "",
+                        CliMessages.MESSAGES.updateCancelled())) {
                     log.infof("Update cancelled by user due to downgrades");
                     return false;
                 }
@@ -596,7 +608,7 @@ public class UpdateCommand extends AbstractParentCommand {
             }
 
             if (!yes && !confirmation.get()) {
-                return false;
+                return true;
             }
 
             updateAction.buildUpdate(updateDirectory.toAbsolutePath());
@@ -626,13 +638,12 @@ public class UpdateCommand extends AbstractParentCommand {
     public UpdateCommand(CliConsole console, ActionFactory actionFactory) {
         super(console, actionFactory, CliConstants.Commands.UPDATE,
                 List.of(
-                    new UpdateCommand.PrepareCommand(console, actionFactory),
-                    new UpdateCommand.ApplyCommand(console, actionFactory),
-                    new UpdateCommand.PerformCommand(console, actionFactory),
-                    new UpdateCommand.ListCommand(console, actionFactory),
-                    new ListChannelsCommand(console, actionFactory),
-                    new SubscribeCommand(console, actionFactory))
-        );
+                        new UpdateCommand.PrepareCommand(console, actionFactory),
+                        new UpdateCommand.ApplyCommand(console, actionFactory),
+                        new UpdateCommand.PerformCommand(console, actionFactory),
+                        new UpdateCommand.ListCommand(console, actionFactory),
+                        new ListChannelsCommand(console, actionFactory),
+                        new SubscribeCommand(console, actionFactory)));
     }
 
     public static void verifyInstallationContainsOnlyProspero(Path dir) throws ArgumentParsingException {

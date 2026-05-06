@@ -331,7 +331,7 @@ public class UpdateCommand extends AbstractParentCommand {
 
         @CommandLine.Option(
                 names = CliConstants.MANIFEST_VERSIONS,
-                split = ","
+                split = CliConstants.Others.VALUE_DELIMETER
         )
         protected List<String> versions = new ArrayList<>();
 
@@ -540,7 +540,7 @@ public class UpdateCommand extends AbstractParentCommand {
 
         @CommandLine.Option(
                 names = CliConstants.MANIFEST_VERSIONS,
-                split = ","
+                split = CliConstants.Others.VALUE_DELIMETER
         )
         protected List<String> versions = new ArrayList<>();
 

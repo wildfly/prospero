@@ -58,7 +58,7 @@ public class FeaturesCommand extends AbstractParentCommand {
         private String fpl;
 
 
-        @CommandLine.Option(names = CliConstants.LAYERS, split = ",", required = false)
+        @CommandLine.Option(names = CliConstants.LAYERS, split = CliConstants.Others.VALUE_DELIMETER, required = false)
         private final Set<String> layers = new HashSet<>();
 
         @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

@@ -68,7 +68,7 @@ public class ChannelAddCommand extends AbstractCommand {
         @CommandLine.Option(names = CliConstants.CHANNEL_MANIFEST, required = true)
         private String manifestLocation;
 
-        @CommandLine.Option(names = CliConstants.REPOSITORIES, split = ",", paramLabel = CliConstants.REPO_URL, required = true)
+        @CommandLine.Option(names = CliConstants.REPOSITORIES, split = CliConstants.Others.VALUE_DELIMETER, paramLabel = CliConstants.REPO_URL, required = true)
         private List<String> repositoryDefs;
     }
 

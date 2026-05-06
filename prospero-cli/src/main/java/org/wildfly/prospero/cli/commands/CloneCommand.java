@@ -103,7 +103,7 @@ public class CloneCommand extends AbstractCommand {
         Path inPath;
 
         @CommandLine.Option(
-          names = CliConstants.REPOSITORIES, paramLabel = CliConstants.REPO_URL, split = ",", order = 3
+                names = CliConstants.REPOSITORIES, paramLabel = CliConstants.REPO_URL, split = CliConstants.Others.VALUE_DELIMETER, order = 3
         )
         List<String> remoteRepositories = new ArrayList<>();
 

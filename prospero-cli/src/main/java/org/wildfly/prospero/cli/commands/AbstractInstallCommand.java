@@ -50,23 +50,21 @@ public abstract class AbstractInstallCommand extends AbstractCommand {
             names = {CliConstants.CHANNELS, CliConstants.CHANNEL},
             paramLabel = CliConstants.CHANNEL_REFERENCE,
             order = 2,
-            split = ","
+            split = CliConstants.Others.VALUE_DELIMETER
     )
     List<String> channelCoordinates = new ArrayList<>();
 
     @CommandLine.Option(
             names = CliConstants.CHANNEL_MANIFEST,
             paramLabel = CliConstants.CHANNEL_MANIFEST_REFERENCE,
-            split = ",",
-            order = 3
+            split = CliConstants.Others.VALUE_DELIMETER, order = 3
     )
     List<String> manifestCoordinates = Collections.emptyList();
 
     @CommandLine.Option(
             names = CliConstants.REPOSITORIES,
             paramLabel = CliConstants.REPO_URL,
-            split = ",",
-            order = 4
+            split = CliConstants.Others.VALUE_DELIMETER, order = 4
     )
     List<String> remoteRepositories = new ArrayList<>();
 

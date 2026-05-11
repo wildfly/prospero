@@ -111,7 +111,7 @@ public class UpdateListChannelCommandTest extends AbstractMavenCommandTest {
                 .contains(CliMessages.MESSAGES.channelVersionUpdateListChannelName() + ": test-channel")
                 .contains(CliMessages.MESSAGES.channelVersionUpdateListCurrentVersion() + ": 1.0.0")
                 .contains(CliMessages.MESSAGES.channelVersionUpdateListAvailableVersions())
-                .contains("- 1.0.1");
+                .contains("· 1.0.1");
     }
 
     @Override

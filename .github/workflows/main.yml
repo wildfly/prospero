@@ -6,19 +6,25 @@ on:
       - main
     paths-ignore:
       - '.gitignore'
-      - 'examples'
+      - 'examples/**'
       - 'README.md'
   pull_request:
     branches-ignore:
       - 'future'
     paths-ignore:
       - '.gitignore'
-      - 'examples'
+      - 'examples/**'
       - 'README.md'
+
+permissions:
+  contents: read
+
+env:
+  MAVEN_ARGS: --show-version --batch-mode --no-transfer-progress
 
 jobs:
   build:
-    name: ${{ matrix.os }}-${{ matrix.jdk }}
+    name: Build (${{ matrix.os }} - JDK ${{ matrix.jdk }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -26,47 +32,63 @@ jobs:
         os: [ ubuntu-latest, windows-latest ]
         jdk: [ 17, 21, 25 ]
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set up JDK ${{ matrix.jdk }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ matrix.jdk }}
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: maven
-      - name: Build and test
+
+      - name: Build and test (Windows)
         if: runner.os == 'Windows'
         run: mvn clean install -DallTests -Pdist '-Dskip.container.tests=true'
-      - name: Build and test
+
+      - name: Build and test (Unix)
         if: runner.os != 'Windows'
         run: mvn clean install -DallTests -Pdist '-Dskip.container.tests=false'
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload Surefire Reports
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: surefire-reports-${{ matrix.os }}-${{ matrix.jdk }}
+          name: surefire-reports-${{ matrix.os }}-jdk${{ matrix.jdk }}
           path: '**/surefire-reports/*.txt'
+          retention-days: 7
+
   pmd:
     name: ubuntu-latest-pmd
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
         with:
-          java-version: 17
-          distribution: 'adopt'
+          java-version: '17'
+          distribution: 'temurin'
           cache: maven
-      - name: Build and test
+
+      - name: Run PMD Check
         run: mvn pmd:aggregate-pmd-check -DskipTests
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload PMD Report
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: pmd-reports
           path: 'target/pmd.xml'
+          retention-days: 7
       - name: Display report
         if: failure()
-        run: cat target/pmd.xml
-
+        run: |
+          if [[ -f target/pmd.xml ]]; then
+            cat target/pmd.xml
+          else
+            echo "PMD report not found"
+          fi

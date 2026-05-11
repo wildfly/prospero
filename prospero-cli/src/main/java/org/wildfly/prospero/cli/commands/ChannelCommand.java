@@ -77,7 +77,7 @@ public class ChannelCommand extends AbstractCommand {
             }
 
             if(!fullList) {
-                console.println("Use the --full parameter for a complete overview.\n");
+                console.println("Use the `--full` parameter for a complete overview.\n");
             }
 
             final ListPrinter listPrinter = ListPrinter.ordered(console);

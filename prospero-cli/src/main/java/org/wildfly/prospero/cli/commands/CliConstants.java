@@ -108,4 +108,12 @@ public final class CliConstants {
     public static final String NO_CONFLICTS_ONLY = "--no-conflicts-only";
     public static final String DRY_RUN = "--dry-run";
 
+    public static final class Others {
+
+        private Others() {
+        }
+
+        public static final String FLAG_SEPARATOR = "=";
+        public static final String VALUE_DELIMETER = ",";
+    }
 }

@@ -91,8 +91,7 @@ public class InstallCommand extends AbstractInstallCommand {
 
     @CommandLine.Option(
             names = CliConstants.SHADE_REPOSITORIES,
-            split = ",",
-            hidden = true
+            split = CliConstants.Others.VALUE_DELIMETER, hidden = true
     )
     List<String> shadowRepositories = new ArrayList<>();
 
@@ -110,7 +109,7 @@ public class InstallCommand extends AbstractInstallCommand {
 
     @CommandLine.Option(
             names = CliConstants.MANIFEST_VERSIONS,
-            split = ","
+            split = CliConstants.Others.VALUE_DELIMETER
     )
     List<String> versions = new ArrayList<>();
 

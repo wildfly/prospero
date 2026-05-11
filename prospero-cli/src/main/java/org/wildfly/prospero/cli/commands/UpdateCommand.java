@@ -331,7 +331,10 @@ public class UpdateCommand extends AbstractParentCommand {
     @CommandLine.Command(name = CliConstants.Commands.LIST, sortOptions = false)
     public static class ListCommand extends AbstractMavenCommand {
 
-        @CommandLine.Option(names = CliConstants.MANIFEST_VERSIONS, split = ",")
+        @CommandLine.Option(
+                names = CliConstants.MANIFEST_VERSIONS,
+                split = CliConstants.Others.VALUE_DELIMETER
+        )
         protected List<String> versions = new ArrayList<>();
 
         public ListCommand(CliConsole console, ActionFactory actionFactory) {
@@ -551,7 +554,10 @@ public class UpdateCommand extends AbstractParentCommand {
         @CommandLine.Spec
         protected CommandLine.Model.CommandSpec spec;
 
-        @CommandLine.Option(names = CliConstants.MANIFEST_VERSIONS, split = ",")
+        @CommandLine.Option(
+                names = CliConstants.MANIFEST_VERSIONS,
+                split = CliConstants.Others.VALUE_DELIMETER
+        )
         protected List<String> versions = new ArrayList<>();
 
         public UpdateBuildCommand(CliConsole console, ActionFactory actionFactory) {

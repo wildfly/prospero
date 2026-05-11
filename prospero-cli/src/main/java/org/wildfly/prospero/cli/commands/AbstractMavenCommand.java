@@ -33,7 +33,7 @@ public abstract class AbstractMavenCommand extends AbstractCommand {
     @CommandLine.Option(names = CliConstants.DIR)
     Optional<Path> directory;
 
-    @CommandLine.Option(names = CliConstants.REPOSITORIES, split = ",")
+    @CommandLine.Option(names = CliConstants.REPOSITORIES, split = CliConstants.Others.VALUE_DELIMETER)
     List<String> temporaryRepositories = new ArrayList<>();
 
     @CommandLine.ArgGroup(exclusive = true, headingKey = "localRepoOptions.heading")

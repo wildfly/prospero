@@ -55,6 +55,7 @@ public class HistoryCommand extends AbstractCommand {
 
         if (revision.isEmpty()) {
             List<SavedState> revisions = historyAction.getRevisions();
+            console.println(CliMessages.MESSAGES.historyHeader());
             final ListPrinter listPrinter = ListPrinter.unordered(console);
             for (SavedState savedState : revisions) {
                 ListPrinter subList = listPrinter.printItem(savedState.shortDescription())

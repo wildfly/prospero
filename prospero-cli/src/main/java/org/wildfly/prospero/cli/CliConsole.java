@@ -30,6 +30,7 @@ import org.wildfly.prospero.api.ChannelVersionChange;
 import org.wildfly.prospero.api.Console;
 import org.wildfly.prospero.api.ProvisioningProgressEvent;
 import org.wildfly.prospero.api.ArtifactChange;
+import org.wildfly.prospero.cli.printers.ListPrinter;
 import picocli.CommandLine;
 
 import static org.jboss.galleon.Constants.TRACK_CONFIGS;
@@ -162,38 +163,45 @@ public class CliConsole implements Console {
 
         if (!manifestUpdates.isEmpty()) {
             println(CliMessages.MESSAGES.manifestUpdatesFound());
-            for (ChannelVersionChange manifestUpdate : manifestUpdates) {
-                String channelName = manifestUpdate.channelName();
-                ChannelVersion original = manifestUpdate.oldVersion();
-                ChannelVersion updated = manifestUpdate.newVersion();
-                String channelDescription = String.format("%s (%s)", original.getLocation(), channelName);
-                String originalPhysicalVersion = original.getPhysicalVersion();
-                String updatedPhysicalVersion = updated != null ? updated.getPhysicalVersion() : "-";
-
-                printf("  %s%-40s    %20s  ==>  %-20s%n", downgradeMarker(manifestUpdate.isDowngrade()),
-                        channelDescription, originalPhysicalVersion, updatedPhysicalVersion, channelName);
-            }
+            ListPrinter.unordered(this)
+                    .printItems(manifestUpdates, this::formatManifestUpdate);
             println("");
         }
 
         if (!artifactUpdates.isEmpty()) {
             println(CliMessages.MESSAGES.artifactUpdatesFound());
-            for (ArtifactChange artifactUpdate : artifactUpdates) {
-                final Optional<String> newVersion = artifactUpdate.getNewVersion();
-                final Optional<String> oldVersion = artifactUpdate.getOldVersion();
-                final String artifactName = artifactUpdate.getArtifactName();
-                final String channelName = artifactUpdate.getChannelName().map(name -> "[" + name + "]")
-                        .orElse("");
-
-                printf("  %s%-50s    %20s  ==>  %-20s   %-20s%n",
-                        downgradeMarker(artifactUpdate.isDowngrade()), artifactName, oldVersion.orElse("[]"),
-                        newVersion.orElse("[]"), channelName);
-            }
+            ListPrinter.unordered(this)
+                    .printItems(artifactUpdates, this::formatArtifactUpdate);
 
             if (artifactUpdates.stream().anyMatch(ArtifactChange::isDowngrade)) {
                 printf(CliMessages.MESSAGES.possibleDowngrade());
             }
         }
+    }
+
+    private String formatManifestUpdate(ChannelVersionChange manifestUpdate) {
+        String channelName = manifestUpdate.channelName();
+        ChannelVersion original = manifestUpdate.oldVersion();
+        ChannelVersion updated = manifestUpdate.newVersion();
+        String channelDescription = String.format("%s (%s)", original.getLocation(), channelName);
+        String originalPhysicalVersion = original.getPhysicalVersion();
+        String updatedPhysicalVersion = updated != null ? updated.getPhysicalVersion() : "-";
+
+        return String.format("%s%-40s    %20s  ==>  %-20s",
+                downgradeMarker(manifestUpdate.isDowngrade()),
+                channelDescription, originalPhysicalVersion, updatedPhysicalVersion);
+    }
+
+    private String formatArtifactUpdate(ArtifactChange artifactUpdate) {
+        final Optional<String> newVersion = artifactUpdate.getNewVersion();
+        final Optional<String> oldVersion = artifactUpdate.getOldVersion();
+        final String artifactName = artifactUpdate.getArtifactName();
+        final String channelName = artifactUpdate.getChannelName().map(name -> "[" + name + "]")
+                .orElse("");
+
+        return String.format("%s%-50s    %20s  ==>  %-20s   %-20s",
+                downgradeMarker(artifactUpdate.isDowngrade()), artifactName, oldVersion.orElse("[]"),
+                newVersion.orElse("[]"), channelName);
     }
 
     private static String downgradeMarker(boolean downgrade) {
@@ -202,18 +210,21 @@ public class CliConsole implements Console {
 
     public void printArtifactChanges(List<ArtifactChange> artifactUpdates) {
         if (!artifactUpdates.isEmpty()) {
-            getStdOut().println(CliMessages.MESSAGES.changesFound());
-            for (ArtifactChange artifactUpdate : artifactUpdates) {
-                final Optional<String> newVersion = artifactUpdate.getNewVersion();
-                final Optional<String> oldVersion = artifactUpdate.getOldVersion();
-                final String artifactName = artifactUpdate.getArtifactName();
-                final String channelName = artifactUpdate.getChannelName().map(name -> "[" + name + "]")
-                        .orElse("");
-
-                getStdOut().printf("  %-50s    %-20s ==>  %-20s   %-20s%n", artifactName, oldVersion.orElse("[]"),
-                        newVersion.orElse("[]"),channelName);
-            }
+            println(CliMessages.MESSAGES.changesFound());
+            ListPrinter.unordered(this)
+                    .printItems(artifactUpdates, this::formatRevertArtifactChange);
         }
+    }
+
+    private String formatRevertArtifactChange(ArtifactChange artifactUpdate) {
+        final Optional<String> newVersion = artifactUpdate.getNewVersion();
+        final Optional<String> oldVersion = artifactUpdate.getOldVersion();
+        final String artifactName = artifactUpdate.getArtifactName();
+        final String channelName = artifactUpdate.getChannelName().map(name -> "[" + name + "]")
+                .orElse("");
+
+        return String.format("%-50s    %-20s ==>  %-20s   %-20s", artifactName, oldVersion.orElse("[]"),
+                newVersion.orElse("[]"), channelName);
     }
 
     public boolean confirmUpdates() {

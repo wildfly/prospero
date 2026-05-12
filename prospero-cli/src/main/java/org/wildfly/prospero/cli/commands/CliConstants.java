@@ -107,6 +107,8 @@ public final class CliConstants {
     public static final String YES = "--yes";
     public static final String NO_CONFLICTS_ONLY = "--no-conflicts-only";
     public static final String DRY_RUN = "--dry-run";
+    public static final String MAVEN_SETTINGS = "--maven-settings";
+    public static final String FILTER_MANIFEST = "--filter-manifest";
 
     public static final class Others {
 

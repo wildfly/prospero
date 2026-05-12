@@ -18,10 +18,13 @@
 package org.wildfly.prospero.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.io.DefaultSettingsReader;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -34,6 +37,9 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
 import static com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS;
 
 public class MavenOptions {
+
+    private static final Path DEFAULT_MAVEN_SETTINGS = Path.of(System.getProperty("user.home"), ".m2/settings.xml");
+
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory()
             .configure(YAMLGenerator.Feature.INDENT_ARRAYS_WITH_INDICATOR, true);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(YAML_FACTORY)
@@ -42,6 +48,9 @@ public class MavenOptions {
     private final Optional<Path> localCache;
     private final Optional<Boolean> offline;
     private final Optional<Boolean> noLocalCache;
+    @JsonIgnore
+    private final Optional<Path> mavenSettingsPath;
+    private final Path filterManifest;
 
     public static final MavenOptions DEFAULT_OPTIONS = builder().build();
     public static final MavenOptions OFFLINE_NO_CACHE = builder()
@@ -64,12 +73,16 @@ public class MavenOptions {
         this.localCache = Optional.ofNullable(localCache).map(Path::toAbsolutePath);
         this.noLocalCache = Optional.of(noLocalCache);
         this.offline = Optional.of(offline);
+        this.mavenSettingsPath = Optional.of(DEFAULT_MAVEN_SETTINGS);
+        this.filterManifest = null;
     }
 
-    private MavenOptions(Optional<Path> localCache, Optional<Boolean> offline, Optional<Boolean> noLocalCache) {
+    private MavenOptions(Optional<Path> localCache, Optional<Boolean> offline, Optional<Boolean> noLocalCache, Optional<Path> mavenSettings, Path filterManifest) {
         this.localCache = localCache;
         this.noLocalCache = noLocalCache;
         this.offline = offline;
+        this.mavenSettingsPath = mavenSettings;
+        this.filterManifest = filterManifest;
     }
 
     public Path getLocalCache() {
@@ -89,12 +102,37 @@ public class MavenOptions {
         return localCache.isPresent();
     }
 
+    public Path getMavenSettingsPath() {
+        return mavenSettingsPath.orElse(null);
+    }
+
+    /**
+     * Parses the maven settings file
+     * @return Maven Settings instance
+     */
+    public Settings getMavenSettings() {
+        if (mavenSettingsPath.isEmpty() || !mavenSettingsPath.get().toFile().exists()) {
+            return null;
+        }
+        try {
+            DefaultSettingsReader settingsReader = new DefaultSettingsReader();
+            return settingsReader.read(mavenSettingsPath.get().toFile(), null);
+        } catch (IOException e) {
+            throw new RuntimeException("Can't read settings.xml file: " + mavenSettingsPath.get(), e);
+        }
+    }
+
+    public Path getFilterManifest() {
+        return filterManifest;
+    }
+
     @Override
     public String toString() {
         return "MavenOptions{" +
                 "localCache=" + localCache +
                 ", offline=" + offline +
                 ", noLocalCache=" + noLocalCache +
+                ", mavenSettings=" + mavenSettingsPath +
                 '}';
     }
 
@@ -117,6 +155,19 @@ public class MavenOptions {
         } else if (this.localCache.isPresent()) {
             builder.setLocalCachePath(this.getLocalCache());
         }
+
+        if (override.mavenSettingsPath.isPresent()) {
+            builder.setMavenSettingsPath(override.getMavenSettingsPath());
+        } else if (this.mavenSettingsPath.isPresent()) {
+            builder.setMavenSettingsPath(this.getMavenSettingsPath());
+        }
+
+        if (override.filterManifest != null) {
+            builder.setFilterManifest(override.getFilterManifest());
+        } else if (this.filterManifest != null) {
+            builder.setFilterManifest(this.getFilterManifest());
+        }
+
         return builder.build();
     }
 
@@ -135,12 +186,15 @@ public class MavenOptions {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MavenOptions that = (MavenOptions) o;
-        return Objects.equals(localCache, that.localCache) && Objects.equals(offline, that.offline) && Objects.equals(noLocalCache, that.noLocalCache);
+        return Objects.equals(localCache, that.localCache)
+                && Objects.equals(offline, that.offline)
+                && Objects.equals(noLocalCache, that.noLocalCache)
+                && Objects.equals(mavenSettingsPath, that.mavenSettingsPath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(localCache, offline, noLocalCache);
+        return Objects.hash(localCache, offline, noLocalCache, mavenSettingsPath);
     }
 
     public static class Builder {
@@ -148,13 +202,14 @@ public class MavenOptions {
         private Optional<Boolean> offline = Optional.empty();
         private Optional<Boolean> noLocalCache = Optional.empty();
         private Optional<Path> localCachePath = Optional.empty();
+        private Optional<Path> mavenSettingsPath = Optional.of(MavenOptions.DEFAULT_MAVEN_SETTINGS);
+        private Path filterManifest = null;
 
         private Builder() {
-
         }
 
         public MavenOptions build() {
-            return new MavenOptions(localCachePath, offline, noLocalCache);
+            return new MavenOptions(localCachePath, offline, noLocalCache, mavenSettingsPath, filterManifest);
         }
 
         public Builder setOffline(boolean offline) {
@@ -169,6 +224,28 @@ public class MavenOptions {
 
         public Builder setLocalCachePath(Path localCachePath) {
             this.localCachePath = Optional.of(localCachePath);
+            return this;
+        }
+
+        /**
+         * Allows to specify location of the Maven settings file.
+         * <p>
+         * This parameter is currently not stored in installation metadata, it is only used for given command invocation.
+         *
+         * @param mavenSettings maven settings.xml file path, defaults to ~/.m2/settings.xml
+         */
+        public Builder setMavenSettingsPath(Path mavenSettings) {
+            this.mavenSettingsPath = Optional.of(mavenSettings);
+            return this;
+        }
+
+        /**
+         * Set filter manifest used to
+         * @param filterManifest
+         * @return
+         */
+        public Builder setFilterManifest(Path filterManifest) {
+            this.filterManifest = filterManifest;
             return this;
         }
     }

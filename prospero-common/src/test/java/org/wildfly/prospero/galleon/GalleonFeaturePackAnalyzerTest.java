@@ -53,7 +53,7 @@ public class GalleonFeaturePackAnalyzerTest {
         final List<Channel> channels = List.of(new Channel.Builder()
                 .addRepository("local-test", repoHome.toUri().toString())
                 .build());
-        final Set<String> featurePacks = new GalleonFeaturePackAnalyzer(channels, msm).getFeaturePacks(temp.newFile().toPath(), provisioningConfig);
+        final Set<String> featurePacks = new GalleonFeaturePackAnalyzer(channels, msm, null, null).getFeaturePacks(temp.newFile().toPath(), provisioningConfig);
         assertThat(featurePacks)
                 .containsOnly("org.test:pack-two", "org.test:pack-one");
     }

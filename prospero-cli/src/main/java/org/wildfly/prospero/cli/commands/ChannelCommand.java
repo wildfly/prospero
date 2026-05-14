@@ -31,6 +31,7 @@ import org.wildfly.prospero.cli.ActionFactory;
 import org.wildfly.prospero.cli.CliConsole;
 import org.wildfly.prospero.cli.CliMessages;
 import org.wildfly.prospero.cli.ReturnCodes;
+import org.wildfly.prospero.cli.printers.ListPrinter;
 import org.wildfly.prospero.metadata.ManifestVersionRecord;
 
 import picocli.CommandLine;
@@ -76,39 +77,41 @@ public class ChannelCommand extends AbstractCommand {
             }
 
             if(!fullList) {
-                console.println("Use the --full parameter for a complete overview.\n");
+                console.println("Use the `--full` parameter for a complete overview.\n");
             }
 
+            final ListPrinter listPrinter = ListPrinter.ordered(console);
             for (Channel channel : channels) {
                 if (fullList) {
                     console.println(ChannelMapper.toYaml(channels));
                 } else {
-                        ChannelManifestCoordinate coordinate = channel.getManifestCoordinate();
-                        if (coordinate != null) {
-                            // Full Maven GAV
-                            if (coordinate.getVersion() != null && !coordinate.getVersion().isEmpty()) {
-                                console.println(channel.getName() + " " + coordinate.getGroupId() + ":" + coordinate.getArtifactId() + ":" + coordinate.getVersion() + "\n");
-                            }
-                            // GA only (no version)
-                            else if (coordinate.getGroupId() != null && coordinate.getArtifactId() != null) {
-                                console.println(channel.getName() + " " + coordinate.getGroupId() + ":" + coordinate.getArtifactId() + "\n");
-                            }
-                            // Manifest URL
-                            else if (coordinate.getUrl() != null){
-                                console.println(channel.getName() + " " + coordinate.getUrl() + "\n");
-                            }
-                        } else {
-                            // No manifest coordinate, print no-stream-strategy and repository ids
-                            console.println(String.format("%s %s@%s",
-                                    channel.getName(),
-                                    channel.getNoStreamStrategy(),
-                                    String.join(",", channel.getRepositories().stream()
-                                            .map(Repository::getId)
-                                            .collect(Collectors.toList()))
-                            ));
+                    ChannelManifestCoordinate coordinate = channel.getManifestCoordinate();
+                    if (coordinate != null) {
+                        // Full Maven GAV
+                        if (coordinate.getVersion() != null && !coordinate.getVersion().isEmpty()) {
+                            listPrinter.printItem(channel.getName() + " " + coordinate.getGroupId() + ":" + coordinate.getArtifactId() + ":" + coordinate.getVersion());
                         }
+                        // GA only (no version)
+                        else if (coordinate.getGroupId() != null && coordinate.getArtifactId() != null) {
+                            listPrinter.printItem(channel.getName() + " " + coordinate.getGroupId() + ":" + coordinate.getArtifactId());
+                        }
+                        // Manifest URL
+                        else if (coordinate.getUrl() != null) {
+                            listPrinter.printItem(channel.getName() + " " + coordinate.getUrl());
+                        }
+                    } else {
+                        // No manifest coordinate, print no-stream-strategy and repository ids
+                        listPrinter.printItem(String.format("%s %s@%s",
+                                channel.getName(),
+                                channel.getNoStreamStrategy(),
+                                String.join(",", channel.getRepositories().stream()
+                                        .map(Repository::getId)
+                                        .collect(Collectors.toList()))
+                        ));
                     }
                 }
+            }
+            console.println("");
 
             return ReturnCodes.SUCCESS;
         }
@@ -117,7 +120,6 @@ public class ChannelCommand extends AbstractCommand {
     @CommandLine.Command(name = CliConstants.Commands.VERSIONS)
     public static class ChannelVersionCommand extends AbstractCommand {
 
-        protected static final String PREFIX = "  * ";
         @CommandLine.Option(names = CliConstants.DIR)
         private Optional<Path> directory;
 
@@ -130,20 +132,21 @@ public class ChannelCommand extends AbstractCommand {
             final Path installationDir = determineInstallationDirectory(directory);
 
             console.println(CliMessages.MESSAGES.serverVersionsHeader());
+            final ListPrinter listPrinter = ListPrinter.unordered(console);
             try (MetadataAction metadataAction = actionFactory.metadataActions(installationDir)) {
                 final ManifestVersionRecord channelVersions = metadataAction.getChannelVersions();
                 for (ManifestVersionRecord.MavenManifest mavenManifest : channelVersions.getMavenManifests()) {
                     if (mavenManifest.getDescription() != null) {
-                        console.println(PREFIX + mavenManifest.getDescription());
+                        listPrinter.printItem(mavenManifest.getDescription());
                     } else {
-                        console.println(PREFIX + buildManifestGav(mavenManifest));
+                        listPrinter.printItem(buildManifestGav(mavenManifest));
                     }
                 }
                 for (ManifestVersionRecord.UrlManifest urlManifest : channelVersions.getUrlManifests()) {
                     if (urlManifest.getDescription() != null) {
-                        console.println(PREFIX + urlManifest.getDescription());
+                        listPrinter.printItem(urlManifest.getDescription());
                     } else {
-                        console.println(PREFIX + String.format("%s [%s]", urlManifest.getUrl(), urlManifest.getHash()));
+                        listPrinter.printItem(String.format("%s [%s]", urlManifest.getUrl(), urlManifest.getHash()));
                     }
                 }
             }

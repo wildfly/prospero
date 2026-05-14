@@ -112,14 +112,14 @@ public class UpdateToVersionTest extends CliTestBase {
         testInstallation.updateWithCheck(
                 List.of(
                         Pair.of(CliMessages.MESSAGES.continueWithUpdate(), "y"),
-                        Pair.of(CliMessages.MESSAGES.continueWithUpdate(), "y")
-                ),
-                (ExecutionUtils.ExecutionResult e)-> {
+                        Pair.of(CliMessages.MESSAGES.continueWithUpdate(), "y")),
+                (ExecutionUtils.ExecutionResult e) -> {
                     try {
                         e.assertReturnCode(ReturnCodes.SUCCESS);
                         assertThat(e.getCommandOutput())
                                 .contains("The update will downgrade following channels:")
-                                .contains("  * test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0 (Logical version 1.0.0)");
+                                .contains(
+                                        "  · test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0 (Logical version 1.0.0)");
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -152,7 +152,7 @@ public class UpdateToVersionTest extends CliTestBase {
                         e.assertReturnCode(ReturnCodes.PROCESSING_ERROR);
                         assertThat(e.getCommandOutput())
                                 .contains("The update will downgrade following channels:")
-                                .contains("  * test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0");
+                                .contains("  · test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0");
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -221,7 +221,8 @@ public class UpdateToVersionTest extends CliTestBase {
                         e.assertReturnCode(ReturnCodes.PROCESSING_ERROR);
                         assertThat(e.getCommandOutput())
                                 .contains("The update will downgrade following channels:")
-                                .contains("  * test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0 (Logical version 1.0.0)");
+                                .contains(
+                                        "  · test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0 (Logical version 1.0.0)");
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -299,7 +300,6 @@ public class UpdateToVersionTest extends CliTestBase {
         List<URL> testRepositories = new ArrayList<>(TestProperties.testReposToUrls());
         testRepositories.add(new URL("https://repo1.maven.org/maven2"));
         TestLocalRepository localRepository = new TestLocalRepository(repoPath, testRepositories);
-
 
         localRepository.deployGalleonPlugins();
 

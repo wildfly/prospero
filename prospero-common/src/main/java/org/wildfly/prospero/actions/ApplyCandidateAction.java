@@ -18,6 +18,9 @@ package org.wildfly.prospero.actions;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -25,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -397,7 +401,22 @@ public class ApplyCandidateAction {
     }
 
     private boolean targetServerIsRunning() {
-        return Files.exists(installationDir.resolve(STANDALONE_STARTUP_MARKER)) || Files.exists(installationDir.resolve(DOMAIN_STARTUP_MARKER));
+        return isMarkerLocked(installationDir.resolve(STANDALONE_STARTUP_MARKER)) || isMarkerLocked(installationDir.resolve(DOMAIN_STARTUP_MARKER));
+    }
+
+    private static boolean isMarkerLocked(Path markerFile) {
+        if (!Files.exists(markerFile)) {
+            return false;
+        }
+        try (FileChannel channel = FileChannel.open(markerFile, StandardOpenOption.READ)) {
+            try (FileLock lock = channel.tryLock()) {
+                return lock == null;
+            }
+        } catch (OverlappingFileLockException e) {
+            return true;
+        } catch (IOException e) {
+            return true;
+        }
     }
 
     private void updateMetadata(Type operation) throws IOException, MetadataException {

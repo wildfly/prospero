@@ -18,6 +18,9 @@ package org.wildfly.prospero.actions;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -25,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,6 +92,7 @@ import org.wildfly.prospero.updates.UpdateSet;
 public class ApplyCandidateAction {
     public static final Path STANDALONE_STARTUP_MARKER = Path.of("standalone", "tmp", "startup-marker");
     public static final Path DOMAIN_STARTUP_MARKER = Path.of("domain", "tmp", "startup-marker");
+    public static final Path RUNNING_LOCK_FILE = Path.of(".installation", "running.lock");
     public static final String CANDIDATE_CHANNEL_NAME_LIST = "candidate_properties.yaml";
     private final Path updateDir;
     private final Path installationDir;
@@ -397,7 +402,22 @@ public class ApplyCandidateAction {
     }
 
     private boolean targetServerIsRunning() {
-        return Files.exists(installationDir.resolve(STANDALONE_STARTUP_MARKER)) || Files.exists(installationDir.resolve(DOMAIN_STARTUP_MARKER));
+        return isLockHeld(installationDir.resolve(RUNNING_LOCK_FILE));
+    }
+
+    private static boolean isLockHeld(Path lockFile) {
+        if (!Files.exists(lockFile)) {
+            return false;
+        }
+        try (FileChannel channel = FileChannel.open(lockFile, StandardOpenOption.WRITE, StandardOpenOption.READ)) {
+            try (FileLock lock = channel.tryLock()) {
+                return lock == null;
+            }
+        } catch (OverlappingFileLockException e) {
+            return true;
+        } catch (IOException e) {
+            return true;
+        }
     }
 
     private void updateMetadata(Type operation) throws IOException, MetadataException {

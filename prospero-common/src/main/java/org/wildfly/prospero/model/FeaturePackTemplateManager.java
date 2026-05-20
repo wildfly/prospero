@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Matches provisioning configurations that need to be applied if a certain feature pack GAV is installed.
+ * Matches provisioning configurations that need to be applied if a certain feature-pack GAV is installed.
  */
 public class FeaturePackTemplateManager {
 
@@ -60,9 +60,9 @@ public class FeaturePackTemplateManager {
      * finds a matching provisioning configuration for a given GAV. The provided artifactCoordinate needs to specify
      * groupId, artifactId and version.
      *
-     * @param groupId - groupId of the feature pack Maven coordinates
-     * @param artifactId - artifactId of the feature pack Maven coordinates
-     * @param version - Maven version of the feature pack being installed
+     * @param groupId - groupId of the feature-pack Maven coordinates
+     * @param artifactId - artifactId of the feature-pack Maven coordinates
+     * @param version - Maven version of the feature-pack being installed
      * @return matched configuration or null if either it doesn't exist
      * @throws FeatureTemplateVersionMismatchException - if the template GA is matched, but none of the records match the version
      */

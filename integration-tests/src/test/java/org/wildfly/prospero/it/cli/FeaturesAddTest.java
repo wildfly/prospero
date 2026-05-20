@@ -99,7 +99,7 @@ public class FeaturesAddTest {
                 .assertReturnCode(ReturnCodes.SUCCESS);
 
         // install the datasource FP
-        System.out.println("Installing datasources feature pack");
+        System.out.println("Installing datasources feature-pack");
         ExecutionUtils.prosperoExecution(CliConstants.Commands.FEATURE_PACKS, CliConstants.Commands.ADD,
                         CliConstants.FPL, datasourceGalleonFp,
                         CliConstants.LAYERS, "datasources-web-server,postgresql-datasource",
@@ -111,7 +111,7 @@ public class FeaturesAddTest {
                 .execute()
                 .assertReturnCode(ReturnCodes.SUCCESS);
 
-        // verify the datasources feature pack was installed successfully
+        // verify the datasources feature-pack was installed successfully
         assertThat(targetDir.toPath().resolve(MODULE_PATH))
                 .exists()
                 .isDirectory();
@@ -120,11 +120,11 @@ public class FeaturesAddTest {
                 .exists()
                 .isNotEmptyFile();
 
-        // rollback the datasources feature pack
+        // rollback the datasources feature-pack
 
         System.out.println("Getting the previous state from history");
         final SavedState savedState = new InstallationHistoryAction(targetDir.toPath(), null).getRevisions().get(1);
-        System.out.println("Rolling back the datasources feature pack");
+        System.out.println("Rolling back the datasources feature-pack");
         ExecutionUtils.prosperoExecution(CliConstants.Commands.REVERT, CliConstants.Commands.PERFORM,
                         CliConstants.REVISION, savedState.getName(),
                         CliConstants.YES,
@@ -156,7 +156,7 @@ public class FeaturesAddTest {
                 .assertReturnCode(ReturnCodes.SUCCESS);
 
         // install the datasource FP
-        System.out.println("Installing datasources feature pack");
+        System.out.println("Installing datasources feature-pack");
         ExecutionUtils.prosperoExecution(CliConstants.Commands.FEATURE_PACKS, CliConstants.Commands.ADD,
                         CliConstants.FPL, datasourceGalleonFp,
                         CliConstants.YES,
@@ -184,8 +184,8 @@ public class FeaturesAddTest {
         assertThat(targetDir.toPath().resolve(MODULE_PATH))
                 .doesNotExist();
 
-        // attempt to install wildfly feature pack with some layers
-        System.out.println("Installing wildfly-galleon-pack feature pack with layers shouldn't work");
+        // attempt to install wildfly feature-pack with some layers
+        System.out.println("Installing wildfly-galleon-pack feature-pack with layers shouldn't work");
         ExecutionUtils.prosperoExecution(CliConstants.Commands.FEATURE_PACKS, CliConstants.Commands.ADD,
                         CliConstants.FPL, "org.wildfly:wildfly-galleon-pack",
                         CliConstants.LAYERS, "test",
@@ -197,7 +197,7 @@ public class FeaturesAddTest {
                 .assertErrorContains(CliMessages.MESSAGES.featurePackDoesNotSupportCustomization("org.wildfly:wildfly-galleon-pack"));
 
         // install the datasource FP
-        System.out.println("Installing wildfly-galleon-pack feature pack");
+        System.out.println("Installing wildfly-galleon-pack feature-pack");
         ExecutionUtils.prosperoExecution(CliConstants.Commands.FEATURE_PACKS, CliConstants.Commands.ADD,
                         CliConstants.FPL, "org.wildfly:wildfly-galleon-pack",
                         CliConstants.YES,
@@ -206,7 +206,7 @@ public class FeaturesAddTest {
                 .execute()
                 .assertReturnCode(ReturnCodes.SUCCESS);
 
-        // verify the datasources feature pack was installed successfully
+        // verify the datasources feature-pack was installed successfully
         final ProvisioningConfig provisioningConfig = ProvisioningXmlParser.parse(targetDir.toPath().resolve(Constants.PROVISIONED_STATE_DIR).resolve(Constants.PROVISIONING_XML));
 
         assertThat(provisioningConfig.getFeaturePackDeps())

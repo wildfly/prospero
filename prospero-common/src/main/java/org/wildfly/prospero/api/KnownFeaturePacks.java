@@ -23,7 +23,7 @@ import org.wildfly.prospero.model.InstallationProfile;
 import org.wildfly.prospero.model.KnownFeaturePack;
 
 /**
- * Defines well known Galleon feature packs.
+ * Defines well known Galleon feature-packs.
  *
  * @deprecated use {@link InstallationProfilesManager} instead
  */

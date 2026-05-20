@@ -201,7 +201,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void layerNotAvailable_throwsException() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
             .getCreator()
@@ -227,7 +227,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void noLayersInTheFeaturePacks_provisionsNoConfigs() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -252,7 +252,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void noLayersInTheFeaturePackWithRequriedLayer_throwsException() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -274,7 +274,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void requestedLayerAddsItsConfig() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -311,7 +311,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void selectedConfigOverridesDefaultWithRequestedLayer() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -348,7 +348,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void addFeaturePackAlreadyInstalledAsDependency() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -402,7 +402,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void installingLayerOverridesExcludesLayer() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .addConfig(ConfigModel.builder()
@@ -464,7 +464,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void multipleModelsDefinedInLayersWithoutSelectedModel_throwError() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -489,7 +489,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void selectedModelIsNotDefinedInFeaturePack_throwError() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -511,7 +511,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void selectedModelOverridesTheDefault() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -550,7 +550,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void featurePacksWithoutLayersCanBeInstalled() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -577,29 +577,29 @@ public class FeaturesAddActionTest {
         mockInstallationData(installDir);
         assertThatThrownBy(()->getFeaturesAddAction().addFeaturePack(null, NO_DEFAULT_CONFIGS, candidatePath))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The feature pack coordinate cannot be null");
+                .hasMessageContaining("The feature-pack coordinate cannot be null");
         assertThatThrownBy(()->getFeaturesAddAction().isFeaturePackAvailable(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The feature pack coordinate cannot be null");
+                .hasMessageContaining("The feature-pack coordinate cannot be null");
 
         assertThatThrownBy(()->getFeaturesAddAction().addFeaturePack("only_group", NO_DEFAULT_CONFIGS, candidatePath))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The feature pack coordinate has to consist of <groupId>:<artifactId>");
+                .hasMessageContaining("The feature-pack coordinate has to consist of <groupId>:<artifactId>");
         assertThatThrownBy(()->getFeaturesAddAction().isFeaturePackAvailable("only_group"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The feature pack coordinate has to consist of <groupId>:<artifactId>");
+                .hasMessageContaining("The feature-pack coordinate has to consist of <groupId>:<artifactId>");
 
         assertThatThrownBy(()->getFeaturesAddAction().addFeaturePack("too:many:parts", NO_DEFAULT_CONFIGS, candidatePath))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The feature pack coordinate has to consist of <groupId>:<artifactId>");
+                .hasMessageContaining("The feature-pack coordinate has to consist of <groupId>:<artifactId>");
         assertThatThrownBy(()->getFeaturesAddAction().isFeaturePackAvailable("too:many:parts"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The feature pack coordinate has to consist of <groupId>:<artifactId>");
+                .hasMessageContaining("The feature-pack coordinate has to consist of <groupId>:<artifactId>");
     }
 
     @Test
     public void existingFeaturePackCannotBeInstalled() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -619,7 +619,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void installDefaultPackagesIfNoLayersAreSpecified() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -646,7 +646,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void installSelectedConfigsIfNoLayersAreSpecified() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -697,7 +697,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void installSelectedConfigsIfLayersAreSpecified() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -753,7 +753,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void nonExistingConfigNameThrowsException() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
 
@@ -781,7 +781,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void nonExistingConfigNameWithoutLayersThrowsException() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
 
@@ -809,7 +809,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void noSelectedLayersOrConfigs_IncludesDefaultConfigs() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -847,7 +847,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void findAndApplyTemplateWithReplaceDependency() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -881,7 +881,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void findAndApplyTemplateWithTransitiveDependency() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -914,7 +914,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void findAndApplyTemplateWithLayersWithTransitiveDependency() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -956,7 +956,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void findAndApplyTemplateWithAdditionalPackages() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -993,7 +993,7 @@ public class FeaturesAddActionTest {
 
     @Test
     public void testAddLicenses() throws Exception {
-        // install base feature pack
+        // install base feature-pack
         final FeaturePackCreator creator = FeaturePackCreator.getInstance().addArtifactResolver(repo);
         creator.newFeaturePack(FeaturePackLocation.fromString("org.test:base-pack:1.0.0:zip").getFPID())
                 .getCreator()
@@ -1008,7 +1008,7 @@ public class FeaturesAddActionTest {
         Files.createDirectories(licenses);
 
         // create licenses - base-license is accepted in the original server and added-license is accepted during
-        // addition of a feature pack
+        // addition of a feature-pack
         final License addedLicense = new License("added-license", "org.test:added-pack", "Added License", "Added license text");
         final License baseLicense = new License("base-license", "org.test:base-pack", "Base license", "Base license text");
         when(licenseManager.getLicenses(any())).thenReturn(List.of(addedLicense));

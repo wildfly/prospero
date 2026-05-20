@@ -2,7 +2,7 @@
 
 ### Installation process
 
-Prospero delegates provisioning server to Galleon. When Galleon attempts to resolve components needed by the server, instead of using versions provided by the feature packs, Prospero intercepts that request and uses Wildfly Channels to find the correct version of the component and resolve it from the channels repositories.
+Prospero delegates provisioning server to Galleon. When Galleon attempts to resolve components needed by the server, instead of using versions provided by the feature-packs, Prospero intercepts that request and uses Wildfly Channels to find the correct version of the component and resolve it from the channels repositories.
 
 image::../images/overview.png[]
 

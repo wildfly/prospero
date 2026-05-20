@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Defines well known Galleon feature packs.
+ * Defines well known Galleon feature-packs.
  */
 public abstract class InstallationProfilesManager {
 

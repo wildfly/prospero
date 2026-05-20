@@ -37,7 +37,7 @@ You can find all information and examples in [Prospero documentation](https://do
 
 #### Building distribution
 
-The full distribution of Prospero includes a Galleon feature pack, a standalone zip and documentation. Building those projects is excluded by default and enabled only if a maven `dist` profile is enabled.
+The full distribution of Prospero includes a Galleon feature-pack, a standalone zip and documentation. Building those projects is excluded by default and enabled only if a maven `dist` profile is enabled.
 
 ```
    cd <PROSPERO_HOME>

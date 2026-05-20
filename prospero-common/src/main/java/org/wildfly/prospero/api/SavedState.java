@@ -32,7 +32,7 @@ public class SavedState {
 
     public enum Type { UPDATE, INSTALL, ROLLBACK, CONFIG_CHANGE,
         /**
-         * A provisioning state change. For example adding a new feature pack
+         * A provisioning state change. For example adding a new feature-pack
           */
         FEATURE_PACK,
         /**

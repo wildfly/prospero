@@ -82,7 +82,7 @@ public class WildflyFpTest {
                         CliConstants.CHANNELS, channelsFile.toString(),
                         CliConstants.DEFINITION, Paths.get(provisionDefinition.toURI()).toString(),
                         CliConstants.ACCEPT_AGREEMENTS,
-                        CliConstants.USE_LOCAL_MAVEN_CACHE, // needed to resolve prospero feature pack
+                        CliConstants.USE_LOCAL_MAVEN_CACHE, // needed to resolve prospero feature-pack
                         CliConstants.DIR, targetDir.toAbsolutePath().toString())
                 .withTimeLimit(20, TimeUnit.MINUTES)
                 .execute()

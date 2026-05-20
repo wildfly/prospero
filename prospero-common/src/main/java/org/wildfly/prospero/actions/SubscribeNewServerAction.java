@@ -58,7 +58,7 @@ public class SubscribeNewServerAction {
     tempDir.toFile().deleteOnExit();
     try (GalleonEnvironment galleonEnv = GalleonEnvironment
       .builder(tempDir, channels, mavenSessionManager, false)
-      // forces the feature pack artifact to be downloaded directly and not go through channel version resolution
+      // forces the feature-pack artifact to be downloaded directly and not go through channel version resolution
       .setArtifactDirectResolve(true)
       .setConsole(console)
       .build()) {

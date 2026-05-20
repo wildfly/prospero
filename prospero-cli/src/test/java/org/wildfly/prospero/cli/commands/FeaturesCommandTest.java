@@ -239,7 +239,7 @@ public class FeaturesCommandTest extends AbstractMavenCommandTest {
                 CliConstants.FPL, "org.test:test");
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains("The feature pack `org.test:test` does not provide requested layers [idontexist].")
+                .contains("The feature-pack `org.test:test` does not provide requested layers [idontexist].")
                 .contains("Supported layers are [layer1, layer2]");
     }
 
@@ -254,7 +254,7 @@ public class FeaturesCommandTest extends AbstractMavenCommandTest {
                 CliConstants.FPL, "org.test:test");
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains("The feature pack `org.test:test` does not provide any layers.")
+                .contains("The feature-pack `org.test:test` does not provide any layers.")
                 .contains("Try removing the --layers parameter");
     }
 
@@ -271,7 +271,7 @@ public class FeaturesCommandTest extends AbstractMavenCommandTest {
                 CliConstants.FPL, "org.test:test");
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains("The feature pack `org.test:test` does not provide requested model `idontexist`.")
+                .contains("The feature-pack `org.test:test` does not provide requested model `idontexist`.")
                 .contains("Supported models are [model1, model2]");
     }
 
@@ -287,7 +287,7 @@ public class FeaturesCommandTest extends AbstractMavenCommandTest {
                 CliConstants.FPL, "org.test:test");
         assertEquals(ReturnCodes.INVALID_ARGUMENTS, exitCode);
         assertThat(getErrorOutput())
-                .contains("The feature pack `org.test:test` does not provide requested configuration `test/idontexist`.");
+                .contains("The feature-pack `org.test:test` does not provide requested configuration `test/idontexist`.");
     }
 
     @Test

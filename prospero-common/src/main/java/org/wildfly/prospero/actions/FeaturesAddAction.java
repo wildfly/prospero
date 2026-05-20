@@ -76,7 +76,7 @@ import org.jboss.galleon.api.config.GalleonFeaturePackConfig;
 import org.jboss.galleon.api.config.GalleonProvisioningConfig;
 
 /**
- * Installs a feature pack onto an existing server.
+ * Installs a feature-pack onto an existing server.
  */
 public class FeaturesAddAction {
 
@@ -117,19 +117,19 @@ public class FeaturesAddAction {
     }
 
     /**
-     * performs feature pack installation as a new candidate server. The added feature pack can be customized by specifying layers and configuration model name.
-     * In order to install a feature pack, a server is re-provisioned and changes are applied to existing server.
+     * performs feature-pack installation as a new candidate server. The added feature-pack can be customized by specifying layers and configuration model name.
+     * In order to install a feature-pack, a server is re-provisioned and changes are applied to existing server.
      * <p>
      * The candidate server is created in a temp directory. To apply the changes and complete the installation,
      * {@link ApplyCandidateAction#applyUpdate(ApplyCandidateAction.Type)} should be used.
      *
-     * @param featurePackCoord   - maven {@code groupId:artifactId} coordinates of the feature pack to install
+     * @param featurePackCoord   - maven {@code groupId:artifactId} coordinates of the feature-pack to install
      * @param defaultConfigNames - set of {@code ConfigId} of the default configurations to include
      * @param candidatePath      - folder where the candidate server should be created
      * @throws ProvisioningException                - if unable to provision the server
-     * @throws ModelNotDefinedException             - if requested model is not provided by the feature pack
-     * @throws LayerNotFoundException               - if one of the requested layers is not provided by the feature pack
-     * @throws FeaturePackAlreadyInstalledException - if the requested feature pack configuration wouldn't change the server state
+     * @throws ModelNotDefinedException             - if requested model is not provided by the feature-pack
+     * @throws LayerNotFoundException               - if one of the requested layers is not provided by the feature-pack
+     * @throws FeaturePackAlreadyInstalledException - if the requested feature-pack configuration wouldn't change the server state
      * @throws InvalidUpdateCandidateException      - if the folder at {@code updateDir} is not a valid update
      * @throws MetadataException                    - if unable to read or write the installation of update metadata
      */
@@ -143,7 +143,7 @@ public class FeaturesAddAction {
         FeaturePackLocation fpl = FeaturePackLocationParser.resolveFpl(featurePackCoord);
 
         if (ProsperoLogger.ROOT_LOGGER.isTraceEnabled()) {
-            ProsperoLogger.ROOT_LOGGER.trace("Adding feature pack " + fpl);
+            ProsperoLogger.ROOT_LOGGER.trace("Adding feature-pack " + fpl);
         }
 
         final Map<String, Set<String>> allLayers = getAllLayers(fpl);
@@ -176,20 +176,20 @@ public class FeaturesAddAction {
 
 
     /**
-     * performs feature pack installation as a new candidate server. The added feature pack can be customized by specifying layers and configuration model name.
-     * In order to install a feature pack, a server is re-provisioned and changes are applied to existing server.
+     * performs feature-pack installation as a new candidate server. The added feature-pack can be customized by specifying layers and configuration model name.
+     * In order to install a feature-pack, a server is re-provisioned and changes are applied to existing server.
      *<p>
      * The candidate server is created in a temp directory. To apply the changes and complete the installation,
      * {@link ApplyCandidateAction#applyUpdate(ApplyCandidateAction.Type)} should be used.
      *
-     * @param featurePackCoord - maven {@code groupId:artifactId} coordinates of the feature pack to install
+     * @param featurePackCoord - maven {@code groupId:artifactId} coordinates of the feature-pack to install
      * @param layers           - set of layer names to be provisioned
      * @param configName       - {@code ConfigId} of the configuration file to generate if supported
      * @param candidateFolder  - folder where the candidate server should be created
      * @throws ProvisioningException                - if unable to provision the server
-     * @throws ModelNotDefinedException             - if requested model is not provided by the feature pack
-     * @throws LayerNotFoundException               - if one of the requested layers is not provided by the feature pack
-     * @throws FeaturePackAlreadyInstalledException - if the requested feature pack configuration wouldn't change the server state
+     * @throws ModelNotDefinedException             - if requested model is not provided by the feature-pack
+     * @throws LayerNotFoundException               - if one of the requested layers is not provided by the feature-pack
+     * @throws FeaturePackAlreadyInstalledException - if the requested feature-pack configuration wouldn't change the server state
      * @throws InvalidUpdateCandidateException      - if the folder at {@code updateDir} is not a valid update
      * @throws MetadataException                    - if unable to read or write the installation of update metadata
      */
@@ -204,7 +204,7 @@ public class FeaturesAddAction {
         FeaturePackLocation fpl = FeaturePackLocationParser.resolveFpl(featurePackCoord);
 
         if (ProsperoLogger.ROOT_LOGGER.isTraceEnabled()) {
-            ProsperoLogger.ROOT_LOGGER.trace("Adding feature pack " + fpl);
+            ProsperoLogger.ROOT_LOGGER.trace("Adding feature-pack " + fpl);
         }
 
         final Map<String, Set<String>> allLayers = getAllLayers(fpl);
@@ -232,10 +232,10 @@ public class FeaturesAddAction {
     }
 
     /**
-     * find a template matching feature pack coordinates
+     * find a template matching feature-pack coordinates
      *
-     * @param featurePackCoord - coordinates of the feature pack in {@code groupId:artifactId} format
-     * @return - template matching the feature pack or null if none found.
+     * @param featurePackCoord - coordinates of the feature-pack in {@code groupId:artifactId} format
+     * @return - template matching the feature-pack or null if none found.
      * @throws ProvisioningException
      * @throws OperationException
      */
@@ -281,10 +281,10 @@ public class FeaturesAddAction {
     }
 
     /**
-     * check if a feature pack with {@code featurePackCoord} can be resolved in available channels.
+     * check if a feature-pack with {@code featurePackCoord} can be resolved in available channels.
      *
-     * @param featurePackCoord - maven {@code groupId:artifactId} coordinates of the feature pack to install
-     * @return true if the feature pack is available, false otherwise
+     * @param featurePackCoord - maven {@code groupId:artifactId} coordinates of the feature-pack to install
+     * @return true if the feature-pack is available, false otherwise
      * @throws OperationException    - if unable to read the metadata
      * @throws ProvisioningException - if unable to read the metadata
      */
@@ -296,14 +296,14 @@ public class FeaturesAddAction {
 
         try {
             if (ProsperoLogger.ROOT_LOGGER.isTraceEnabled()) {
-                ProsperoLogger.ROOT_LOGGER.trace("Resolving a feature pack: " + featurePackCoord);
+                ProsperoLogger.ROOT_LOGGER.trace("Resolving a feature-pack: " + featurePackCoord);
             }
             channelSession.resolveMavenArtifact(coord.getGroupId(), coord.getArtifactId(),
                     coord.getExtension(), coord.getClassifier(), coord.getVersion());
         } catch (NoStreamFoundException e) {
             return false;
         } catch (ArtifactTransferException e) {
-            throw new ArtifactResolutionException("Unable to resolve feature pack " + featurePackCoord, e,
+            throw new ArtifactResolutionException("Unable to resolve feature-pack " + featurePackCoord, e,
                     e.getUnresolvedArtifacts(), e.getAttemptedRepositories(), false);
         }
 
@@ -324,10 +324,10 @@ public class FeaturesAddAction {
 
     private static void verifyFeaturePackCoord(String featurePackCoord) {
         if (featurePackCoord == null || featurePackCoord.isEmpty()) {
-            throw new IllegalArgumentException("The feature pack coordinate cannot be null");
+            throw new IllegalArgumentException("The feature-pack coordinate cannot be null");
         }
         if (featurePackCoord.split(":").length != 2) {
-            throw new IllegalArgumentException("The feature pack coordinate has to consist of <groupId>:<artifactId>");
+            throw new IllegalArgumentException("The feature-pack coordinate has to consist of <groupId>:<artifactId>");
         }
     }
 
@@ -366,7 +366,7 @@ public class FeaturesAddAction {
 
     private static ArtifactCoordinate toMavenCoordinates(String featurePackCoord) {
         if (featurePackCoord == null || featurePackCoord.isEmpty()) {
-            throw new IllegalArgumentException("The feature pack coordinate cannot be null");
+            throw new IllegalArgumentException("The feature-pack coordinate cannot be null");
         }
         // a workaround for tests
         if (featurePackCoord.endsWith("::zip")) {
@@ -374,7 +374,7 @@ public class FeaturesAddAction {
         }
         final String[] splitCoordinates = featurePackCoord.split(":");
         if (splitCoordinates.length != 2) {
-            throw new IllegalArgumentException("The feature pack coordinate has to consist of <groupId>:<artifactId>");
+            throw new IllegalArgumentException("The feature-pack coordinate has to consist of <groupId>:<artifactId>");
         }
         final ArtifactCoordinate coord = new ArtifactCoordinate(splitCoordinates[0], splitCoordinates[1],
                 "zip", null, "");
@@ -419,7 +419,7 @@ public class FeaturesAddAction {
                 fpBuilder.setInheritPackages(false);
             }
 
-            // order of feature packs matter. if the feature pack redefines an existing package, insert it in its place
+            // order of feature-packs matter. if the feature-pack redefines an existing package, insert it in its place
             final int fpIndex;
             final FeaturePackTemplate mapping = getFeaturePackRecipe(fpl.getProducerName());
             if (mapping != null) {
@@ -654,7 +654,7 @@ public class FeaturesAddAction {
     }
 
     /**
-     * Thrown if a requested layer cannot be found in a feature pack
+     * Thrown if a requested layer cannot be found in a feature-pack
      */
     public static class LayerNotFoundException extends OperationException {
 
@@ -677,7 +677,7 @@ public class FeaturesAddAction {
     }
 
     /**
-     * Thrown if either the user requested model is not supported by the feature packs,
+     * Thrown if either the user requested model is not supported by the feature-packs,
      * or if it is impossible to determine default model.
      */
     public static class ModelNotDefinedException extends OperationException {

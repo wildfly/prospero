@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Definition of the provisioning changes a feature pack requires to be installed on top of the base server.
+ * Definition of the provisioning changes a feature-pack requires to be installed on top of the base server.
  */
 public class FeaturePackTemplate {
 

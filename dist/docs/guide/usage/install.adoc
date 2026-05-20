@@ -46,9 +46,9 @@ WARNING: Specifying a full version string (e.g., `--manifest org.wildfly.channel
 
 NOTE: You can check available versions on https://mvnrepository.com/artifact/org.wildfly.channels/wildfly-ee[Maven Repository].
 
-#### Installing a feature pack
+#### Installing a feature-pack
 
-If a desired server configuration is not provided by one of the profiles, Prospero can provision a feature pack based on its Maven coordinates (groupId:artifactId). The resulting server will have a default configuration provided by that feature pack.
+If a desired server configuration is not provided by one of the profiles, Prospero can provision a feature-pack based on its Maven coordinates (groupId:artifactId). The resulting server will have a default configuration provided by that feature-pack.
 
 [source, bash]
 ----
@@ -59,15 +59,15 @@ $ ./prospero.sh install \
       --repositories https://repo1.maven.org/maven2/,https://repository.jboss.org/nexus/content/groups/public/ #<4>
 ----
 <1> directory to place provisioned server in
-<2> Maven `<groupId>:<artifactId>` coordinates of the feature pack to be installed
+<2> Maven `<groupId>:<artifactId>` coordinates of the feature-pack to be installed
 <3> Path to the manifest file
 <4> List of Maven repositories containing components listed in the channel file.
 
 NOTE: An example Wildfly manifest file is available in examples directory.
 
-#### Installing a customized feature pack
+#### Installing a customized feature-pack
 
-Galleon feature packs consist of https://docs.wildfly.org/galleon/#_layers[layers] and https://docs.wildfly.org/galleon/#_feature_pack_packages[packages] that can be excluded or included to generate customized server.
+Galleon feature-packs consist of https://docs.wildfly.org/galleon/#_layers[layers] and https://docs.wildfly.org/galleon/#_feature_pack_packages[packages] that can be excluded or included to generate customized server.
 
 In order to create a customized installation, the required provisioning configuration need to be described in `provisioning.xml` file. For example, following file adds configuration examples to the generated server.
 
@@ -122,7 +122,7 @@ NOTE: When using a <groupId>:<artifactId> to resolve manifest from a repository,
 
 #### Selecting stability level of provisioned server
 
-Some feature packs may contain experimental or preview features not intended to be made available by default. To separate those features from stable ones, feature packs may segregate the features into `stability-levels`. At the provisioning time, the user is able to change the default stability level of the feature pack by using the `--stability` flag.
+Some feature-packs may contain experimental or preview features not intended to be made available by default. To separate those features from stable ones, feature-packs may segregate the features into `stability-levels`. At the provisioning time, the user is able to change the default stability level of the feature-pack by using the `--stability` flag.
 
 [source, bash]
 ----

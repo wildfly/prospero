@@ -314,7 +314,7 @@ public interface ProsperoLogger extends BasicLogger {
     @Message(id = 247, value = "Invalid channel definition")
     ChannelDefinitionException invalidChannel(@Cause InvalidChannelMetadataException e);
 
-    @Message(id = 248, value = "Provided feature pack location has invalid format `%s`. Expected <groupId:artifactId>")
+    @Message(id = 248, value = "Provided feature-pack location has invalid format `%s`. Expected <groupId:artifactId>")
     String invalidFpl(String fplText);
 
     @Message(id = 249, value = "Unrecognized profile %s, did you mean one of [%s]")
@@ -333,23 +333,23 @@ public interface ProsperoLogger extends BasicLogger {
     @Message(id = 253, value = "Unable to retrieve stored provisioning configuration. Falling back to current configuration")
     void fallbackToGalleonProvisioningDefinition();
 
-    @Message(id = 254, value = "Multiple models available in the selected feature pack, please select one.")
+    @Message(id = 254, value = "Multiple models available in the selected feature-pack, please select one.")
     String noDefaultModel();
 
-    @Message(id = 255, value = "Chosen feature pack does not support model %s. Please choose one of supported models.")
+    @Message(id = 255, value = "Chosen feature-pack does not support model %s. Please choose one of supported models.")
     String modelNotFoundInFeaturePack(String model);
 
-    @Message(id = 256, value = "The feature pack doesn't define requested layers: [%s]")
+    @Message(id = 256, value = "The feature-pack doesn't define requested layers: [%s]")
     String layerNotFoundInFeaturePack(String layerName);
 
-    @Message(id = 257, value = "Feature pack %s is already provisioned")
+    @Message(id = 257, value = "Feature-pack %s is already provisioned")
     FeaturesAddAction.FeaturePackAlreadyInstalledException featurePackAlreadyInstalled(FeaturePackLocation fpl);
 
     @LogMessage(level = Logger.Level.DEBUG)
-    @Message(id = 258, value = "Adding a feature pack [%s] with configuration %s and layers [%s]")
+    @Message(id = 258, value = "Adding a feature-pack [%s] with configuration %s and layers [%s]")
     void addingFeaturePack(FeaturePackLocation fpl, String configuration, String layers);
 
-    @Message(id = 259, value = "Requested configuration %s/%s is not available in the feature packs.")
+    @Message(id = 259, value = "Requested configuration %s/%s is not available in the feature-packs.")
     String galleonConfigNotFound(String model, String name);
 
     @Message(id = 260, value = "The selected folder %s cannot be created.")

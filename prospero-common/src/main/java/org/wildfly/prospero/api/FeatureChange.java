@@ -20,7 +20,7 @@ package org.wildfly.prospero.api;
 import java.util.Locale;
 
 /**
- * Represents changes to feature packs used to provison the server.
+ * Represents changes to feature-packs used to provison the server.
  */
 public class FeatureChange extends Diff {
 

@@ -22,9 +22,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.2" producer="org.wildfly.prospero:prospero-wildfly-galleon-pack">
+<build xmlns="urn:wildfly:feature-pack-build:3.5" producer="org.wildfly.prospero:prospero-wildfly-galleon-pack">
   <dependencies>
-    <dependency group-id="${prospero.base.feature-pack.groupId}" artifact-id="${prospero.base.feature-pack.artifactId}">
+    <dependency group-id="${prospero.base.feature-pack.groupId}" artifact-id="${prospero.base.feature-pack.artifactId}" allowedFamily="wildfly:jakarta-ee-10+">
       <packages inherit="true"/>
       <default-configs inherit="false"/>
     </dependency>

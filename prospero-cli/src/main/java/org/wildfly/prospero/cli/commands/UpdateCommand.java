@@ -537,7 +537,7 @@ public class UpdateCommand extends AbstractParentCommand {
                     .readProvisioningConfig(knownFeaturePack.getGalleonConfiguration());
             if (config.getFeaturePackDeps().isEmpty()) {
                 throw new ProvisioningException(
-                        "At least one feature pack location must be specified in the provisioning configuration");
+                        "At least one feature-pack location must be specified in the provisioning configuration");
             }
             FeaturePackLocation fpl = config.getFeaturePackDeps().iterator().next().getLocation();
             String[] split = fpl.toString().split(":");

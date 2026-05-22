@@ -4,7 +4,7 @@ Sometimes it might be needed to provision a copy of the server, with the same co
 
 * a list of component versions used to provision the server,
 * a list of channels used during provisioning,
-* a list of Galleon feature packs used.
+* a list of Galleon feature-packs used.
 
 This information can be obtained from any provisioned server using `clone export` command:
 

@@ -135,7 +135,7 @@ $ ./prospero.sh update subscribe \
        --product=wildfly \ # <1>
        --version=29.0.1.Final # <2>
 ----
-<1> name of the installed server, or name of the feature pack used to install the server
-<2> version of installed server or feature pack
+<1> name of the installed server, or name of the feature-pack used to install the server
+<2> version of installed server or feature-pack
 
 The product and version information is needed to determine currently installed software and subscribe server to correct channels.

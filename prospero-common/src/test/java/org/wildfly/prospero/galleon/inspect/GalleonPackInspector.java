@@ -83,7 +83,7 @@ class GalleonPackInspector extends XmlSupport {
                 parseTemplateArtifacts(res, versionProperties, moduleFile, copy.toFile());
             }
         } catch (IOException e) {
-            throw new ProvisioningException("Unable to parse feature pack " + featurePack, e);
+            throw new ProvisioningException("Unable to parse feature-pack " + featurePack, e);
         }
         return res;
 
@@ -112,7 +112,7 @@ class GalleonPackInspector extends XmlSupport {
             final String[] gav = versionProperties.get(name).split(":");
 
             Artifact artifact = new DefaultArtifact(gav[0], gav[1], gav[3], gav[4], gav[2], null);
-            // feature pack version might have been changed by channel resolution
+            // feature-pack version might have been changed by channel resolution
             artifact = getInstalledVersion(artifact);
 
             if (artifact != null) {

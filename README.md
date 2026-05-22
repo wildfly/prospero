@@ -1,5 +1,5 @@
 ## Prospero 
-Prospero is a tool combining Galleon feature packs and wildfly-channels to provision 
+Prospero is a tool combining Galleon feature-packs and wildfly-channels to provision 
 and update Wildfly server.
 
 ## Example:
@@ -30,7 +30,7 @@ The demo below provisions and updates Wildfly 29.0.0.Final.
 Please see the instructions available in the [contribution guide](CONTRIBUTING.md).
 
 ## Building distribution
-The full distribution of Prospero includes a Galleon feature pack, a standalone zip and documentation. Building those projects is excluded by default and enabled only if a maven `dist` profile is enabled.
+The full distribution of Prospero includes a Galleon feature-pack, a standalone zip and documentation. Building those projects is excluded by default and enabled only if a maven `dist` profile is enabled.
 ```
    cd <PROSPERO_HOME>
    mvn clean install -Pdist

@@ -128,7 +128,7 @@ public class GalleonFeaturePackAnalyzer {
         final Path tempInstallationPath = Files.createTempDirectory("temp");
         final Set<String> fps = new HashSet<>();
         try (GalleonEnvironment galleonEnv = galleonEnvWithFpMapper(tempInstallationPath, installedDir, fps, provisioningConfig)) {
-            // calling this for a side effect of resolving feature pack artifacts
+            // calling this for a side effect of resolving feature-pack artifacts
             galleonEnv.getProvisioning().getProvisioningRuntime(provisioningConfig).close();
             return fps;
         } finally {

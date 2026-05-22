@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 /**
  * Manages stored licenses and agreements. Licenses are stored in classpath in {@code DEFAULT_LICENSE_DEFINITION} and
- * are keyed by the Feature Pack Maven coordinated (groupId:artifactId).
+ * are keyed by the Feature-Pack Maven coordinated (groupId:artifactId).
  */
 public class LicenseManager {
 
@@ -81,7 +81,7 @@ public class LicenseManager {
     /**
      * retrieve {@code License}s applicable to the list of FeaturePacks coordinates.
      *
-     * @param fpls - list of Maven coordinates (groupId:artifactId) of installed Feature Packs
+     * @param fpls - list of Maven coordinates (groupId:artifactId) of installed Feature-Packs
      * @return list of required {@License}s. Empty list if no licenses are required.
      */
     public List<License> getLicenses(Set<String> fpls) {

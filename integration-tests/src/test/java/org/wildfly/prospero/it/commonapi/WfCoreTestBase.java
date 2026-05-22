@@ -112,7 +112,7 @@ public class WfCoreTestBase {
         final RepositorySystem system = msm.newRepositorySystem();
         final DefaultRepositorySystemSession session = msm.newRepositorySystemSession(system);
 
-        /* mock a wildfly-core feature pack that requires a channel resolve
+        /* mock a wildfly-core feature-pack that requires a channel resolve
          * the mocked artifact lives in {@code testRepo}
          */
         deployFeaturePackRequiringChannels(system, session);

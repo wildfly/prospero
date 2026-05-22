@@ -55,14 +55,14 @@ import org.wildfly.prospero.model.InstallationProfile;
 public class ProvisioningDefinition {
 
     /**
-     * Galleon feature pack location. Can be either a well-known name (like "eap-8.0" or "wildfly") that references a predefined
-     * combination of Galleon configuration and channels, a feature pack G:A(:V), or a standard Galleon feature pack location
+     * Galleon feature-pack location. Can be either a well-known name (like "eap-8.0" or "wildfly") that references a predefined
+     * combination of Galleon configuration and channels, a feature-pack G:A(:V), or a standard Galleon feature-pack location
      * string (see https://docs.wildfly.org/galleon/#_feature_pack_location).
      */
     private final String fpl;
 
     /**
-     * This field would only contain channels parsed from the prosper-known-combinations.yaml file ("well-known feature packs"),
+     * This field would only contain channels parsed from the prosper-known-combinations.yaml file ("well-known feature-packs"),
      * or a synthetic channel created when a manifest coordinate is given (via {@link Builder#setManifest(String)}).
      *
      * When channels are provided via {@link Builder#setChannelCoordinates(String)}, the channels would come in a form of

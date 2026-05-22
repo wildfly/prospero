@@ -6,15 +6,15 @@ Wildfly (upstream project), and the Prospero tool would only be used to provisio
 
 Prospero needs two required inputs, to be able to provision an installation:
 
-* a Galleon *feature pack location*,
+* a Galleon *feature-pack location*,
 * a *Wildfly Channel* reference.
 
 ## Dictionary of Terms
 <dl>
-    <dt>Galleon Feature Pack</dt>
+    <dt>Galleon Feature-Pack</dt>
     <dd>
-        The <i>Galleon feature pack</i> is a package containing all the metadata required to compose an installation of the Wildfly 
-        or JBoss EAP application server. Among other things, the feature pack contains coordinates (GAVs) to Maven artifacts
+        The <i>Galleon feature-pack</i> is a package containing all the metadata required to compose an installation of the Wildfly 
+        or JBoss EAP application server. Among other things, the feature-pack contains coordinates (GAVs) to Maven artifacts
         that the Wildfly server is composed of.
     </dd>
     <dt>Wildfly Channel</dt>
@@ -25,7 +25,7 @@ Prospero needs two required inputs, to be able to provision an installation:
     <dt>Wildfly Channel Manifest</dt>
     <dd>
         The <i>Wildfly Channel Manifest</i> specifies versions of all the Maven artifacts that given feature
-        pack depends on (these version override the original Maven artifacts versions defined in the feature pack).
+        pack depends on (these version override the original Maven artifacts versions defined in the feature-pack).
     </dd>
 </dl>
 
@@ -68,7 +68,7 @@ mvn clean package
 ```
 
 Description:
- * The `--fpl` option defines a feature pack to be installed.
+ * The `--fpl` option defines a feature-pack to be installed.
  * The `--channels` option defines a Wildfly Channel (a *Wildfly Channel* references a *Wildfly Channel Manifest* and
 Maven repositories). 
 
@@ -82,7 +82,7 @@ Maven repositories).
 ```
 
 Description:
-* The `--fpl` option defines a feature pack to be installed.
+* The `--fpl` option defines a feature-pack to be installed.
 * The `--manifest` option defines a Wildfly Channel Manifest (specifies Maven artifacts versions).
 * The `--repositories` options defines Maven repositories to download Maven artifacts from.
 

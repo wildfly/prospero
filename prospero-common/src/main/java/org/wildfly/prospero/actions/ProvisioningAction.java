@@ -212,10 +212,10 @@ public class ProvisioningAction {
     }
 
     /**
-     * List agreements and licenses that need to be accepted before installing the required Feature Packs.
+     * List agreements and licenses that need to be accepted before installing the required Feature-Packs.
      *
-     * @param provisioningConfig - list of Feature Packs being installed
-     * @param channels - list of channels used to resolve the Feature Packs
+     * @param provisioningConfig - list of Feature-Packs being installed
+     * @param channels - list of channels used to resolve the Feature-Packs
      * @return - list of {@code License}, or empty list if no licenses were required
      */
     public List<License> getPendingLicenses(GalleonProvisioningConfig provisioningConfig, List<Channel> channels) throws OperationException {

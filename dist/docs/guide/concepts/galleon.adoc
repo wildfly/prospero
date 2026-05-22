@@ -1,9 +1,9 @@
-### Feature Packs
+### Feature-Packs
 
 Galleon is a provisioning tool used to assemble Wildfly distributions. In order for a piece of software to be provisioned by Galleon it needs to be packaged as a feature-pack.
 
-Feature packs are ZIP archives usually available in Maven repositories. They contain information about installed software's filesystem content, configuration and additional tasks needed to assemble and configure it.
+Feature-packs are ZIP archives usually available in Maven repositories. They contain information about installed software's filesystem content, configuration and additional tasks needed to assemble and configure it.
 
-In case of Wildfly server, the feature pack also contains a list of Maven coordinates for all the components included in the server distribution. During provisioning, those coordinates are used to download the components and place them in resulting server.
+In case of Wildfly server, the feature-pack also contains a list of Maven coordinates for all the components included in the server distribution. During provisioning, those coordinates are used to download the components and place them in resulting server.
 
-For more information on Galleon and the Feature Packs see the https://docs.wildfly.org/galleon/#_feature_packs[Galleon documentation]
+For more information on Galleon and the Feature-Packs see the https://docs.wildfly.org/galleon/#_feature_packs[Galleon documentation]

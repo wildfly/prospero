@@ -15,7 +15,7 @@ One way to specify channel content is by using manifests. Manifests are YAML fil
 schemaVersion: "1.0.0"
 name: Manifest for WildFly 27
 description: |-
-  This manifest provides updates for WildFly 27 Feature Pack.
+  This manifest provides updates for WildFly 27 Feature-Pack.
 streams:
   - groupId: "org.wildfly"
     artifactId: "wildfly-galleon-pack"

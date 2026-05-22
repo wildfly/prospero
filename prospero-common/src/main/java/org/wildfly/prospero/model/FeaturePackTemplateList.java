@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * contains recipes for feature pack addition
+ * contains recipes for feature-pack addition
  */
 class FeaturePackTemplateList {
 

@@ -364,7 +364,7 @@ public class InstallCommand extends AbstractInstallCommand {
     private List<FeaturePackLocation> getFeaturePacks(InstallationProfile profile) throws MetadataException, ProvisioningException {
         final GalleonProvisioningConfig config = GalleonUtils.readProvisioningConfig(profile.getGalleonConfiguration());
         if (config.getFeaturePackDeps().isEmpty()) {
-            throw new ProvisioningException("At least one feature pack location must be specified in the provisioning configuration");
+            throw new ProvisioningException("At least one feature-pack location must be specified in the provisioning configuration");
         }
 
         return config.getFeaturePackDeps().stream()

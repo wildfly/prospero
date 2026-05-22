@@ -61,7 +61,7 @@ import org.wildfly.prospero.it.ExecutionUtils;
 import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
 
 /**
- * A simple Galleon feature pack creating one or more module(s) with artifact(s) provisioned by Prospero.
+ * A simple Galleon feature-pack creating one or more module(s) with artifact(s) provisioned by Prospero.
  */
 public class TestInstallation {
 
@@ -145,7 +145,7 @@ public class TestInstallation {
     }
 
     /**
-     * provision a feature pack with name {@name fplName}.
+     * provision a feature-pack with name {@name fplName}.
      *
      * @param fplName
      * @param channels
@@ -314,7 +314,7 @@ public class TestInstallation {
     }
 
     /**
-     * Simplified builder for a feature pack. Generates a zip file with the feature pack
+     * Simplified builder for a feature-pack. Generates a zip file with the feature-pack
      */
     public static class Builder {
         private List<Artifact> modules = new ArrayList<>();

@@ -202,7 +202,7 @@ public class MavenOptions {
         private Optional<Boolean> offline = Optional.empty();
         private Optional<Boolean> noLocalCache = Optional.empty();
         private Optional<Path> localCachePath = Optional.empty();
-        private Optional<Path> mavenSettingsPath = Optional.of(MavenOptions.DEFAULT_MAVEN_SETTINGS);
+        private Optional<Path> mavenSettingsPath = Optional.of(DEFAULT_MAVEN_SETTINGS);
         private Path filterManifest = null;
 
         private Builder() {

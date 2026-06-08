@@ -22,10 +22,13 @@ import org.junit.Test;
 import org.wildfly.channel.Repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public class MavenProxyHandlerTest {
+
+    private RemoteRepository.Builder builder(Repository repository) {
+        return new RemoteRepository.Builder(repository.getId(), "default", repository.getUrl());
+    }
 
     @After
     public void clearProperties() {
@@ -44,35 +47,50 @@ public class MavenProxyHandlerTest {
 
     @Test
     public void noProxiesAddedIfSettingsAreNotPresent() throws Exception {
-        final RemoteRepository result = MavenProxyHandler.addProxySettings(new Repository("test", "http://foo.bar"));
+        Repository repo = new Repository("test", "http://foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
 
-        assertNull(result.getProxy());
+        assertNull(builder.build().getProxy());
     }
 
     @Test
     public void addUnauthenticatedHttpProxy() throws Exception {
         System.setProperty("http.proxyHost", "http://proxy");
         System.setProperty("http.proxyPort", "8888");
-        final RemoteRepository result = MavenProxyHandler.addProxySettings(new Repository("test", "http://foo.bar"));
 
-        assertThat(result.getProxy())
+        Repository repo = new Repository("test", "http://foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        assertThat(builder.build().getProxy())
                 .hasFieldOrPropertyWithValue("host", "http://proxy")
                 .hasFieldOrPropertyWithValue("port", 8888);
 
-        assertNull(MavenProxyHandler.addProxySettings(new Repository("test", "https://foo.bar")).getProxy());
+        repo = new Repository("test", "https://foo.bar");
+        builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+        assertNull(builder.build().getProxy());
     }
 
     @Test
     public void addUnauthenticatedHttpsProxy() throws Exception {
         System.setProperty("https.proxyHost", "http://proxy");
         System.setProperty("https.proxyPort", "8888");
-        final RemoteRepository result = MavenProxyHandler.addProxySettings(new Repository("test", "https://foo.bar"));
 
-        assertThat(result.getProxy())
+        Repository repo = new Repository("test", "https://foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        assertThat(builder.build().getProxy())
                 .hasFieldOrPropertyWithValue("host", "http://proxy")
                 .hasFieldOrPropertyWithValue("port", 8888);
 
-        assertNull(MavenProxyHandler.addProxySettings(new Repository("test", "http://foo.bar")).getProxy());
+        repo = new Repository("test", "http://foo.bar");
+        builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        assertNull(builder.build().getProxy());
     }
 
     @Test
@@ -81,12 +99,16 @@ public class MavenProxyHandlerTest {
         System.setProperty("https.proxyPort", "8888");
         System.setProperty("https.proxyUser", "test");
         System.setProperty("https.proxyPassword", "pwd");
-        final RemoteRepository result = MavenProxyHandler.addProxySettings(new Repository("test", "https://foo.bar"));
 
-        assertThat(result.getProxy())
-                .hasFieldOrPropertyWithValue("host", "http://proxy")
-                .hasFieldOrPropertyWithValue("port", 8888);
-        assertNotNull(result.getProxy().getAuthentication());
+        Repository repo = new Repository("test", "https://foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        assertThat(builder.build().getProxy()).satisfies(proxy -> {
+            assertThat(proxy.getHost()).isEqualTo("http://proxy");
+            assertThat(proxy.getPort()).isEqualTo(8888);
+            assertThat(proxy.getAuthentication()).isNotNull();
+        });
     }
 
     @Test
@@ -95,12 +117,18 @@ public class MavenProxyHandlerTest {
         System.setProperty("http.proxyPort", "8888");
         System.setProperty("http.proxyUser", "test");
         System.setProperty("http.proxyPassword", "pwd");
-        final RemoteRepository result = MavenProxyHandler.addProxySettings(new Repository("test", "http://foo.bar"));
 
-        assertThat(result.getProxy())
-                .hasFieldOrPropertyWithValue("host", "http://proxy")
-                .hasFieldOrPropertyWithValue("port", 8888);
-        assertNotNull(result.getProxy().getAuthentication());
+        Repository repo = new Repository("test", "http://foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        assertThat(builder.build().getProxy()).satisfies(proxy -> {
+            assertThat(proxy.getHost()).isEqualTo("http://proxy");
+            assertThat(proxy.getPort()).isEqualTo(8888);
+            assertThat(proxy.getAuthentication()).isNotNull();
+        });
     }
 
     @Test
@@ -108,20 +136,29 @@ public class MavenProxyHandlerTest {
         System.setProperty("http.proxyHost", "http://proxy");
         System.setProperty("http.proxyPort", "8888");
         System.setProperty("http.proxyPassword", "pwd");
-        final RemoteRepository result = MavenProxyHandler.addProxySettings(new Repository("test", "http://foo.bar"));
 
-        assertThat(result.getProxy())
-                .hasFieldOrPropertyWithValue("host", "http://proxy")
-                .hasFieldOrPropertyWithValue("port", 8888);
-        assertNull(result.getProxy().getAuthentication());
+        Repository repo = new Repository("test", "http://foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        assertThat(builder.build().getProxy()).satisfies(proxy -> {
+            assertThat(proxy.getHost()).isEqualTo("http://proxy");
+            assertThat(proxy.getPort()).isEqualTo(8888);
+            assertThat(proxy.getAuthentication()).isNull();
+        });
     }
 
     @Test
     public void defaultPortTo80IfNotPresent() throws Exception {
         System.setProperty("http.proxyHost", "http://proxy");
-        final RemoteRepository result = MavenProxyHandler.addProxySettings(new Repository("test", "http://foo.bar"));
 
-        assertThat(result.getProxy())
+        Repository repo = new Repository("test", "http://foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        assertThat(builder.build().getProxy())
                 .hasFieldOrPropertyWithValue("host", "http://proxy")
                 .hasFieldOrPropertyWithValue("port", 80);
     }
@@ -130,18 +167,32 @@ public class MavenProxyHandlerTest {
     public void skipProxyIfHostExcluded() throws Exception {
         System.setProperty("http.proxyHost", "http://proxy");
         System.setProperty("http.nonProxyHosts", "foo.bar");
-        final RemoteRepository result = MavenProxyHandler.addProxySettings(new Repository("test", "http://foo.bar"));
 
-        assertNull(result.getProxy());
+        Repository repo = new Repository("test", "http://foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+
+        assertNull(builder.build().getProxy());
     }
 
     @Test
     public void skipProxyIfRepositoryUrlInvalid() throws Exception {
         System.setProperty("http.proxyHost", "http://proxy");
 
-        assertNull(MavenProxyHandler.addProxySettings(new Repository("test", "http:foo.bar")).getProxy());
-        assertNull(MavenProxyHandler.addProxySettings(new Repository("test", "httpfoo.bar")).getProxy());
-        assertNull(MavenProxyHandler.addProxySettings(new Repository("test", "")).getProxy());
+        Repository repo = new Repository("test", "https:foo.bar");
+        RemoteRepository.Builder builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+        assertNull(builder.build().getProxy());
+
+        repo = new Repository("test", "https:foo.bar");
+        builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+        assertNull(builder.build().getProxy());
+
+        repo = new Repository("test", "");
+        builder = builder(repo);
+        MavenProxyHandler.addProxySettings(repo, builder);
+        assertNull(builder.build().getProxy());
     }
 
 }

@@ -18,6 +18,7 @@
 package org.wildfly.prospero.galleon;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.settings.Settings;
 import org.jboss.galleon.Constants;
 import org.jboss.galleon.ProvisioningException;
 import org.jboss.galleon.util.HashUtils;
@@ -44,10 +45,15 @@ public class GalleonFeaturePackAnalyzer {
 
     private final List<Channel> channels;
     private final MavenSessionManager mavenSessionManager;
+    private final Settings mavenSettings;
+    private final Path filterManifest;
 
-    public GalleonFeaturePackAnalyzer(List<Channel> channels, MavenSessionManager mavenSessionManager) {
+    public GalleonFeaturePackAnalyzer(List<Channel> channels, MavenSessionManager mavenSessionManager,
+                                      Settings mavenSettings, Path filterManifest) {
         this.channels = channels;
         this.mavenSessionManager = mavenSessionManager;
+        this.mavenSettings = mavenSettings;
+        this.filterManifest = filterManifest;
     }
 
     /**
@@ -143,6 +149,8 @@ public class GalleonFeaturePackAnalyzer {
                 .setSourceServerPath(sourcePath)
                 .setProvisioningConfig(provisioningConfig)
                 .setResolvedFpTracker(fps::add)
+                .setMavenSettings(mavenSettings)
+                .setFilterManifest(filterManifest)
                 .build();
         return galleonEnv;
     }

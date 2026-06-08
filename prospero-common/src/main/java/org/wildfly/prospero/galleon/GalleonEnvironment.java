@@ -18,6 +18,7 @@
 package org.wildfly.prospero.galleon;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.jboss.galleon.ProvisioningException;
@@ -102,12 +103,16 @@ public class GalleonEnvironment implements AutoCloseable {
         final RepositorySystem system = builder.mavenSessionManager.newRepositorySystem();
         final DefaultRepositorySystemSession session = builder.mavenSessionManager.newRepositorySystemSession(system);
         final Path sourceServerPath = builder.sourceServerPath == null? builder.installDir:builder.sourceServerPath;
+        final RepositoryFactory repositoryFactory = new RepositoryFactory(List.of(
+                new MavenProxyHandler(), new RepositoryAuthenticationHandler(builder.mavenSettings)));
+
         MavenVersionsResolver.Factory factory;
         try {
-            factory = new CachedVersionResolverFactory(new VersionResolverFactory(system, session, MavenProxyHandler::addProxySettings), sourceServerPath, system, session);
+            factory = new ProsperoVersionResolverFactory(new VersionResolverFactory(system, session, repositoryFactory),
+                    sourceServerPath, system, session, builder.filterManifest);
         } catch (IOException e) {
             ProsperoLogger.ROOT_LOGGER.debug("Unable to read artifact cache, falling back to Maven resolver.", e);
-            factory = new VersionResolverFactory(system, session, MavenProxyHandler::addProxySettings);
+            factory = new VersionResolverFactory(system, session, repositoryFactory);
         }
 
         channelSession = initChannelSession(session, factory);
@@ -281,6 +286,8 @@ public class GalleonEnvironment implements AutoCloseable {
         private boolean artifactDirectResolve;
         private List<ManifestVersionRecord.MavenManifest> restoredManifestVersions;
         private final boolean useDefaultCore;
+        private Settings mavenSettings;
+        private Path filterManifest;
 
         private GalleonProvisioningConfig config;
 
@@ -341,6 +348,23 @@ public class GalleonEnvironment implements AutoCloseable {
          */
         public Builder setArtifactDirectResolve(boolean artifactDirectResolve) {
             this.artifactDirectResolve = artifactDirectResolve;
+            return this;
+        }
+
+        /**
+         * Maven settings file to use for retrieving authentication credentials.
+         */
+        public Builder setMavenSettings(Settings mavenSettings) {
+            this.mavenSettings = mavenSettings;
+            return this;
+        }
+
+        /**
+         * Manifest used by version resolver to filter component versions. This is used to identify component versions
+         * intended for specific product stream.
+         */
+        public Builder setFilterManifest(Path filterManifest) {
+            this.filterManifest = filterManifest;
             return this;
         }
 

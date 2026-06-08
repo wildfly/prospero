@@ -23,6 +23,9 @@ import org.wildfly.channel.ArtifactCoordinate;
 import org.wildfly.channel.Repository;
 import org.wildfly.channel.maven.VersionResolverFactory;
 import org.wildfly.channel.spi.MavenVersionsResolver;
+import org.wildfly.prospero.galleon.artifactfiltering.ArtifactVersion;
+import org.wildfly.prospero.galleon.artifactfiltering.FilteringVersionResolver;
+import org.wildfly.prospero.galleon.artifactfiltering.ManifestBasedArtifactFilter;
 import org.wildfly.prospero.metadata.ManifestVersionRecord;
 import org.wildfly.prospero.metadata.ProsperoMetadataUtils;
 
@@ -31,26 +34,39 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
-public class CachedVersionResolverFactory implements MavenVersionsResolver.Factory {
+public class ProsperoVersionResolverFactory implements MavenVersionsResolver.Factory {
 
     private final VersionResolverFactory factory;
     private final RepositorySystem system;
     private final DefaultRepositorySystemSession session;
     private final ArtifactCache artifactCache;
     private final Path installDir;
+    private final Path filterManifest;
 
-    public CachedVersionResolverFactory(VersionResolverFactory factory, Path installDir, RepositorySystem system, DefaultRepositorySystemSession session) throws IOException {
+    public ProsperoVersionResolverFactory(VersionResolverFactory factory, Path installDir, RepositorySystem system, DefaultRepositorySystemSession session, Path filterManifest) throws IOException {
         this.factory = factory;
         this.system = system;
         this.session = session;
         this.artifactCache = ArtifactCache.getInstance(installDir);
         this.installDir = installDir;
+        this.filterManifest = filterManifest;
     }
 
     @Override
     public MavenVersionsResolver create(Collection<Repository> repositories) {
-        return new CachedVersionResolver(factory.create(repositories), artifactCache, system, session,
+        MavenVersionsResolver wildflyChannelVersionsResolver = factory.create(repositories);
+
+        Predicate<ArtifactVersion> artifactFiler;
+        if (filterManifest != null) {
+            artifactFiler = new ManifestBasedArtifactFilter(filterManifest, true);
+        } else {
+            artifactFiler = artifactVersion -> true;
+        }
+        FilteringVersionResolver filteringVersionResolver = new FilteringVersionResolver(artifactFiler, wildflyChannelVersionsResolver);
+
+        return new CachedVersionResolver(filteringVersionResolver, artifactCache, system, session,
                 (a)->getCurrentManifestVersion(a, installDir.resolve(ProsperoMetadataUtils.METADATA_DIR).resolve(ProsperoMetadataUtils.CURRENT_VERSION_FILE)));
     }
 

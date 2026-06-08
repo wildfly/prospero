@@ -156,7 +156,7 @@ class PrepareCandidateAction implements AutoCloseable {
                 manifestRecord);
 
         try {
-            final GalleonFeaturePackAnalyzer galleonFeaturePackAnalyzer = new GalleonFeaturePackAnalyzer(galleonEnv.getChannels(), mavenSessionManager);
+            final GalleonFeaturePackAnalyzer galleonFeaturePackAnalyzer = new GalleonFeaturePackAnalyzer(galleonEnv.getChannels(), mavenSessionManager, null, null);
             galleonFeaturePackAnalyzer.cacheGalleonArtifacts(targetDir, provisioningConfig);
         } catch (Exception e) {
             throw new RuntimeException(e);

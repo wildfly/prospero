@@ -319,29 +319,19 @@ public class ApplyCandidateActionTest {
     }
 
     @Test
-    public void targetStandaloneServerHasToBeStopped() throws Exception {
+    public void targetServerHasToBeStopped() throws Exception {
         createSimpleFeaturePacks();
 
         install(installationPath, FPL_100);
         prepareUpdate(updatePath, installationPath, FPL_101);
 
-        Files.createDirectories(installationPath.resolve(ApplyCandidateAction.STANDALONE_STARTUP_MARKER.getParent()));
-        Files.writeString(installationPath.resolve(ApplyCandidateAction.STANDALONE_STARTUP_MARKER), "test");
-
-        assertThrows(ProvisioningException.class, () -> new ApplyCandidateAction(installationPath, updatePath).applyUpdate(ApplyCandidateAction.Type.UPDATE));
-    }
-
-    @Test
-    public void targetDomainServerHasToBeStopped() throws Exception {
-        createSimpleFeaturePacks();
-
-        install(installationPath, FPL_100);
-        prepareUpdate(updatePath, installationPath, FPL_101);
-
-        Files.createDirectories(installationPath.resolve(ApplyCandidateAction.DOMAIN_STARTUP_MARKER.getParent()));
-        Files.writeString(installationPath.resolve(ApplyCandidateAction.DOMAIN_STARTUP_MARKER), "test");
-
-        assertThrows(ProvisioningException.class, () -> new ApplyCandidateAction(installationPath, updatePath).applyUpdate(ApplyCandidateAction.Type.UPDATE));
+        Path lockFile = installationPath.resolve(ApplyCandidateAction.RUNNING_LOCK_FILE);
+        Files.createDirectories(lockFile.getParent());
+        try (java.nio.channels.FileChannel channel = java.nio.channels.FileChannel.open(lockFile,
+                java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.WRITE, java.nio.file.StandardOpenOption.READ);
+             java.nio.channels.FileLock lock = channel.lock()) {
+            assertThrows(ProvisioningException.class, () -> new ApplyCandidateAction(installationPath, updatePath).applyUpdate(ApplyCandidateAction.Type.UPDATE));
+        }
     }
 
     @Test

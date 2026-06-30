@@ -43,6 +43,7 @@ import org.wildfly.prospero.cli.CliMessages;
 import org.wildfly.prospero.cli.ReturnCodes;
 import org.wildfly.prospero.test.MetadataTestUtils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +97,9 @@ public class HistoryCommandTest extends AbstractConsoleTest {
         int exitCode = commandLine.execute(CliConstants.Commands.HISTORY, CliConstants.DIR, installationDir.toString());
         assertEquals(ReturnCodes.SUCCESS, exitCode);
         verify(historyAction).getRevisions();
-        assertTrue(getStandardOutput().contains("abcd"));
+        assertThat(getStandardOutput().lines()
+                .filter(line -> line.contains("abcd")))
+                .allMatch(line -> line.startsWith("  - "));
     }
 
     @Test

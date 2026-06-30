@@ -184,6 +184,10 @@ public interface CliMessages {
         return bundle.getString("prospero.general.prompt.no");
     }
 
+    default String historyHeader() {
+        return bundle.getString("prospero.history.header");
+    }
+
     default String noChangesFound() {
         return bundle.getString("prospero.history.no_updates");
     }

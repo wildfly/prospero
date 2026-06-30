@@ -20,8 +20,6 @@ public class ChannelVersionChangesPrinter {
     private static final ProsperoLogger logger = ProsperoLogger.ROOT_LOGGER;
 
     private final Console console;
-    private static final String INDENT = "  ";
-    private static final String ITEM_ELEM = "* ";
 
 
     public ChannelVersionChangesPrinter(Console console) {
@@ -31,27 +29,30 @@ public class ChannelVersionChangesPrinter {
     public void printDowngrades(Collection<ChannelVersionChange> downgrades) {
         logger.infof("Displaying %d downgrade(s) to user", downgrades.size());
         console.println(CliMessages.MESSAGES.channelDowngradeWarningHeader());
-        final StringBuilder sb = new StringBuilder();
-        for (ChannelVersionChange downgrade : downgrades) {
-            logger.debugf("Preparing downgrade display: %s: %s -> %s",
+        ListPrinter.unordered(console)
+                .printItems(downgrades, this::formatDowngrade);
+        console.println("");
+        logger.infof("Downgrade warning displayed to user");
+    }
+
+    private String formatDowngrade(ChannelVersionChange downgrade) {
+        logger.debugf("Preparing downgrade display: %s: %s -> %s",
                 downgrade.channelName(),
                 downgrade.oldVersion().getPhysicalVersion(),
                 downgrade.newVersion().getPhysicalVersion());
 
-            sb.append(INDENT).append(ITEM_ELEM).append(downgrade.channelName()).append(": ");
-            sb.append(downgrade.oldVersion().getPhysicalVersion());
-            if (downgrade.oldVersion().getLogicalVersion() != null) {
-                sb.append(" (").append(downgrade.oldVersion().getLogicalVersion()).append(")");
-            }
-
-            sb.append("  ->  ").append(downgrade.newVersion().getPhysicalVersion());
-            if (downgrade.newVersion().getLogicalVersion() != null) {
-                sb.append(" (").append(downgrade.newVersion().getLogicalVersion()).append(")");
-            }
-            sb.append(System.lineSeparator());
+        final StringBuilder sb = new StringBuilder();
+        sb.append(downgrade.channelName()).append(": ");
+        sb.append(downgrade.oldVersion().getPhysicalVersion());
+        if (downgrade.oldVersion().getLogicalVersion() != null) {
+            sb.append(" (").append(downgrade.oldVersion().getLogicalVersion()).append(")");
         }
-        console.println(sb.toString());
-        logger.infof("Downgrade warning displayed to user");
+
+        sb.append("  ->  ").append(downgrade.newVersion().getPhysicalVersion());
+        if (downgrade.newVersion().getLogicalVersion() != null) {
+            sb.append(" (").append(downgrade.newVersion().getLogicalVersion()).append(")");
+        }
+        return sb.toString();
     }
 
     public void printUnexpectedDowngradesError(Collection<ChannelVersionChange> downgrades, CommandLine.Model.CommandSpec spec) {
@@ -79,18 +80,21 @@ public class ChannelVersionChangesPrinter {
 
         final List<String> currentManifestVersions = new ArrayList<>();
         console.println(CliMessages.MESSAGES.channelVersionUpdateListHeader());
+        final ListPrinter channelList = ListPrinter.unordered(console);
         for (String channelName : result.getUpdatedChannels()) {
             final ChannelsUpdateResult.ChannelResult channelResult = result.getUpdatedVersion(channelName);
             if (channelResult.getStatus() == ChannelsUpdateResult.Status.UpdatesFound) {
                 final Set<ChannelVersion> availableVersions = channelResult.getAvailableVersions();
 
-                console.println(" - %s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListChannelName(), channelName));
-                console.println("   %s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListCurrentVersion(), channelResult.getCurrentVersion().getPhysicalVersion()));
-                console.println("   %s:".formatted(CliMessages.MESSAGES.channelVersionUpdateListAvailableVersions()));
-                for (ChannelVersion channelVersion : availableVersions) {
-                    final String logicalVersion =  channelVersion.getLogicalVersion() == null ? "" : " (%s)".formatted(channelVersion.getLogicalVersion());
-                    console.println("   - %s%s".formatted(channelVersion.getPhysicalVersion(), logicalVersion));
-                }
+                channelList.printItem("%s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListChannelName(), channelName));
+                ListPrinter details = channelList.unorderedSubList();
+                details.printText("%s: %s".formatted(CliMessages.MESSAGES.channelVersionUpdateListCurrentVersion(), channelResult.getCurrentVersion().getPhysicalVersion()));
+                details.printText("%s:".formatted(CliMessages.MESSAGES.channelVersionUpdateListAvailableVersions()));
+                details.unorderedSubList()
+                        .printItems(availableVersions, channelVersion -> {
+                            final String logicalVersion = channelVersion.getLogicalVersion() == null ? "" : " (%s)".formatted(channelVersion.getLogicalVersion());
+                            return "%s%s".formatted(channelVersion.getPhysicalVersion(), logicalVersion);
+                        });
             }
             currentManifestVersions.add(channelName + "::" + channelResult.getCurrentVersion().getPhysicalVersion());
         }

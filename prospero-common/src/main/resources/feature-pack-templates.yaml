@@ -1,18 +1,20 @@
 schemaVersion: 1.0.0
 feature-packs:
-  - groupId: "org.wildfly"
-    artifactId: "wildfly-galleon-pack"
-    version: "[0,)"
-    supports-customization: false
-    requires-layers: false
-    replaces-dependency: "org.wildfly:wildfly-ee-galleon-pack"
-  - groupId: "org.wildfly"
-    artifactId: "wildfly-datasources-galleon-pack"
+  -  groupId: "org.jboss.eap.xp"
+     artifactId: "wildfly-galleon-pack"
+     version: "[0,)"
+     additional-packages:
+       - "docs.examples.configs"
+     replaces-dependency: "org.jboss.eap:wildfly-ee-galleon-pack::zip"
+     supports-customization: false
+     requires-layers: false
+  - groupId: "org.jboss.eap"
+    artifactId: "eap-datasources-galleon-pack"
     version: "[0,)"
     supports-customization: true
     requires-layers: true
-  - groupId: "org.wildfly"
-    artifactId: "wildfly-myfaces-feature-pack"
+  - groupId: "org.jboss.eap"
+    artifactId: "eap-myfaces-feature-pack"
     version: "[0,)"
     supports-customization: true
     requires-layers: true

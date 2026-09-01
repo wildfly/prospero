@@ -11,7 +11,7 @@
 
     <groupId>org.wildfly.prospero</groupId>
     <artifactId>prospero</artifactId>
-    <version>1.4.2.Final-SNAPSHOT</version>
+    <version>1.4.2.Final-redhat-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Prospero Parent</name>
@@ -70,28 +70,28 @@
         <maven.compiler.release>17</maven.compiler.release>
         <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
         <nexus.staging.tag>prospero-${project.version}</nexus.staging.tag>
-        <prospero.dist.name>prospero</prospero.dist.name>
-        <prospero.target.server>Wildfly</prospero.target.server>
-        <prospero.base.feature-pack.groupId>org.wildfly</prospero.base.feature-pack.groupId>
+        <prospero.dist.name>jboss-eap-installation-manager</prospero.dist.name>
+        <prospero.target.server>JBoss EAP</prospero.target.server>
+        <prospero.base.feature-pack.groupId>org.jboss.eap</prospero.base.feature-pack.groupId>
         <prospero.base.feature-pack.artifactId>wildfly-ee-galleon-pack</prospero.base.feature-pack.artifactId>
-        <prospero.base.feature-pack.family-prefix>wildfly</prospero.base.feature-pack.family-prefix>
-        <prospero.test.base.channel.groupId>org.wildfly.channels</prospero.test.base.channel.groupId>
-        <prospero.test.base.channel.artifactId>wildfly</prospero.test.base.channel.artifactId>
-        <prospero.test.base.channel.version>${version.org.wildfly.galleon-pack}</prospero.test.base.channel.version>
-        <prospero.test.base.repositories>https://repo1.maven.org/maven2/,https://repository.jboss.org/nexus/content/groups/public/</prospero.test.base.repositories>
-        <prospero.test.datasources-feature-pack.groupId>org.wildfly</prospero.test.datasources-feature-pack.groupId>
-        <prospero.test.datasources-feature-pack.artifactId>wildfly-datasources-galleon-pack</prospero.test.datasources-feature-pack.artifactId>
-        <prospero.test.datasources-feature-pack.version>4.0.0.Final</prospero.test.datasources-feature-pack.version>
+        <prospero.base.feature-pack.family-prefix>jboss-eap</prospero.base.feature-pack.family-prefix>
+        <prospero.test.base.channel.groupId>org.jboss.eap.channels</prospero.test.base.channel.groupId>
+        <prospero.test.base.channel.artifactId>eap-8.2</prospero.test.base.channel.artifactId>
+        <prospero.test.base.channel.version>1.0.0.Alpha-redhat-00025</prospero.test.base.channel.version>
+        <prospero.test.base.repositories>https://repo1.maven.org/maven2/,https://repository.jboss.org/nexus/content/groups/public/,https://download.devel.redhat.com/brewroot/repos/jb-eap-8.2-maven-build/latest/maven/,https://indy.corp.redhat.com/api/content/maven/hosted/pnc-builds/</prospero.test.base.repositories>
+        <prospero.test.datasources-feature-pack.groupId>org.jboss.eap</prospero.test.datasources-feature-pack.groupId>
+        <prospero.test.datasources-feature-pack.artifactId>eap-datasources-galleon-pack</prospero.test.datasources-feature-pack.artifactId>
+        <prospero.test.datasources-feature-pack.version>8.2.0.Beta-redhat-00010</prospero.test.datasources-feature-pack.version>
         <prospero.test.generate.server.profile>${prospero.test.server.profile}</prospero.test.generate.server.profile>
-        <prospero.test.generate.server_dist.version>28.0.0.Final</prospero.test.generate.server_dist.version>
-        <prospero.test.generate.server_dist.url>https://repo1.maven.org/maven2/org/wildfly/wildfly-dist/28.0.0.Final/wildfly-dist-28.0.0.Final.zip</prospero.test.generate.server_dist.url>
-        <prospero.test.generate.server_core.version>20.0.1.Final</prospero.test.generate.server_core.version>
-        <prospero.test.server.profile>wildfly</prospero.test.server.profile>
-        <prospero.repo.id>central</prospero.repo.id>
-        <prospero.repo.url>https://repo1.maven.org/maven2/</prospero.repo.url>
-        <prospero.channel.resolution.mode>NOT_REQUIRED</prospero.channel.resolution.mode>
-        <prospero.channel.manifest.artifactId>prospero-standalone-galleon-pack</prospero.channel.manifest.artifactId>
-        <prospero.channel.manifest.groupId>${project.groupId}</prospero.channel.manifest.groupId>
+        <prospero.test.generate.server_dist.version>8.2.0.Alpha-redhat-00001</prospero.test.generate.server_dist.version>
+        <prospero.test.generate.server_dist.url>https://download.devel.redhat.com/brewroot/repos/jb-eap-8.2-maven-build/latest/maven/org/jboss/eap/wildfly-ee-dist/8.2.0.Alpha-redhat-00001/wildfly-ee-dist-8.2.0.Alpha-redhat-00001.zip</prospero.test.generate.server_dist.url>
+        <prospero.test.generate.server_core.version>32.0.0.Beta1-redhat-00001</prospero.test.generate.server_core.version>
+        <prospero.test.server.profile>eap-8.2</prospero.test.server.profile>
+        <prospero.repo.id>mrrc</prospero.repo.id>
+        <prospero.repo.url>https://maven.repository.redhat.com/ga/</prospero.repo.url>
+        <prospero.channel.resolution.mode>REQUIRED</prospero.channel.resolution.mode>
+        <prospero.channel.manifest.artifactId>eap-8.2</prospero.channel.manifest.artifactId>
+        <prospero.channel.manifest.groupId>org.jboss.eap.channels</prospero.channel.manifest.groupId>
 
         <version.io.undertow>2.4.0.Final</version.io.undertow>
         <version.commons-codec>1.17.1</version.commons-codec>
@@ -132,7 +132,7 @@
         <version.maven-shade-plugin>3.6.0</version.maven-shade-plugin>
         <version.org.wildfly.channel>1.2.3.Final</version.org.wildfly.channel>
         <version.maven-compiler-plugin>3.10.1</version.maven-compiler-plugin>
-        <version.org.wildfly.galleon-pack>39.0.0.Final</version.org.wildfly.galleon-pack>
+        <version.org.wildfly.galleon-pack>8.2.0.Alpha-redhat-00034</version.org.wildfly.galleon-pack>
         <version.info.picocli>4.7.7</version.info.picocli>
         <version.system-rules>1.19.0</version.system-rules>
         <version.assertj>3.27.7</version.assertj>
@@ -705,6 +705,15 @@
             <url>https://repository.jboss.org/nexus/content/groups/public/</url>
             <layout>default</layout>
         </repository>
+    
+    <repository>
+        <id>jboss-eap8-product</id>
+        <url>https://download.devel.redhat.com/brewroot/repos/jb-eap-8.2-maven-build/latest/maven/</url>
+    </repository>
+    <repository>
+        <id>mrrc-ga</id>
+        <url>https://maven.repository.redhat.com/ga/</url>
+    </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -721,5 +730,14 @@
             <url>https://repository.jboss.org/nexus/content/groups/public/</url>
             <layout>default</layout>
         </pluginRepository>
+    
+    <pluginRepository>
+        <id>jboss-eap8-product</id>
+        <url>https://download.devel.redhat.com/brewroot/repos/jb-eap-8.2-maven-build/latest/maven/</url>
+    </pluginRepository>
+    <pluginRepository>
+        <id>mrrc-ga</id>
+        <url>https://maven.repository.redhat.com/ga/</url>
+    </pluginRepository>
     </pluginRepositories>
 </project>

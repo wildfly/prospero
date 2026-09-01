@@ -18,5 +18,10 @@
   -->
 
 <installation xmlns="urn:jboss:galleon:provisioning:3.0">
-    <feature-pack location="org.wildfly:wildfly-galleon-pack::zip"/>
+    <feature-pack location="org.jboss.eap.xp:wildfly-galleon-pack::zip">
+        <packages>
+            <include name="docs.examples.configs"/>
+        </packages>
+    </feature-pack>
+    <feature-pack location="org.wildfly.prospero:prospero-wildfly-galleon-pack::zip"/>
 </installation>

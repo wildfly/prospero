@@ -1,49 +1,34 @@
 ---
-- name: "wildfly"
-  galleonConfiguration: "classpath:wildfly-provisioning.xml"
+- name: "eap-8.2"
+  galleonConfiguration: "classpath:eap-8.2-provisioning.xml"
   channels:
     - schemaVersion: "2.0.0"
-      name: "wildfly"
+      name: "eap-8.2"
       repositories:
-        - id: "central"
-          url: "https://repo1.maven.org/maven2/"
-        - id: "jboss-public"
-          url: "https://repository.jboss.org/nexus/content/groups/public/"
         - id: "mrrc"
           url: "https://maven.repository.redhat.com/ga/"
       manifest:
         maven:
-          groupId: "org.wildfly.channels"
-          artifactId: "wildfly"
-- name: "wildfly-ee"
-  galleonConfiguration: "classpath:wildfly-ee-provisioning.xml"
+          groupId: "org.jboss.eap.channels"
+          artifactId: "eap-8.2"
+- name: "eap-xp-7.0"
+  galleonConfiguration: "classpath:eap-xp-7.0-provisioning.xml"
   channels:
     - schemaVersion: "2.0.0"
-      name: "wildfly-ee"
+      name: "eap-xp-7.0"
       repositories:
-        - id: "central"
-          url: "https://repo1.maven.org/maven2/"
-        - id: "jboss-public"
-          url: "https://repository.jboss.org/nexus/content/groups/public/"
         - id: "mrrc"
           url: "https://maven.repository.redhat.com/ga/"
       manifest:
         maven:
-          groupId: "org.wildfly.channels"
-          artifactId: "wildfly-ee"
-- name: "wildfly-preview"
-  galleonConfiguration: "classpath:wildfly-preview-provisioning.xml"
-  channels:
+          groupId: "org.jboss.eap.channels"
+          artifactId: "eap-xp-7.0"
     - schemaVersion: "2.0.0"
-      name: "wildfly-preview"
+      name: "eap-8.2"
       repositories:
-        - id: "central"
-          url: "https://repo1.maven.org/maven2/"
-        - id: "jboss-public"
-          url: "https://repository.jboss.org/nexus/content/groups/public/"
         - id: "mrrc"
           url: "https://maven.repository.redhat.com/ga/"
       manifest:
         maven:
-          groupId: "org.wildfly.channels"
-          artifactId: "wildfly-preview"
+          groupId: "org.jboss.eap.channels"
+          artifactId: "eap-8.2"

@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
@@ -42,6 +44,7 @@ public class MavenSessionManager {
 
     public static final Path LOCAL_MAVEN_REPO = Paths.get(System.getProperty("user.home"), ".m2", "repository");
     private static final String AETHER_OFFLINE_PROTOCOLS_PROPERTY = "aether.offline.protocols";
+    private static final String AETHER_USE_SYSTEM_PROPERTIES = "aether.connector.http.useSystemProperties";
     public static final String AETHER_OFFLINE_PROTOCOLS_VALUE = "file";
     private final Path provisioningRepo;
     private boolean offline;
@@ -96,6 +99,18 @@ public class MavenSessionManager {
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
         session.setConfigProperty(AETHER_OFFLINE_PROTOCOLS_PROPERTY, AETHER_OFFLINE_PROTOCOLS_VALUE);
         session.setOffline(offline);
+
+        // Allow configuring aether and potentially other Maven config properties from the Java system properties.
+        // This would be done in Maven. This was added to be able to configure retry handler and various connection
+        // timeouts in cases when infrastructure is not behaving very reliably.
+        Map<String, Object> configProps = new HashMap<>(session.getConfigProperties());
+        for (String name : System.getProperties().stringPropertyNames()) {
+            if (name.startsWith("aether.") || name.startsWith("maven.") || name.startsWith("http.")) {
+                configProps.put(name, System.getProperty(name));
+            }
+        }
+        session.setConfigProperties(configProps);
+
         return session;
     }
 

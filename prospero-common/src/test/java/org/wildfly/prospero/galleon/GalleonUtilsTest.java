@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.wildfly.prospero.galleon.GalleonUtils.JBOSS_MODULES_SETTINGS_XML_URL;
@@ -90,6 +91,47 @@ public class GalleonUtilsTest {
                 .doesNotExist();
         assertThat(System.getProperties())
                 .doesNotContainKey(JBOSS_MODULES_SETTINGS_XML_URL);
+    }
+
+    @Test
+    public void testCycloneDxProperties() throws Exception {
+        String cycloneDx = System.getProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY);
+        String cycloneDxFailOnError = System.getProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY);
+        try {
+            System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY, "true");
+            System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY, "true");
+            GalleonUtils.executeGalleon((options) -> {
+                assertEquals("true", options.get(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY));
+                assertEquals("true", options.get(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY));
+            }, Paths.get("test"));
+
+            System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY, "false");
+            System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY, "false");
+            GalleonUtils.executeGalleon((options) -> {
+                assertEquals("false", options.get(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY));
+                assertEquals("false", options.get(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY));
+            }, Paths.get("test"));
+
+            System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY);
+            System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY);
+            GalleonUtils.executeGalleon((options) -> {
+                assertFalse(options.containsKey(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY));
+                assertFalse(options.containsKey(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY));
+            }, Paths.get("test"));
+
+        } finally {
+            // Reset original values
+            if (cycloneDx == null) {
+                System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY);
+            } else {
+                System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY, cycloneDx);
+            }
+            if (cycloneDxFailOnError == null) {
+                System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY);
+            } else {
+                System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY, cycloneDxFailOnError);
+            }
+        }
     }
 
     private static Path urlToPath(String url) {

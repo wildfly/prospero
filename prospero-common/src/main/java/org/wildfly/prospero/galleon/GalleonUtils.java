@@ -59,6 +59,8 @@ public class GalleonUtils {
     public static final String JBOSS_FORK_EMBEDDED_VALUE = "true";
     public static final String JBOSS_BULK_RESOLVE_PROPERTY = "jboss-bulk-resolve-artifacts";
     public static final String JBOSS_BULK_RESOLVE_VALUE = "true";
+    public static final String JBOSS_CYCLONEDX_PROPERTY = "jboss-cyclonedx";
+    public static final String JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY = "jboss-cyclonedx-fail-on-error";
     public static final String MODULE_PATH_PROPERTY = "module.path";
     public static final String PRINT_ONLY_CONFLICTS_PROPERTY = "print-only-conflicts";
     public static final String PRINT_ONLY_CONFLICTS_VALUE = "true";
@@ -84,10 +86,22 @@ public class GalleonUtils {
             options.put(PRINT_ONLY_CONFLICTS_PROPERTY, PRINT_ONLY_CONFLICTS_VALUE);
             options.put(STORE_INPUT_PROVISIONING_CONFIG_PROPERTY, STORE_INPUT_PROVISIONING_CONFIG_VALUE);
             options.put(STORE_PROVISIONED_ARTIFACTS, STORE_PROVISIONED_ARTIFACTS_VALUE);
+
             String resetSysProp = System.getProperty(OPTION_RESET_EMBEDDED_SYSTEM_PROPERTIES, "");
             if (!resetSysProp.equals("-")) {
                 options.put(OPTION_RESET_EMBEDDED_SYSTEM_PROPERTIES, resetSysProp);
             }
+
+           String cycloneDxValue = System.getProperty(JBOSS_CYCLONEDX_PROPERTY, "");
+            if (!cycloneDxValue.isBlank()) {
+                options.put(JBOSS_CYCLONEDX_PROPERTY, cycloneDxValue);
+            }
+
+            String cycloneDxFailOnErrorValue = System.getProperty(JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY, "");
+            if (!cycloneDxFailOnErrorValue.isBlank()) {
+                options.put(JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY, cycloneDxFailOnErrorValue);
+            }
+
             if (logger.isTraceEnabled()) {
                 logger.trace("Executing galleon");
                 logger.trace("System properties:");

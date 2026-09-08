@@ -155,30 +155,34 @@ public class UpdateCommand extends AbstractParentCommand {
             Path targetDir = null;
             try {
                 targetDir = Files.createTempDirectory("update-candidate");
-                if (buildUpdate(updateAction, targetDir, console::confirmUpdates)) {
-                    console.println("");
-                    console.buildUpdatesComplete();
-
-                    ApplyCandidateAction applyCandidateAction = actionFactory.applyUpdate(installDir, targetDir);
-                    final List<FileConflict> conflicts = applyCandidateAction.getConflicts();
-                    if (!conflicts.isEmpty()) {
-                        FileConflictPrinter.print(conflicts, console);
-
-                        if (noConflictsOnly) {
-                            throw CliMessages.MESSAGES.cancelledByConfilcts();
-                        }
-
-                        if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), "",
-                                CliMessages.MESSAGES.updateCancelled())) {
-                            return false;
-                        }
-                    }
-
-                    console.println(CliMessages.MESSAGES.applyingUpdates());
-                    applyCandidateAction.applyUpdate(ApplyCandidateAction.Type.UPDATE);
-                } else {
+                BuildResult result = buildUpdate(updateAction, targetDir, console::confirmUpdates);
+                if (result == BuildResult.ERROR) {
                     return false;
                 }
+                if (result != BuildResult.BUILT) {
+                    return true;
+                }
+
+                console.println("");
+                console.buildUpdatesComplete();
+
+                ApplyCandidateAction applyCandidateAction = actionFactory.applyUpdate(installDir, targetDir);
+                final List<FileConflict> conflicts = applyCandidateAction.getConflicts();
+                if (!conflicts.isEmpty()) {
+                    FileConflictPrinter.print(conflicts, console);
+
+                    if (noConflictsOnly) {
+                        throw CliMessages.MESSAGES.cancelledByConfilcts();
+                    }
+
+                    if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), "",
+                            CliMessages.MESSAGES.updateCancelled())) {
+                        return false;
+                    }
+                }
+
+                console.println(CliMessages.MESSAGES.applyingUpdates());
+                applyCandidateAction.applyUpdate(ApplyCandidateAction.Type.UPDATE);
             } catch (IOException e) {
                 throw ProsperoLogger.ROOT_LOGGER.unableToCreateTemporaryDirectory(e);
             } finally {
@@ -229,7 +233,11 @@ public class UpdateCommand extends AbstractParentCommand {
 
                 try (UpdateAction updateAction = actionFactory.update(installationDir, overrideChannels,
                         mavenOptions, console)) {
-                    if (buildUpdate(updateAction, candidateDirectory, console::confirmBuildUpdates)) {
+                    BuildResult result = buildUpdate(updateAction, candidateDirectory, console::confirmBuildUpdates);
+                    if (result == BuildResult.ERROR) {
+                        return ReturnCodes.PROCESSING_ERROR;
+                    }
+                    if (result == BuildResult.BUILT) {
                         console.println("");
                         console.buildUpdatesComplete();
                         console.println(CliMessages.MESSAGES.updateCandidateGenerated(candidateDirectory));
@@ -560,11 +568,18 @@ public class UpdateCommand extends AbstractParentCommand {
         )
         protected List<String> versions = new ArrayList<>();
 
+        enum BuildResult {
+            BUILT,
+            CANCELLED,
+            NO_UPDATES,
+            ERROR
+        }
+
         public UpdateBuildCommand(CliConsole console, ActionFactory actionFactory) {
             super(console, actionFactory);
         }
 
-        protected boolean buildUpdate(UpdateAction updateAction, Path updateDirectory,
+        protected BuildResult buildUpdate(UpdateAction updateAction, Path updateDirectory,
                 Supplier<Boolean> confirmation) throws OperationException, ProvisioningException {
             // Log version overrides being applied
             if (!versions.isEmpty()) {
@@ -595,7 +610,7 @@ public class UpdateCommand extends AbstractParentCommand {
                 if (hasUnexpectedDowngrade(downgrades)) {
                     log.errorf("Found unexpected downgrade(s) - user must explicitly specify version overrides");
                     printer.printUnexpectedDowngradesError(downgrades, spec);
-                    return false;
+                    return BuildResult.ERROR;
                 } else {
                     log.infof("All downgrades are explicitly requested via version overrides");
                 }
@@ -603,23 +618,23 @@ public class UpdateCommand extends AbstractParentCommand {
                 if (!yes && !console.confirm(CliMessages.MESSAGES.continueWithUpdate(), "",
                         CliMessages.MESSAGES.updateCancelled())) {
                     log.infof("Update cancelled by user due to downgrades");
-                    return false;
+                    return BuildResult.CANCELLED;
                 }
                 log.infof("User confirmed downgrade operation");
             }
 
             console.updatesFound(updateSet.getArtifactUpdates(), updateSet.getChannelVersionChanges());
             if (updateSet.isEmpty()) {
-                return false;
+                return BuildResult.NO_UPDATES;
             }
 
             if (!yes && !confirmation.get()) {
-                return true;
+                return BuildResult.CANCELLED;
             }
 
             updateAction.buildUpdate(updateDirectory.toAbsolutePath());
 
-            return true;
+            return BuildResult.BUILT;
         }
 
         private boolean hasUnexpectedDowngrade(List<ChannelVersionChange> downgrades) {

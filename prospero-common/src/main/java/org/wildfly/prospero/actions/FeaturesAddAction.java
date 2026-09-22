@@ -87,6 +87,7 @@ public class FeaturesAddAction {
     private final Console console;
     private final CandidateActionsFactory candidateActionsFactory;
     private final FeaturePackTemplateManager featurePackTemplateManager;
+    private final MavenOptions mavenOptions;
     private LicenseManager licenseManager;
 
     public FeaturesAddAction(MavenOptions mavenOptions, Path installDir, List<Repository> repositories, Console console) throws MetadataException, ProvisioningException {
@@ -104,9 +105,12 @@ public class FeaturesAddAction {
 
         this.console = console;
         this.metadata = InstallationMetadata.loadInstallation(this.installDir);
-        this.prosperoConfig = addTemporaryRepositories(repositories);
 
-        final MavenOptions mergedOptions = prosperoConfig.getMavenOptions().merge(mavenOptions);
+        this.mavenOptions = mavenOptions;
+        final MavenOptions mergedOptions = metadata.getProsperoConfig().getMavenOptions().merge(mavenOptions);
+
+        this.prosperoConfig = composeUpdatedProsperoConfig(metadata.getProsperoConfig().getChannels(), repositories, mergedOptions);
+
         this.mavenSessionManager = new MavenSessionManager(mergedOptions);
 
         this.candidateActionsFactory = candidateActionsFactory;
@@ -290,24 +294,24 @@ public class FeaturesAddAction {
      */
     public boolean isFeaturePackAvailable(String featurePackCoord) throws OperationException, ProvisioningException {
         final ArtifactCoordinate coord = toMavenCoordinates(featurePackCoord);
-        final ChannelSession channelSession = GalleonEnvironment
-                .builder(installDir, prosperoConfig.getChannels(), mavenSessionManager, false).build()
-                .getChannelSession();
+        try (GalleonEnvironment galleonEnv = createGalleonEnvironment()) {
+            final ChannelSession channelSession = galleonEnv.getChannelSession();
 
-        try {
-            if (ProsperoLogger.ROOT_LOGGER.isTraceEnabled()) {
-                ProsperoLogger.ROOT_LOGGER.trace("Resolving a feature pack: " + featurePackCoord);
+            try {
+                if (ProsperoLogger.ROOT_LOGGER.isTraceEnabled()) {
+                    ProsperoLogger.ROOT_LOGGER.trace("Resolving a feature-pack: " + featurePackCoord);
+                }
+                channelSession.resolveMavenArtifact(coord.getGroupId(), coord.getArtifactId(),
+                        coord.getExtension(), coord.getClassifier(), coord.getVersion());
+            } catch (NoStreamFoundException e) {
+                return false;
+            } catch (ArtifactTransferException e) {
+                throw new ArtifactResolutionException("Unable to resolve feature-pack " + featurePackCoord, e,
+                        e.getUnresolvedArtifacts(), e.getAttemptedRepositories(), false);
             }
-            channelSession.resolveMavenArtifact(coord.getGroupId(), coord.getArtifactId(),
-                    coord.getExtension(), coord.getClassifier(), coord.getVersion());
-        } catch (NoStreamFoundException e) {
-            return false;
-        } catch (ArtifactTransferException e) {
-            throw new ArtifactResolutionException("Unable to resolve feature pack " + featurePackCoord, e,
-                    e.getUnresolvedArtifacts(), e.getAttemptedRepositories(), false);
-        }
 
-        return true;
+            return true;
+        }
     }
 
     private static String getSelectedConfig(ConfigId defaultConfigName, String selectedModel) {
@@ -555,8 +559,7 @@ public class FeaturesAddAction {
     }
 
     private void verifyConfigurationsAvailable(GalleonProvisioningConfig config) throws ProvisioningException, OperationException {
-        try (GalleonEnvironment env = GalleonEnvironment
-                .builder(installDir, prosperoConfig.getChannels(), mavenSessionManager, false).build()) {
+        try (GalleonEnvironment env = createGalleonEnvironment()) {
             final Stream<ConfigId> configIds = Stream.concat(
                     config.getFeaturePackDeps().stream().flatMap(fd -> fd.getIncludedConfigs().stream()),
                     config.getDefinedConfigs().stream().map(GalleonConfigurationWithLayers::getId));
@@ -606,6 +609,7 @@ public class FeaturesAddAction {
                 .builder(target, prosperoConfig.getChannels(), mavenSessionManager, false)
                 .setSourceServerPath(this.installDir)
                 .setConsole(console)
+                .setMavenSettings(mavenOptions.getMavenSettings())
                 .build();
     }
 
@@ -615,42 +619,45 @@ public class FeaturesAddAction {
                 .addFeaturePackDep(GalleonFeaturePackConfig.builder(fpl).build())
                 .build();
 
-        final MavenRepoManager repositoryManager = GalleonEnvironment
-                .builder(installDir, prosperoConfig.getChannels(), mavenSessionManager, false).build()
-                .getRepositoryManager();
-        final Map<String, Set<String>> layersMap = new HashMap<>();
-        try (Provisioning p = new GalleonBuilder().addArtifactResolver(repositoryManager).newProvisioningBuilder(config).build()) {
-            try (GalleonProvisioningLayout layout = p.newProvisioningLayout(config)) {
-                for (GalleonFeaturePackLayout fp : layout.getOrderedFeaturePacks()) {
-                    final Set<ConfigId> configIds;
-                    try {
-                        configIds = fp.loadLayers();
-                    } catch (IOException e) {
-                        // this should not happen as the code IOException is not actually thrown by loadLayers
-                        throw new RuntimeException(e);
-                    }
-                    for (ConfigId layer : configIds) {
-                        final String model = layer.getModel();
-                        Set<String> names = layersMap.get(model);
-                        if (names == null) {
-                            names = new HashSet<>();
-                            layersMap.put(model, names);
+        try (GalleonEnvironment galleonEnv = createGalleonEnvironment()) {
+            final MavenRepoManager repositoryManager = galleonEnv.getRepositoryManager();
+            final Map<String, Set<String>> layersMap = new HashMap<>();
+            try (Provisioning p = new GalleonBuilder().addArtifactResolver(repositoryManager).newProvisioningBuilder(config).build()) {
+                try (GalleonProvisioningLayout layout = p.newProvisioningLayout(config)) {
+                    for (GalleonFeaturePackLayout fp : layout.getOrderedFeaturePacks()) {
+                        final Set<ConfigId> configIds;
+                        try {
+                            configIds = fp.loadLayers();
+                        } catch (IOException e) {
+                            // this should not happen as the code IOException is not actually thrown by loadLayers
+                            throw new RuntimeException(e);
                         }
-                        names.add(layer.getName());
+                        for (ConfigId layer : configIds) {
+                            final String model = layer.getModel();
+                            Set<String> names = layersMap.get(model);
+                            if (names == null) {
+                                names = new HashSet<>();
+                                layersMap.put(model, names);
+                            }
+                            names.add(layer.getName());
+                        }
                     }
                 }
             }
-        }
+            return layersMap;
 
-        return layersMap;
+        }
     }
 
-    private ProsperoConfig addTemporaryRepositories(List<Repository> repositories) {
-        final ProsperoConfig prosperoConfig = metadata.getProsperoConfig();
+    private static ProsperoConfig composeUpdatedProsperoConfig(List<Channel> channels, List<Repository> repositories, MavenOptions mergedOptions) {
+        final List<Channel> updatedChannels = TemporaryRepositoriesHandler.overrideRepositories(channels, repositories);
+        return new ProsperoConfig(updatedChannels, mergedOptions);
+    }
 
-        final List<Channel> channels = TemporaryRepositoriesHandler.overrideRepositories(prosperoConfig.getChannels(), repositories);
-
-        return new ProsperoConfig(channels, prosperoConfig.getMavenOptions());
+    private GalleonEnvironment createGalleonEnvironment() throws ProvisioningException, OperationException {
+        return GalleonEnvironment.builder(installDir, prosperoConfig.getChannels(), mavenSessionManager, false)
+            .setMavenSettings(mavenOptions.getMavenSettings())
+            .build();
     }
 
     /**

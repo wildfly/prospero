@@ -111,6 +111,24 @@ public class ApplyCandidateActionTest {
     }
 
     @Test
+    public void testUpdateWithCandidateInsideInstallationDir() throws Exception {
+        createSimpleFeaturePacks();
+
+        install(installationPath, FPL_100);
+
+        // place the candidate inside the installation's tmp dir, mimicking the real EAP layout
+        final Path nestedUpdatePath = installationPath.resolve("standalone/tmp/installation-manager/prepared-server");
+        Files.createDirectories(nestedUpdatePath);
+        prepareUpdate(nestedUpdatePath, installationPath, FPL_101);
+
+        final List<FileConflict> conflicts = new ApplyCandidateAction(installationPath, nestedUpdatePath)
+                .applyUpdate(ApplyCandidateAction.Type.UPDATE);
+
+        assertThat(conflicts).isEmpty();
+        assertThat(installationPath.resolve("prod1/p1.txt")).hasContent("p1 1.0.1");
+    }
+
+    @Test
     public void testUpdateWithSymlink() throws Exception {
         final DirState expectedState = dirBuilder
                 .addFile("prod1/p1.txt", "p1 1.0.1")

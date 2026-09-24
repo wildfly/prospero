@@ -714,6 +714,12 @@ public class ApplyCandidateAction {
 
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                if (dir.equals(skipUpdateGalleon) || dir.equals(skipUpdateInstallation)) {
+                    if (ProsperoLogger.ROOT_LOGGER.isDebugEnabled()) {
+                        ProsperoLogger.ROOT_LOGGER.debug("The directory " + dir + " skipped");
+                    }
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
                 if (dir.equals(skipInstallationGalleon) || dir.equals(skipInstallationInstallation) || dir.equals(installationDir.resolve(ApplyStageBackup.BACKUP_FOLDER))) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }

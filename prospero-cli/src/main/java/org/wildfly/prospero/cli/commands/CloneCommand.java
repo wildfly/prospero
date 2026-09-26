@@ -32,6 +32,7 @@ import org.wildfly.prospero.cli.ReturnCodes;
 import org.wildfly.prospero.api.TemporaryFilesManager;
 import org.wildfly.prospero.cli.commands.options.LocalRepoOptions;
 import org.wildfly.prospero.cli.printers.ChannelPrinter;
+import org.wildfly.prospero.cli.printers.ListPrinter;
 import picocli.CommandLine;
 
 import java.nio.file.Files;
@@ -39,7 +40,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.jboss.galleon.api.config.GalleonFeaturePackConfig;
 
 @CommandLine.Command(name = CliConstants.Commands.CLONE)
 public class CloneCommand extends AbstractCommand {
@@ -132,9 +132,9 @@ public class CloneCommand extends AbstractCommand {
 
             try (InstallationMetadata metadataBundle = InstallationMetadata.fromMetadataBundle(inPath.toAbsolutePath())) {
                 console.println(CliMessages.MESSAGES.provisioningConfigHeader());
-                for (GalleonFeaturePackConfig featurePackDep : metadataBundle.getGalleonProvisioningConfig().getFeaturePackDeps()) {
-                    console.println(" * " + featurePackDep.getLocation().toString());
-                }
+                ListPrinter.unordered(console)
+                        .printItems(metadataBundle.getGalleonProvisioningConfig().getFeaturePackDeps(),
+                                fp -> fp.getLocation().toString());
                 console.println(CliMessages.MESSAGES.subscribedChannelsHeader());
                 final ChannelPrinter channelPrinter = new ChannelPrinter(console);
                 for (Channel channel : metadataBundle.getProsperoConfig().getChannels()) {

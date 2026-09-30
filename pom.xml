@@ -580,6 +580,35 @@
                     <artifactId>licenses-plugin</artifactId>
                     <version>${version.org.wildfly.maven.plugins.licenses-plugin}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.5.0</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-jdk-version</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireJavaVersion>
+                                        <!-- Define que a versão do JDK deve ser estritamente menor que 25 -->
+                                        <version>[17, 25)</version>
+                                        <message>
+        ======================================================================
+        ERROR: Java 25 is not supported by this project yet. 
+        Please use JDK 17, 21, or any version prior to JDK 25.
+        ======================================================================
+                                        </message>
+                                    </requireJavaVersion>
+                                </rules>
+                                <!-- Garante que a checagem falhe o build imediatamente -->
+                                <fail>true</fail>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>

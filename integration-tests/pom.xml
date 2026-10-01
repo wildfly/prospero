@@ -13,6 +13,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
@@ -90,7 +91,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <reuseForks>false</reuseForks> <!-- Don't reuse forks to avoid jboss-modules hanging on in the classpath -->
                 </configuration>
             </plugin>
         </plugins>
@@ -104,6 +105,9 @@
                     <name>allTests</name>
                 </property>
             </activation>
+            <properties>
+                <skipTests>false</skipTests>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.wildfly.prospero</groupId>
@@ -189,14 +193,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skipTests>false</skipTests>
-                            <reuseForks>false</reuseForks> <!-- Don't reuse forks to avoid jboss-modules hanging on in the classpath -->
-                        </configuration>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -229,17 +225,9 @@
                     <name>test</name>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skipTests>false</skipTests>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <skipTests>false</skipTests>
+            </properties>
         </profile>
     </profiles>
 

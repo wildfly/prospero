@@ -174,8 +174,14 @@ public class ApplyCandidateAction {
             throw ex;
         }
 
-        if (targetServerIsRunning()) {
-            final ProvisioningException ex = ProsperoLogger.ROOT_LOGGER.serverRunningError();
+        try {
+            if (targetServerIsRunning()) {
+                final ProvisioningException ex = ProsperoLogger.ROOT_LOGGER.serverRunningError();
+                ProsperoLogger.ROOT_LOGGER.warn("", ex);
+                throw ex;
+            }
+        } catch (IOException e) {
+            final ProvisioningException ex = ProsperoLogger.ROOT_LOGGER.unableToCheckServerLock(e);
             ProsperoLogger.ROOT_LOGGER.warn("", ex);
             throw ex;
         }
@@ -401,23 +407,25 @@ public class ApplyCandidateAction {
         }
     }
 
-    private boolean targetServerIsRunning() {
+    private boolean targetServerIsRunning() throws IOException {
         return isLockHeld(installationDir.resolve(RUNNING_LOCK_FILE));
     }
 
-    private static boolean isLockHeld(Path lockFile) {
+    private static boolean isLockHeld(Path lockFile) throws IOException {
         if (!Files.exists(lockFile)) {
             return false;
         }
         try (FileChannel channel = FileChannel.open(lockFile, StandardOpenOption.WRITE, StandardOpenOption.READ)) {
             try (FileLock lock = channel.tryLock()) {
+                // lock == null means another process holds it (server is running)
+                // lock != null means we got it (server is stopped); try-with-resources releases it
                 return lock == null;
             }
         } catch (OverlappingFileLockException e) {
-            return true;
-        } catch (IOException e) {
+            // Lock already held in this JVM (shouldn't happen in Prospero)
             return true;
         }
+        // IOException is NOT caught - propagates up as a failure to determine server state
     }
 
     private void updateMetadata(Type operation) throws IOException, MetadataException {

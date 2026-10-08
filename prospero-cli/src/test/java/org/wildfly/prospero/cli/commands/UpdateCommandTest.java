@@ -655,6 +655,82 @@ public class UpdateCommandTest extends AbstractMavenCommandTest {
                 ;
     }
 
+    @Test
+    public void userCancellingDowngradeConfirmationReturnsSuccess() throws Exception {
+        when(updateAction.findUpdates()).thenReturn(new UpdateSet(List.of(change("1.0.0", "1.0.1")),
+                List.of(new ChannelVersionChange("test-channel",
+                        new ChannelVersion.Builder().setPhysicalVersion("1.0.1").setType(ChannelVersion.Type.MAVEN).build(),
+                        new ChannelVersion.Builder().setPhysicalVersion("1.0.0").setType(ChannelVersion.Type.MAVEN).build()
+                ))));
+        setDenyConfirm(true, 1);
+
+        int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PERFORM,
+                CliConstants.DIR, installationDir.toAbsolutePath().toString(),
+                CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0");
+
+        assertEquals(ReturnCodes.SUCCESS, exitCode);
+        assertEquals(1, getAskedConfirmation());
+        Mockito.verify(updateAction, never()).buildUpdate(any());
+        Mockito.verify(applyCandidateAction, never()).applyUpdate(any());
+    }
+
+    @Test
+    public void userCancellingBuildUpdateConfirmationInPrepareReturnsSuccess() throws Exception {
+        when(updateAction.findUpdates()).thenReturn(new UpdateSet(List.of(change("1.0.0", "1.0.1"))));
+        setDenyConfirm(true);
+        final Path updatePath = tempFolder.newFolder().toPath();
+
+        int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PREPARE,
+                CliConstants.CANDIDATE_DIR, updatePath.toString(),
+                CliConstants.DIR, installationDir.toAbsolutePath().toString());
+
+        assertEquals(ReturnCodes.SUCCESS, exitCode);
+        assertEquals(1, getAskedConfirmation());
+        Mockito.verify(updateAction, never()).buildUpdate(any());
+    }
+
+    @Test
+    public void userCancellingDowngradeConfirmationInPrepareReturnsSuccess() throws Exception {
+        when(updateAction.findUpdates()).thenReturn(new UpdateSet(List.of(change("1.0.0", "1.0.1")),
+                List.of(new ChannelVersionChange("test-channel",
+                        new ChannelVersion.Builder().setPhysicalVersion("1.0.1").setType(ChannelVersion.Type.MAVEN).build(),
+                        new ChannelVersion.Builder().setPhysicalVersion("1.0.0").setType(ChannelVersion.Type.MAVEN).build()
+                ))));
+        setDenyConfirm(true, 1);
+        final Path updatePath = tempFolder.newFolder().toPath();
+
+        int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PREPARE,
+                CliConstants.CANDIDATE_DIR, updatePath.toString(),
+                CliConstants.DIR, installationDir.toAbsolutePath().toString(),
+                CliConstants.MANIFEST_VERSIONS, "test-channel::1.0.0");
+
+        assertEquals(ReturnCodes.SUCCESS, exitCode);
+        assertEquals(1, getAskedConfirmation());
+        Mockito.verify(updateAction, never()).buildUpdate(any());
+    }
+
+    @Test
+    public void unexpectedDowngradeInPrepareReturnsError() throws Exception {
+        when(updateAction.findUpdates()).thenReturn(new UpdateSet(List.of(change("1.0.0", "1.0.1")),
+                List.of(new ChannelVersionChange("test-channel",
+                        new ChannelVersion.Builder().setPhysicalVersion("1.0.1").setType(ChannelVersion.Type.MAVEN).build(),
+                        new ChannelVersion.Builder().setPhysicalVersion("1.0.0").setType(ChannelVersion.Type.MAVEN).build()
+                ))));
+        final Path updatePath = tempFolder.newFolder().toPath();
+
+        int exitCode = commandLine.execute(CliConstants.Commands.UPDATE, CliConstants.Commands.PREPARE,
+                CliConstants.CANDIDATE_DIR, updatePath.toString(),
+                CliConstants.DIR, installationDir.toAbsolutePath().toString(),
+                CliConstants.YES);
+
+        assertEquals(ReturnCodes.PROCESSING_ERROR, exitCode);
+        assertEquals(0, getAskedConfirmation());
+        Mockito.verify(updateAction, never()).buildUpdate(any());
+        assertThat(getStandardOutput())
+                .contains("The update would introduce one or more unexpected channel downgrades.")
+                .contains("test-channel: 1.0.1  ->  1.0.0");
+    }
+
     private Path generateTwoChannelConfiguration() throws IOException {
         // build a list of two channels
         final List<Channel> channels = List.of(

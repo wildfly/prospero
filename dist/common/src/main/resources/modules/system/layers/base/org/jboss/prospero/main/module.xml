@@ -61,5 +61,6 @@
 
   <dependencies>
     <module name="org.jboss.prospero-dep" export="true" services="import"/>
+    <module name="java.logging" export="true"/>
   </dependencies>
 </module>

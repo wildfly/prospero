@@ -102,7 +102,7 @@ public class SimpleProvisionTest extends WfCoreTestBase {
         // make sure the channel names are empty
         List<Channel> emptyNameChannels = MetadataTestUtils.readChannels(channelsFile).stream()
                 .map(c -> new Channel(c.getSchemaVersion(), null, null, null, c.getRepositories(),
-                        c.getManifestCoordinate(), null, null)).collect(Collectors.toList());
+                        c.getManifestCoordinate(), null, null, null, null)).collect(Collectors.toList());
         MetadataTestUtils.writeChannels(channelsFile, emptyNameChannels);
 
         final ProvisioningDefinition provisioningDefinition = defaultWfCoreDefinition()

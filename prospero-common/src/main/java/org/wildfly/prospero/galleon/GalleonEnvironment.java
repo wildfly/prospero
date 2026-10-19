@@ -108,11 +108,11 @@ public class GalleonEnvironment implements AutoCloseable {
 
         MavenVersionsResolver.Factory factory;
         try {
-            factory = new ProsperoVersionResolverFactory(new VersionResolverFactory(system, session, repositoryFactory),
+            factory = new ProsperoVersionResolverFactory(new VersionResolverFactory(system, session, null, repositoryFactory),
                     sourceServerPath, system, session, builder.filterManifest);
         } catch (IOException e) {
             ProsperoLogger.ROOT_LOGGER.debug("Unable to read artifact cache, falling back to Maven resolver.", e);
-            factory = new VersionResolverFactory(system, session, repositoryFactory);
+            factory = new VersionResolverFactory(system, session, null, repositoryFactory);
         }
 
         channelSession = initChannelSession(session, factory);
@@ -208,7 +208,8 @@ public class GalleonEnvironment implements AutoCloseable {
                         c.getRepositories(),
                         manifestCoord,
                         c.getBlocklistCoordinate(),
-                        c.getNoStreamStrategy()))
+                        c.getNoStreamStrategy(),
+                        null, null))
                 .collect(Collectors.toList());
         return channels;
     }

@@ -267,7 +267,8 @@ public class ProvisioningAction {
             if (StringUtils.isEmpty(c.getName())) {
                 return new Channel(c.getSchemaVersion(), CHANNEL_NAME_PREFIX + channelCounter.getAndIncrement(), c.getDescription(),
                         c.getVendor(), c.getRepositories(),
-                        c.getManifestCoordinate(), c.getBlocklistCoordinate(), c.getNoStreamStrategy());
+                        c.getManifestCoordinate(), c.getBlocklistCoordinate(), c.getNoStreamStrategy(),
+                        null, null);
             } else {
                 return c;
             }

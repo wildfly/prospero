@@ -110,7 +110,7 @@ public class GalleonEnvironmentTest {
         final ManifestVersionRecord record = new ManifestVersionRecord();
         record.addManifest(new ManifestVersionRecord.MavenManifest(manifestArtifact.getGroupId(), manifestArtifact.getArtifactId(),
                 manifestArtifact.getVersion(), "desc"));
-        GalleonEnvironment.builder(temp.newFolder().toPath(), List.of(), msm, true)
+        GalleonEnvironment.builder(temp.newFolder().toPath(), List.of(new Channel()), msm, true)
                 .setRestoreManifest(restoreManifest, record)
                 .build();
 
@@ -142,7 +142,7 @@ public class GalleonEnvironmentTest {
                 missingArtifact.getVersion(), "desc"));
         record.addManifest(new ManifestVersionRecord.MavenManifest(manifestArtifact.getGroupId(), manifestArtifact.getArtifactId(),
                 manifestArtifact.getVersion(), "desc"));
-        GalleonEnvironment.builder(temp.newFolder().toPath(), List.of(), msm, true)
+        GalleonEnvironment.builder(temp.newFolder().toPath(), List.of(new Channel()), msm, true)
                 .setRestoreManifest(restoreManifest, record)
                 .build();
 

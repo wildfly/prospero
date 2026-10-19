@@ -33,8 +33,10 @@ import org.eclipse.aether.resolution.VersionRangeResult;
 import org.eclipse.aether.version.Version;
 import org.jboss.logging.Logger;
 import org.wildfly.channel.ArtifactCoordinate;
+import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifest;
 import org.wildfly.channel.ChannelManifestMapper;
+import org.wildfly.channel.ChannelMapper;
 import org.wildfly.channel.Repository;
 import org.wildfly.channel.Stream;
 import org.wildfly.channel.maven.ChannelCoordinate;
@@ -147,7 +149,9 @@ public class ArtifactPromoter {
             log.debugf("Found existing customization channel with version %s", version.get());
 
             try(VersionResolverFactory versionResolverFactory = new VersionResolverFactory(system, session)) {
-                final MavenVersionsResolver resolver = versionResolverFactory.create(Arrays.asList(new Repository(targetRepository.getId(), targetRepository.getUrl())));
+                List<Repository> repositories = List.of(new Repository(targetRepository.getId(), targetRepository.getUrl()));
+                final MavenVersionsResolver resolver = versionResolverFactory.create(
+                        syntheticChannel(repositories, null, null));
 
                 final File file = resolver.resolveArtifact(coordinate.getGroupId(), coordinate.getArtifactId(),
                         ChannelManifest.EXTENSION, ChannelManifest.CLASSIFIER, version.get());
@@ -199,5 +203,10 @@ public class ArtifactPromoter {
         }
 
         return String.format("%s%08d", coreVersion, currentVersion + 1);
+    }
+
+    static Channel syntheticChannel(List<Repository> repositories, Boolean gpgCheck, List<String> gpgUrls) {
+        return new Channel(ChannelMapper.CURRENT_SCHEMA_VERSION, "", "", null, repositories, null, null, null,
+                gpgCheck, gpgUrls);
     }
 }

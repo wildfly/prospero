@@ -5,10 +5,10 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.Error;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.SpecificationVersion;
 import org.wildfly.channel.ChannelMapper;
 import org.wildfly.channel.version.VersionMatcher;
 import org.wildfly.prospero.ProsperoLogger;
@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * generates commit messages used in the git history storage
@@ -31,9 +30,9 @@ import java.util.Set;
 class SavedStateParser {
     public static final String SCHEMA_VERSION_1_0_0 = "1.0.0";
     private static final String SCHEMA_1_0_0_FILE = "org/wildfly/prospero/savedstate/v1.0.0/schema.json";
-    private static final Map<String, JsonSchema> SCHEMAS = new HashMap();
+    private static final Map<String, Schema> SCHEMAS = new HashMap<>();
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
-    private static final JsonSchemaFactory SCHEMA_FACTORY = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909)).jsonMapper(JSON_MAPPER).build();
+    private static final SchemaRegistry SCHEMA_FACTORY = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2019_09);
 
     static {
         SCHEMAS.put(SCHEMA_VERSION_1_0_0, SCHEMA_FACTORY.getSchema(ChannelMapper.class.getClassLoader().getResourceAsStream(SCHEMA_1_0_0_FILE)));
@@ -104,15 +103,15 @@ class SavedStateParser {
 
     private static List<SavedState.Version> readVersions(String text) throws JsonProcessingException {
         JsonNode node = JSON_MAPPER.readTree(text);
-        JsonSchema schema = getSchema(node);
+        Schema schema = getSchema(node);
 
         if (schema == null) {
             return Collections.emptyList();
         }
 
-        Set<ValidationMessage> validationMessages = schema.validate(node);
+        List<Error> validationMessages = schema.validate(node);
         if (!validationMessages.isEmpty()) {
-            for (ValidationMessage validationMessage : validationMessages) {
+            for (Error validationMessage : validationMessages) {
                 ProsperoLogger.ROOT_LOGGER.error("Invalid Saved State in history " + validationMessage);
             }
             return Collections.emptyList();
@@ -136,7 +135,7 @@ class SavedStateParser {
         return JSON_MAPPER.writeValueAsString(currentVersions);
     }
 
-    private static JsonSchema getSchema(JsonNode node) {
+    private static Schema getSchema(JsonNode node) {
         JsonNode schemaVersion = node.path("schemaVersion");
         String version = schemaVersion.asText();
         if (version == null || version.isEmpty()) {
@@ -144,7 +143,7 @@ class SavedStateParser {
             return null;
         }
 
-        JsonSchema schema = SCHEMAS.get(version);
+        Schema schema = SCHEMAS.get(version);
         if (schema != null) {
             return schema;
         } else {

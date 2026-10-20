@@ -66,7 +66,7 @@ public class ChannelManifestSubstitutor {
                             channel.getBlocklistCoordinate(), channel.getNoStreamStrategy());
                 } else {
                     return new Channel(channel.getSchemaVersion(), channel.getName(), channel.getDescription(), channel.getVendor(), channel.getRepositories(), substitutedChannelManifestCoordinate,
-                            channel.getBlocklistCoordinate(), channel.getNoStreamStrategy());
+                            channel.getBlocklistCoordinate(), channel.getNoStreamStrategy(), null, null);
                 }
             }
         }

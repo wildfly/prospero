@@ -33,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.wildfly.channel.ArtifactTransferException;
+import org.wildfly.channel.Channel;
 import org.wildfly.channel.ChannelManifest;
 import org.wildfly.channel.ChannelManifestMapper;
 import org.wildfly.channel.Repository;
@@ -258,19 +259,22 @@ public class ArtifactPromoterTest {
     }
 
     private ChannelManifest getManifest(ChannelCoordinate channelGa) throws IOException {
-        final MavenVersionsResolver resolver = new VersionResolverFactory(system, session).create(Arrays.asList(new Repository(targetRepository.getId(), targetRepository.getUrl())));
+        Channel channel = ArtifactPromoter.syntheticChannel(List.of(new Repository(targetRepository.getId(), targetRepository.getUrl())),
+                null, null);
+        try (VersionResolverFactory versionResolverFactory = new VersionResolverFactory(system, session)) {
+            final MavenVersionsResolver resolver = versionResolverFactory.create(channel);
+            final Set<String> allVersions = resolver.getAllVersions(channelGa.getGroupId(), channelGa.getArtifactId(),
+                    ChannelManifest.EXTENSION, ChannelManifest.CLASSIFIER);
+            final Optional<String> latestVersion = allVersions.stream().max(VersionMatcher.COMPARATOR);
 
-        final Set<String> allVersions = resolver.getAllVersions(channelGa.getGroupId(), channelGa.getArtifactId(),
-                ChannelManifest.EXTENSION, ChannelManifest.CLASSIFIER);
-        final Optional<String> latestVersion = allVersions.stream().max(VersionMatcher.COMPARATOR);
+            if (latestVersion.isEmpty()) {
+                throw new ArtifactTransferException("No latestVersion", Collections.emptySet(), Collections.emptySet());
+            }
 
-        if (latestVersion.isEmpty()) {
-            throw new ArtifactTransferException("No latestVersion", Collections.emptySet(), Collections.emptySet());
+            final File file = resolver.resolveArtifact(channelGa.getGroupId(), channelGa.getArtifactId(),
+                    ChannelManifest.EXTENSION, ChannelManifest.CLASSIFIER, latestVersion.get());
+            return ChannelManifestMapper.fromString(Files.readString(file.toPath()));
         }
-
-        final File file = resolver.resolveArtifact(channelGa.getGroupId(), channelGa.getArtifactId(),
-                ChannelManifest.EXTENSION, ChannelManifest.CLASSIFIER, latestVersion.get());
-        return ChannelManifestMapper.fromString(Files.readString(file.toPath()));
     }
 
     private void assertArtifactInRepository(CustomArtifact artifactCoordinate) throws IOException {

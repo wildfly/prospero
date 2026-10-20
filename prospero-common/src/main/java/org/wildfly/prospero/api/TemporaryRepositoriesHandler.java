@@ -38,7 +38,8 @@ public class TemporaryRepositoriesHandler {
 
         for (Channel oc : originalChannels) {
             final Channel c = new Channel(oc.getSchemaVersion(), oc.getName(), oc.getDescription(), oc.getVendor(),
-                    repositories, oc.getManifestCoordinate(), oc.getBlocklistCoordinate(), oc.getNoStreamStrategy());
+                    repositories, oc.getManifestCoordinate(), oc.getBlocklistCoordinate(), oc.getNoStreamStrategy(),
+                    null, null);
             mergedChannels.add(c);
         }
 

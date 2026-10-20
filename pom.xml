@@ -11,7 +11,7 @@
 
     <groupId>org.wildfly.prospero</groupId>
     <artifactId>prospero</artifactId>
-    <version>1.4.2.Final</version>
+    <version>1.4.3.Final-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Prospero Parent</name>

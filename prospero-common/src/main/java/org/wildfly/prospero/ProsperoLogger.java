@@ -409,6 +409,9 @@ public interface ProsperoLogger extends BasicLogger {
     @Message(id = 277, value = "Version overwrite [%s] in not formatted correctly. It should consist of <channel_name>::<version>.")
     IllegalArgumentException invalidVersionOverrideString(String versionString);
 
+    @Message(id = 278, value = "Unable to determine if server is running - failed to check lock file")
+    ProvisioningException unableToCheckServerLock(@Cause IOException cause);
+
     @Message(value = "Version overwrite defines channel [%s] multiple times. Please make sure each channel is specified only once.")
     IllegalArgumentException duplicatedVersionOverride(String channelName);
 

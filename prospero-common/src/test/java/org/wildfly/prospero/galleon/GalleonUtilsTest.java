@@ -97,26 +97,33 @@ public class GalleonUtilsTest {
     public void testCycloneDxProperties() throws Exception {
         String cycloneDx = System.getProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY);
         String cycloneDxFailOnError = System.getProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY);
+        String cycloneDxCompress = System.getProperty(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS);
         try {
             System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY, "true");
             System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY, "true");
+            System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS, "true");
             GalleonUtils.executeGalleon((options) -> {
                 assertEquals("true", options.get(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY));
                 assertEquals("true", options.get(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY));
+                assertEquals("true", options.get(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS));
             }, Paths.get("test"));
 
             System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY, "false");
             System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY, "false");
+            System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS, "false");
             GalleonUtils.executeGalleon((options) -> {
                 assertEquals("false", options.get(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY));
                 assertEquals("false", options.get(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY));
+                assertEquals("false", options.get(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS));
             }, Paths.get("test"));
 
             System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY);
             System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY);
+            System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS);
             GalleonUtils.executeGalleon((options) -> {
                 assertFalse(options.containsKey(GalleonUtils.JBOSS_CYCLONEDX_PROPERTY));
                 assertFalse(options.containsKey(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY));
+                assertFalse(options.containsKey(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS));
             }, Paths.get("test"));
 
         } finally {
@@ -130,6 +137,11 @@ public class GalleonUtilsTest {
                 System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY);
             } else {
                 System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_FAIL_ON_ERROR_PROPERTY, cycloneDxFailOnError);
+            }
+            if (cycloneDxCompress == null) {
+                System.clearProperty(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS);
+            } else {
+                System.setProperty(GalleonUtils.JBOSS_CYCLONEDX_COMPRESS, cycloneDxCompress);
             }
         }
     }

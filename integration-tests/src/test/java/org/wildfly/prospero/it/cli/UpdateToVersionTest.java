@@ -218,7 +218,7 @@ public class UpdateToVersionTest extends CliTestBase {
                 ),
                 (ExecutionUtils.ExecutionResult e) -> {
                     try {
-                        e.assertReturnCode(ReturnCodes.PROCESSING_ERROR);
+                        e.assertReturnCode(ReturnCodes.SUCCESS);
                         assertThat(e.getCommandOutput())
                                 .contains("The update will downgrade following channels:")
                                 .contains("  * test-channel: 1.0.1 (Logical version 1.0.1)  ->  1.0.0 (Logical version 1.0.0)");

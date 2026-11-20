@@ -19,6 +19,7 @@ package org.wildfly.prospero.api.exceptions;
 
 import org.wildfly.channel.ChannelMetadataCoordinate;
 import org.wildfly.channel.Repository;
+import org.wildfly.prospero.api.ArtifactUtils;
 
 import java.util.Set;
 
@@ -30,7 +31,7 @@ public class UnresolvedChannelMetadataException extends OperationException {
 
     public UnresolvedChannelMetadataException(String msg, Throwable cause, Set<ChannelMetadataCoordinate> missingArtifacts,
                                               Set<Repository> repositories, boolean offline) {
-        super(msg, cause);
+        super(ArtifactResolutionException.withDetails(msg, missingArtifacts, ArtifactUtils::printCoordinate, repositories), cause);
         this.missingArtifacts = missingArtifacts;
         this.repositories = repositories;
         this.offline = offline;

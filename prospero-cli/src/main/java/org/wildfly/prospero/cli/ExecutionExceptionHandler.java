@@ -174,7 +174,8 @@ public class ExecutionExceptionHandler implements CommandLine.IExecutionExceptio
                 console.error("  * " + ArtifactUtils.printStream(missingArtifact));
             }
         } else {
-            console.error(CliMessages.MESSAGES.errorHeader(ex.getLocalizedMessage()));
+            // the message contains repository URLs, which can include '%'
+            console.error(CliMessages.MESSAGES.errorHeader(ex.getLocalizedMessage()).replace("%", "%%"));
 
         }
     }
@@ -191,7 +192,8 @@ public class ExecutionExceptionHandler implements CommandLine.IExecutionExceptio
 
             printRepositories(ex.getRepositories(), ex.isOffline());
         } else {
-            console.error(CliMessages.MESSAGES.errorHeader(ex.getLocalizedMessage()));
+            // the message contains repository URLs, which can include '%'
+            console.error(CliMessages.MESSAGES.errorHeader(ex.getLocalizedMessage()).replace("%", "%%"));
         }
     }
 

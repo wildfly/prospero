@@ -19,9 +19,13 @@ package org.wildfly.prospero.api.exceptions;
 
 import org.wildfly.channel.ArtifactCoordinate;
 import org.wildfly.channel.Repository;
+import org.wildfly.prospero.api.ArtifactUtils;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ArtifactResolutionException extends OperationException {
 
@@ -35,7 +39,7 @@ public class ArtifactResolutionException extends OperationException {
 
     public ArtifactResolutionException(String msg, Throwable cause, Set<ArtifactCoordinate> missingArtifacts,
                                        Set<Repository> repositories, boolean offline) {
-        super(msg, cause);
+        super(withDetails(msg, missingArtifacts, ArtifactUtils::printCoordinate, repositories), cause);
         this.repositories = repositories;
         this.offline = offline;
         this.missingArtifacts = missingArtifacts;
@@ -51,5 +55,30 @@ public class ArtifactResolutionException extends OperationException {
 
     public boolean isOffline() {
         return offline;
+    }
+
+    /**
+     * Appends the unresolved artifacts and the attempted repositories to the message, so that the information is
+     * available to consumers that only use {@link Throwable#getMessage()}.
+     */
+    static <T> String withDetails(String msg, Collection<T> artifacts, Function<T, String> artifactPrinter,
+                                  Collection<Repository> repositories) {
+        final boolean hasArtifacts = artifacts != null && !artifacts.isEmpty();
+        final boolean hasRepositories = repositories != null && !repositories.isEmpty();
+        if (msg == null || (!hasArtifacts && !hasRepositories)) {
+            return msg;
+        }
+
+        final StringBuilder sb = new StringBuilder(msg);
+        if (hasArtifacts) {
+            sb.append(": ").append(artifacts.stream().map(artifactPrinter).sorted().collect(Collectors.joining(", ")));
+        }
+        if (hasRepositories) {
+            sb.append(". Attempted repositories: ").append(repositories.stream()
+                    .map(r -> r.getId() + " (" + r.getUrl() + ")")
+                    .sorted()
+                    .collect(Collectors.joining(", ")));
+        }
+        return sb.toString();
     }
 }

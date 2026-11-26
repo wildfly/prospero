@@ -23,6 +23,8 @@ import org.junit.Test;
 import org.wildfly.channel.ChannelManifest;
 import org.wildfly.channel.ChannelMetadataCoordinate;
 import org.wildfly.channel.Repository;
+import org.wildfly.prospero.api.exceptions.ArtifactResolutionException;
+import org.wildfly.prospero.api.exceptions.StreamNotFoundException;
 import org.wildfly.prospero.api.exceptions.UnresolvedChannelMetadataException;
 import picocli.CommandLine;
 
@@ -163,6 +165,31 @@ public class ExecutionExceptionHandlerTest {
         assertThat(output).contains("file:/home/user/my%20repo/");
         assertThat(output).contains("https://repo.maven.org/maven2/");
         assertThat(output).contains("file:/tmp/local-repository");
+        assertThat(exitCode).isEqualTo(ReturnCodes.PROCESSING_ERROR);
+    }
+
+    @Test
+    public void testArtifactResolutionWithoutArtifactsAndPercentInRepositoryUrl() throws Exception {
+        // Given: no missing artifacts, so the (formatted) exception message is printed, and it contains a '%'
+        ArtifactResolutionException exception = new ArtifactResolutionException("Unable to resolve artifact", null,
+                Collections.emptySet(), Set.of(new Repository("repo", "file:/home/user/my%20repo/")), false);
+
+        int exitCode = handler.handleExecutionException(exception, commandLine, parseResult);
+
+        String output = errorStream.toString();
+        assertThat(output).contains("file:/home/user/my%20repo/");
+        assertThat(exitCode).isEqualTo(ReturnCodes.PROCESSING_ERROR);
+    }
+
+    @Test
+    public void testStreamNotFoundWithoutArtifactsAndPercentInRepositoryUrl() throws Exception {
+        StreamNotFoundException exception = new StreamNotFoundException("Unable to find stream", null,
+                Collections.emptySet(), Set.of(new Repository("repo", "file:/home/user/my%20repo/")), false);
+
+        int exitCode = handler.handleExecutionException(exception, commandLine, parseResult);
+
+        String output = errorStream.toString();
+        assertThat(output).contains("file:/home/user/my%20repo/");
         assertThat(exitCode).isEqualTo(ReturnCodes.PROCESSING_ERROR);
     }
 }

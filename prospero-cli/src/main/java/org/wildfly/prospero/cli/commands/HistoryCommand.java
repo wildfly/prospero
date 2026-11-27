@@ -29,6 +29,7 @@ import org.wildfly.prospero.cli.CliConsole;
 import org.wildfly.prospero.cli.CliMessages;
 import org.wildfly.prospero.cli.DiffPrinter;
 import org.wildfly.prospero.cli.ReturnCodes;
+import org.wildfly.prospero.cli.printers.ListPrinter;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -54,10 +55,13 @@ public class HistoryCommand extends AbstractCommand {
 
         if (revision.isEmpty()) {
             List<SavedState> revisions = historyAction.getRevisions();
+            console.println(CliMessages.MESSAGES.historyHeader());
+            final ListPrinter listPrinter = ListPrinter.unordered(console);
             for (SavedState savedState : revisions) {
-                console.println(savedState.shortDescription());
+                ListPrinter subList = listPrinter.printItem(savedState.shortDescription())
+                        .unorderedSubList();
                 for (SavedState.Version manifestVersion: savedState.getManifestVersions()) {
-                    console.println("  * " + manifestVersion.getDisplayVersion());
+                    subList.printItem(manifestVersion.getDisplayVersion());
                 }
             }
         } else {

@@ -194,11 +194,11 @@ public class ChannelCommandTest extends AbstractConsoleTest {
                 CliConstants.DIR, dir.toString());
         Assert.assertEquals(ReturnCodes.SUCCESS, exitCode);
         assertThat(getStandardOutput().lines()
-                .filter(line -> line.matches(".*\\S+ \\S+:\\S+(?::\\S+)?")))
-                .containsExactlyInAnyOrder(
-                        "test1 g:a",
-                        "test2 g:a:v",
-                        "test3 file:/a:b"
+                .filter(line -> line.matches("\\s+\\d+\\.\\s+.*")))
+                .containsExactly(
+                        "   1. test1 g:a",
+                        "   2. test2 g:a:v",
+                        "   3. test3 file:/a:b"
                 );
     }
 

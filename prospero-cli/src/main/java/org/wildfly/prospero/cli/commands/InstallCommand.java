@@ -59,6 +59,7 @@ import org.wildfly.prospero.cli.ArgumentParsingException;
 import org.wildfly.prospero.api.TemporaryFilesManager;
 import org.wildfly.prospero.cli.commands.options.InstallationProfilesCandidates;
 import org.wildfly.prospero.cli.printers.ChannelPrinter;
+import org.wildfly.prospero.cli.printers.ListPrinter;
 import org.wildfly.prospero.galleon.GalleonUtils;
 import org.wildfly.prospero.licenses.License;
 import org.wildfly.prospero.model.InstallationProfile;
@@ -353,9 +354,8 @@ public class InstallCommand extends AbstractInstallCommand {
             }
 
             console.println(PROFILE_SUBHEADERS_INDENT + CliMessages.MESSAGES.includedFeaturePacks());
-            for (FeaturePackLocation featurePackLocation: getFeaturePacks(profile)) {
-                console.println(" ".repeat(PROFILES_INDENT) + featurePackLocation.toString());
-            }
+            ListPrinter.unordered(console)
+                    .printItems(getFeaturePacks(profile), FeaturePackLocation::toString);
         }
 
         return ReturnCodes.SUCCESS;
